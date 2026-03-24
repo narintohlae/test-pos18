@@ -2347,6 +2347,7 @@ async importFromGoogleSheet(isAutomatic = false) {
                          category: product.category || '',
                         baseUnit: product.baseUnit || '',
                         stockInBaseUnits: product.stockInBaseUnits || 0,
+                        soldCount: product.soldCount || 0,
                         pricingUnit: unit,
          
                                display: `${product.productName} (${unit.unitName})`,
@@ -2774,10 +2775,18 @@ showProductEditorModal(product) {
    
                  return null;
         }).filter(Boolean);
-        results.sort((a, b) => {
-            if (b.score !== a.score) { return b.score - a.score; }
-            return a.productName.localeCompare(b.productName);
-        });
+results.sort((a, b) => {
+    // 1. เรียงตามความแม่นยำของการพิมพ์ (score) ก่อน
+    if (b.score !== a.score) { 
+        return b.score - a.score; 
+    }
+    // 2. ถ้าพิมพ์ตรงกัน (score เท่ากัน) ให้เอาตัวที่ขายบ่อยกว่า (soldCount) ขึ้นก่อน
+    if (b.soldCount !== a.soldCount) {
+        return b.soldCount - a.soldCount;
+    }
+    // 3. ท้ายสุดถ้าขายเท่ากันอีก ให้เรียงตามตัวอักษร (ก-ฮ, A-Z)
+    return a.productName.localeCompare(b.productName);
+});
         this.state.currentSearchResults = results;
         this.state.selectedSearchIndex = results.length > 0 ? 0 : -1;
         this.displaySearchResults(results, queryToSearch);
@@ -3288,7 +3297,9 @@ async confirmSale() {
                 
                 // หักสต็อก (แปลงจำนวนที่ขายกลับไปเป็นหน่วยเล็กสุดเพื่อตัดสต็อก)
                 const ref = api.doc(this.getProductsCollectionRef(), item.productUnit.productId);
-                batch.update(ref, { stockInBaseUnits: api.increment(-(item.quantity * fac)) });
+                batch.update(ref, { stockInBaseUnits: api.increment(-(item.quantity * fac)),
+                soldCount: api.increment(item.quantity)
+                });
 
                 return {
                     productId: item.productUnit.productId, 
