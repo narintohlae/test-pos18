@@ -4725,7 +4725,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
 </div>
-    <style id="modern-2026-search-css">
+    <style id="modern-2026-smart-reveal-css">
     /* 🚀 1. ทลายกำแพง Z-Index */
     .search-column { position: relative !important; z-index: 999999 !important; }
     .search-column .card { position: relative !important; z-index: 999999 !important; overflow: visible !important; }
@@ -4734,58 +4734,55 @@ document.addEventListener('DOMContentLoaded', () => {
     .cart-column { position: relative !important; z-index: 1 !important; }
     .cart-column .card { position: relative !important; z-index: 1 !important; }
 
-    /* 🎨 2. 2026 Glassmorphism Container (กระจกฝ้า) */
+    /* 🎨 2. 2026 Glassmorphism Container */
     #search-results.has-results {
         position: absolute;
         top: 12px; left: 0;
-        width: max-content; /* ยืดตามเนื้อหา */
+        width: max-content; 
         min-width: 100%;
         max-width: 95vw; 
         max-height: calc(100vh - 180px);
         z-index: 9999999 !important;
         
-        /* สไตล์ปี 2026 */
-        background: rgba(255, 255, 255, 0.85); /* ขาวโปร่งแสง */
-        backdrop-filter: blur(20px); /* เบลอพื้นหลัง */
+        background: rgba(255, 255, 255, 0.85); 
+        backdrop-filter: blur(20px); 
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.6);
-        border-radius: 16px; /* มุมโค้งมนขึ้น */
-        box-shadow: 0 20px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.03); /* เงานุ่มลึก */
+        border-radius: 16px; 
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.03); 
         
         display: flex; flex-direction: column; gap: 4px;
-        padding: 8px; /* เว้นขอบด้านในให้ดูมีราคา */
+        padding: 8px; 
         overflow-y: auto; overflow-x: visible;
-        pointer-events: none; 
+        pointer-events: auto; /* จับเมาส์เต็มที่ ไม่ให้ทะลุกระจก */
         scrollbar-width: none; 
     }
     #search-results::-webkit-scrollbar { display: none; }
 
-    /* 3. แถวสินค้า (Row) - ไร้เส้นคั่น */
+    /* 3. แถวสินค้า (Row) */
     .search-row {
         display: flex; flex-direction: row; flex-wrap: nowrap;
         align-items: center;
         border-radius: 12px;
-        padding: 4px; /* เว้นระยะห่างให้เซลล์ข้างใน */
-        pointer-events: none; 
+        padding: 4px; 
+        pointer-events: auto; /* จับการ Hover แถว */
         transition: background 0.2s ease;
     }
     
-    /* Hover แถวให้มีพื้นหลังจางๆ */
-    .search-row.selected-row {
-        background: rgba(0, 0, 0, 0.03);
+    .search-row.selected-row, .search-row:hover {
+        background: rgba(0, 0, 0, 0.04);
     }
 
-    /* 4. เซลล์ตาราง (Cell) แบบ Pills */
+    /* 4. เซลล์ตาราง (Cell) */
     .search-unit-cell {
         padding: 0.5rem 1rem; 
         font-size: 0.9em; 
         cursor: pointer;
         display: flex; align-items: center; justify-content: space-between;
-        border-radius: 10px; /* มุมโค้งแบบ Pill */
-        transition: all 0.2s cubic-bezier(0.2, 0, 0, 1); /* Animation นุ่มนวล */
+        border-radius: 10px; 
+        transition: all 0.2s cubic-bezier(0.2, 0, 0, 1); 
         white-space: nowrap;
-        pointer-events: auto; 
-        height: 42px; /* สูงขึ้นนิดให้กดง่าย */
+        height: 42px; 
         box-sizing: border-box;
         border: 1px solid transparent;
     }
@@ -4796,36 +4793,40 @@ document.addEventListener('DOMContentLoaded', () => {
         gap: 16px;
     }
     
-    /* 🌟 กล่องรอง (ลอยทับตะกร้า) - สีเทาอ่อนๆ สไตล์ Tag */
+    /* 🌟 กล่องรอง (ลอยทับตะกร้า) */
     .search-unit-cell.alt-cell {
         flex: 0 0 auto; gap: 12px;
         background: rgba(0,0,0,0.04);
-        margin-left: 6px; /* เว้นช่องไฟระหว่างหน่วย */
+        margin-left: 6px; 
+        display: none; /* 🌟 ซ่อนไว้โดยปริยาย! */
     }
 
-    /* Typography ยุคใหม่ (สะอาดตา) */
+    /* 🌟 Animation เลื่อนโชว์หน่วยรองอย่างนุ่มนวล */
+    @keyframes revealAlt {
+        0% { opacity: 0; transform: translateX(-15px) scale(0.95); }
+        100% { opacity: 1; transform: translateX(0) scale(1); }
+    }
+
+    /* 🌟 โชว์หน่วยรอง เฉพาะตอนแถวนี้ถูกเลือก (Keyboard) หรือชี้ด้วยเมาส์ (Hover) */
+    .search-row.selected-row .search-unit-cell.alt-cell,
+    .search-row:hover .search-unit-cell.alt-cell {
+        display: flex;
+        animation: revealAlt 0.2s cubic-bezier(0.2, 0, 0, 1) forwards;
+    }
+
+    /* Typography */
     .product-name-single { 
         font-weight: 600; 
-        color: #1f2937; /* ดำเทาดูแพง */
+        color: #1f2937; 
         letter-spacing: -0.01em;
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         flex-grow: 1;
     }
-    .price-unit-group {
-        display: flex; align-items: center; gap: 10px; flex-shrink: 0;
-    }
-    .cell-price { 
-        font-weight: 700; 
-        color: #10b981; /* เขียว Modern */
-        text-align: right; 
-    }
-    .sub-text { 
-        font-size: 0.9em; 
-        color: #6b7280; 
-        font-weight: 500; 
-    }
+    .price-unit-group { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .cell-price { font-weight: 700; color: #10b981; text-align: right; }
+    .sub-text { font-size: 0.9em; color: #6b7280; font-weight: 500; }
 
-    /* 5. สถานะ Active (สีเด่นแต่ดูนุ่ม) */
+    /* 5. สถานะ Active */
     .search-unit-cell:hover {
         background: #ffffff; 
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
@@ -4834,7 +4835,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .search-unit-cell.active-unit {
         background: var(--primary-color) !important;
         box-shadow: 0 6px 16px rgba(0, 92, 191, 0.25) !important;
-        transform: translateY(-1px); /* ยกลอยขึ้นนิดนึงตอนเลือก */
+        transform: translateY(-1px); 
     }
     
     .search-unit-cell.active-unit .product-name-single,
@@ -4850,7 +4851,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const app = window.POS_APP;
         if (!app) return;
 
-        console.log("Applying Patch V18: 2026 Minimal & Modern UI...");
+        console.log("Applying Patch V19: Smart Reveal Modern UI...");
 
         app.state.selectedUnitIndex = 0;
 
@@ -4869,9 +4870,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             this.state.selectedUnitIndex = 0;
 
-            // คำนวณความกว้างเพื่อบังคับกล่องหลัก
             const searchInputEl = document.getElementById('barcode-input');
-            // ลบขอบซ้ายขวาของ Container ให้ออกมาเป๊ะ
             const mainBoxWidth = searchInputEl ? searchInputEl.offsetWidth - 24 : 300; 
 
             const groupedMap = new Map();
@@ -4906,12 +4905,12 @@ document.addEventListener("DOMContentLoaded", function() {
                     </div>
                 `;
 
-                // 🌟 กล่องรอง (ลอยทับตะกร้า)
+                // 🌟 กล่องรอง (จะถูกซ่อนไว้ด้วย CSS รอโชว์ตอน Hover/Active)
                 for (let i = 1; i < group.units.length; i++) {
                     const altUnit = group.units[i];
                     const isAltActive = (pIndex === this.state.selectedSearchIndex && this.state.selectedUnitIndex === i) ? 'active-unit' : '';
                     html += `
-                        <div class="search-unit-cell alt-cell ${isAltActive}" data-pindex="${pIndex}" data-uindex="${i}">
+                        <div class="search-unit-cell alt-cell ${isAltActive}" data-pindex="${pIndex}" data-uindex="${i}" style="animation-delay: ${(i-1) * 0.04}s;">
                             <span class="sub-text">${this.escapeHtml(altUnit.pricingUnit.unitName)}</span>
                             <span class="cell-price">${this.formatPrice(altUnit.price)}</span>
                         </div>
@@ -4920,11 +4919,19 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 rowDiv.innerHTML = html;
 
+                // Sync Mouse Hover กับ Keyboard State ให้แม่นยำ
+                rowDiv.onmouseenter = () => {
+                    if (app.state.selectedSearchIndex !== pIndex) {
+                        app.state.selectedSearchIndex = pIndex;
+                        app.state.selectedUnitIndex = 0; // เลื่อนเมาส์มาโดนแถวใหม่ ให้ชี้หน่วยแรกเสมอ
+                        app.updateSelectedSearchResult();
+                    }
+                };
+
                 rowDiv.querySelectorAll('.search-unit-cell').forEach(cell => {
                     cell.onmouseenter = () => {
-                        this.state.selectedSearchIndex = parseInt(cell.dataset.pindex, 10);
-                        this.state.selectedUnitIndex = parseInt(cell.dataset.uindex, 10);
-                        this.updateSelectedSearchResult();
+                        app.state.selectedUnitIndex = parseInt(cell.dataset.uindex, 10);
+                        app.updateSelectedSearchResult();
                     };
                     
                     cell.onclick = (e) => {
