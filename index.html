@@ -4725,6 +4725,213 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
 </div>
+    <style id="horizontal-search-ui-css">
+    /* จัดกลุ่มสินค้าแต่ละตัว */
+    .search-item-grouped {
+        padding: 0.8rem 1rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        transition: background-color 0.2s;
+        background-color: var(--white-color);
+    }
+    .search-item-grouped:last-child {
+        border-bottom: none;
+    }
+    .search-item-grouped:hover {
+        background-color: #fcfcfc;
+    }
+
+    /* แถวแสดงชื่อและสต็อก */
+    .product-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .product-info-row strong {
+        font-size: 1.05em;
+        color: var(--dark-text);
+    }
+    .product-info-row .stock-badge {
+        font-size: 0.8em;
+        background: #f1f3f5;
+        padding: 0.2rem 0.5rem;
+        border-radius: 6px;
+        color: var(--secondary-color);
+        border: 1px solid #e0e0e0;
+    }
+
+    /* แถวแสดงหน่วยขายแนวนอน */
+    .unit-options-horizontal {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+        overflow-x: auto; /* เลื่อนซ้ายขวาได้ถ้าหน่วยเยอะ */
+        padding-bottom: 0.4rem;
+        scrollbar-width: none; /* ซ่อน Scrollbar (Firefox) */
+    }
+    .unit-options-horizontal::-webkit-scrollbar {
+        display: none; /* ซ่อน Scrollbar (Chrome/Edge) */
+    }
+
+    /* ปุ่มกดเลือกหน่วย */
+    .unit-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background-color: var(--light-bg);
+        border: 1px solid var(--border-color);
+        color: var(--dark-text);
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        cursor: pointer;
+        white-space: nowrap;
+        font-size: 0.9em;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .unit-btn .unit-price {
+        color: var(--success-color);
+        font-weight: bold;
+        background: rgba(40, 167, 69, 0.1);
+        padding: 0.1rem 0.4rem;
+        border-radius: 4px;
+    }
+    .unit-btn:hover {
+        border-color: var(--primary-color);
+        background-color: #f0f7ff;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    }
+    
+    /* สถานะเมื่อใช้คีย์บอร์ดเลื่อน (ลูกศรขึ้น/ลง) */
+    .unit-btn.selected-unit {
+        background-color: var(--primary-color);
+        color: var(--white-color);
+        border-color: var(--primary-color);
+        transform: scale(1.02);
+        box-shadow: 0 3px 8px rgba(0, 92, 191, 0.3);
+    }
+    .unit-btn.selected-unit .unit-price {
+        color: var(--white-color);
+        background: rgba(255, 255, 255, 0.2);
+    }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(function() {
+        const app = window.POS_APP;
+        if (!app) return;
+
+        console.log("Applying Horizontal Unit Search UI Patch...");
+
+        // 1. Override ฟังก์ชันการวาด UI ผลการค้นหา
+        app.displaySearchResults = function(results, query) {
+            const resultsContainer = document.getElementById('search-results');
+            resultsContainer.innerHTML = '';
+            resultsContainer.classList.toggle('has-results', results.length > 0);
+            
+            if (results.length === 0) return;
+
+            // จัดกลุ่มผลการค้นหาตามรหัสสินค้า (Product ID)
+            const groupedMap = new Map();
+            results.slice(0, 30).forEach((productUnit, index) => {
+                if (!groupedMap.has(productUnit.productId)) {
+                    groupedMap.set(productUnit.productId, {
+                        productName: productUnit.productName,
+                        productCode: productUnit.productCode,
+                        stock: productUnit.stockInBaseUnits,
+                        baseUnit: productUnit.baseUnit,
+                        items: [] // เก็บหน่วยขายต่างๆ
+                    });
+                }
+                // เก็บ Data และ Index อ้างอิงจาก Array ต้นฉบับ (เพื่อใช้กับ Keyboard)
+                groupedMap.get(productUnit.productId).items.push({ productUnit, index });
+            });
+
+            // สร้าง UI แสดงผล
+            groupedMap.forEach((group, productId) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'search-item-grouped';
+
+                const stockDisplay = `เหลือ: ${group.stock} ${group.baseUnit}`;
+                
+                let headerHTML = `
+                    <div class="product-info-row">
+                        <strong>${this.escapeHtml(group.productName)}</strong>
+                        <span class="stock-badge">${group.productCode ? `[${group.productCode}]` : ''} | ${stockDisplay}</span>
+                    </div>
+                    <div class="unit-options-horizontal">
+                `;
+
+                // วาดปุ่มแนวนอนสำหรับแต่ละหน่วย
+                let unitsHTML = group.items.map(item => {
+                    const isSelected = item.index === this.state.selectedSearchIndex ? 'selected-unit' : '';
+                    return `
+                        <button type="button" class="unit-btn ${isSelected}" data-index="${item.index}">
+                            ${this.escapeHtml(item.productUnit.pricingUnit.unitName)} 
+                            <span class="unit-price">${this.formatPrice(item.productUnit.price)}</span>
+                        </button>
+                    `;
+                }).join('');
+
+                groupDiv.innerHTML = headerHTML + unitsHTML + `</div>`;
+
+                // ฝัง Event การคลิกที่ปุ่มหน่วย
+                const btns = groupDiv.querySelectorAll('.unit-btn');
+                btns.forEach(btn => {
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        const flatIndex = parseInt(btn.dataset.index, 10);
+                        const selectedUnit = this.state.currentSearchResults[flatIndex];
+                        
+                        const inputValue = document.getElementById('barcode-input').value.trim();
+                        const quantityPattern = /^(\d+)\s*\*\s*(.+)$/;
+                        const match = inputValue.match(quantityPattern);
+                        let quantityToAdd = 1;
+                        if (match) {
+                            quantityToAdd = parseInt(match[1], 10);
+                        }
+                        
+                        this.addToCart(selectedUnit, quantityToAdd);
+                        
+                        document.getElementById('barcode-input').value = '';
+                        this.state.currentSearchResults = [];
+                        this.state.selectedSearchIndex = -1;
+                        this.displaySearchResults([], '');
+                        this.toggleUIVisibility();
+                        this.focusSearchIfReady(); 
+                    };
+                });
+
+                resultsContainer.appendChild(groupDiv);
+            });
+        };
+
+        // 2. Override ฟังก์ชันไฮไลท์เมื่อใช้คีย์บอร์ดลูกศรขึ้นลง
+        app.updateSelectedSearchResult = function() {
+            // ลบไฮไลท์เดิมออกทั้งหมด
+            document.querySelectorAll('.unit-btn').forEach(btn => {
+                btn.classList.remove('selected-unit');
+            });
+            
+            // หาปุ่มหน่วยที่ตรงกับ Index ปัจจุบันและไฮไลท์
+            const activeBtn = document.querySelector(`.unit-btn[data-index="${this.state.selectedSearchIndex}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('selected-unit');
+                // เลื่อนหน้าจอให้เห็นปุ่มนั้นพอดี (ใช้ block: 'nearest' ไม่ให้กระตุก)
+                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            }
+        };
+
+    }, 1000); // หน่วงเวลา 1 วินาทีให้รอ POS_APP โหลดเสร็จก่อนเสียบโค้ด
+});
+</script>
 </body></html>
 
 <script>
