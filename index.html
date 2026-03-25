@@ -4725,100 +4725,129 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
 </div>
-    <style id="seamless-table-search-css">
-    /* 1. Z-Index และ Overflow */
+    <style id="premium-seamless-search-css">
+    /* 1. Z-Index และ Overflow ของ Column ค้นหา */
     .search-column { position: relative; z-index: 100 !important; }
     .cart-column { position: relative; z-index: 1 !important; }
-    .search-column .card, #main-search-area { position: relative; overflow: visible !important; }
-
-    /* 2. กรอบผลลัพธ์ลอยทับตะกร้า (เปลี่ยนเป็นกล่องทึบรวมก้อนเดียว) */
+    
+    /* 2. กรอบนอกสุด (ลอยทับตะกร้า) - 🌟 เพิ่ม Radius และเงาให้นุ่มนวล */
     #search-results.has-results {
         position: absolute;
-        top: 0; left: 0;
+        top: 2px; /* ห่างจากช่องค้นหานิดหน่อย */
+        left: 0;
         width: 800px; 
         max-width: 95vw;
-        max-height: calc(100vh - 180px);
+        max-height: calc(100vh - 200px);
         z-index: 2000;
-        background: var(--white-color); /* 🌟 เปลี่ยนเป็นสีทึบ */
-        border: 1px solid var(--border-color);
-        border-radius: 8px; /* ขอบโค้งที่กล่องนอกสุด */
-        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        background: var(--white-color);
+        
+        /* 🎨 เพิ่มมิติความมืออาชีพ */
+        border: 1px solid rgba(0,0,0,0.1); /* เส้นขอบบางลง */
+        border-radius: 8px; /* โค้งมนนุ่มนวล */
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12); /* เงานุ่ม กว้าง */
+        
         pointer-events: none; 
         display: flex; flex-direction: column;
-        gap: 0; /* 🌟 ลบช่องว่างระหว่างบรรทัด */
-        padding: 0; /* 🌟 ลบขอบ padding ให้เนื้อหาติดขอบพอดี */
+        gap: 0; 
+        padding: 0;
         overflow-y: auto; overflow-x: hidden;
         scrollbar-width: none;
     }
     #search-results::-webkit-scrollbar { display: none; }
 
-    /* 3. แถวแนวนอน */
+    /* 3. แถวสินค้า (Row) */
     .search-row {
         display: flex; flex-direction: row;
-        gap: 0; /* 🌟 ลบช่องว่างระหว่างคอลัมน์ */
+        gap: 0; 
         padding: 0; 
-        border-bottom: 1px solid #e9ecef; /* 🌟 เส้นคั่นบรรทัด */
+        border-bottom: 1px solid #f1f3f5; /* เส้นคั่นบรรทัดสีอ่อนลง */
         pointer-events: none; 
+        background: transparent;
+        transition: background-color 0.1s ease;
     }
-    .search-row:last-child { border-bottom: none; } /* บรรทัดสุดท้ายไม่ต้องมีเส้นคั่น */
+    .search-row:last-child { border-bottom: none; }
 
-    /* 4. เซลล์ตาราง (Cell) */
+    /* 4. กล่องหน่วย (Cell) - 🌟 ปรับขนาด Typography ให้ Professional */
     .unit-box {
         pointer-events: auto; 
         background: transparent;
-        border: none; /* 🌟 ลบเส้นขอบแต่ละกล่องทิ้ง */
-        border-radius: 0; /* 🌟 ลบมุมโค้งออกให้ติดกันสนิท */
-        padding: 0 0.8rem;
-        height: 38px; /* ความสูงของบรรทัด */
+        border: none;
+        border-radius: 0; 
+        padding: 0 0.9rem; /* เพิ่ม padding อีกนิด */
+        height: 40px; /* สูงขึ้นเล็กน้อย ดูไม่อึดอัด */
         cursor: pointer;
-        transition: background-color 0.1s ease;
+        transition: all 0.1s ease;
         display: flex; align-items: center;
+        box-sizing: border-box !important;
     }
 
     /* 4.1 คอลัมน์หลัก (ซ้ายสุด) */
     .unit-box.main-box {
         justify-content: space-between;
-        box-sizing: border-box !important; 
-        gap: 8px;
+        gap: 10px;
     }
     .main-box .p-name {
-        font-weight: bold;
+        font-weight: 600; /* นน. ปานกลาง */
         font-size: 0.95em; 
         color: var(--dark-text);
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         flex-grow: 1;
     }
     .main-box .p-price {
-        font-weight: bold;
+        font-weight: 700; /* ราคาเน้นหนา */
         font-size: 0.95em; 
         color: var(--success-color);
         white-space: nowrap; flex-shrink: 0;
     }
     .main-box .u-name {
-        font-size: 0.85em; color: var(--secondary-color); font-weight: normal;
+        font-size: 0.85em; color: var(--secondary-color); font-weight: 400;
     }
 
     /* 4.2 คอลัมน์หน่วยรอง (ขวามือ) */
     .unit-box.alt-box {
         flex-direction: row; 
         justify-content: center;
-        gap: 6px; 
+        gap: 8px; /* ห่างขึ้นนิดหน่อย */
         min-width: auto; 
-        border-left: 1px solid #e9ecef; /* 🌟 เส้นคั่นแนวตั้งระหว่างหน่วย */
+        border-left: 1px solid #f1f3f5; /* เส้นคั่นสีอ่อน */
     }
-    .alt-box .alt-name { font-size: 0.85em; color: var(--secondary-color); margin-bottom: 0; }
-    .alt-box .alt-price { font-size: 0.95em; font-weight: bold; color: var(--success-color); }
+    .alt-box .alt-name { font-size: 0.85em; color: var(--secondary-color); margin-bottom: 0; font-weight: 400;}
+    .alt-box .alt-price { font-size: 0.95em; font-weight: 600; color: var(--success-color); }
 
-    /* 5. สถานะ Active / Hover */
-    .unit-box:hover { background: #f0f7ff; }
-    .search-row.selected-row { background-color: #f8f9fa; }
+    /* ================================= */
+    /* 🎨 🌟 สถานะ Highlights (New Version!) */
+    /* ================================= */
     
+    /* Hover ด้วยเมาส์ (เซลล์เดียว) */
+    .unit-box:hover { background: #f8faff; }
+    
+    /* 1. เมื่อกดขึ้น/ลง เลือกสินค้า (แต่ยังไม่ได้เลือกหน่วยเสริม) */
+    /* 🌟 เปลี่ยนจากสีพื้นหลัง เป็นแค่กรอบสีน้ำเงินอ่อน เพื่อลดความลายตา */
+    .search-row.selected-row .main-box {
+        position: relative;
+    }
+    .search-row.selected-row .main-box::after {
+        content: '';
+        position: absolute;
+        top: 2px; left: 2px; right: 2px; bottom: 2px;
+        border: 2px solid rgba(0, 123, 255, 0.3); /* กรอบสีฟ้าอ่อนน้ำ */
+        border-radius: 6px;
+        pointer-events: none;
+    }
+    
+    /* 2. เมื่อกดซ้าย/ขวา เลือกหน่วยเสริม หรือโฟกัสหน่วยหลัก */
+    /* 🌟 ไฮไลท์สีน้ำเงินทึบ แต่ดูนุ่มนวลกว่าเดิม */
     .unit-box.active-unit {
         background: var(--primary-color) !important;
-        /* ไม่ต้องมีเงาและกรอบแล้ว เพราะเป็นเซลล์ทึบ */
+        border: none !important;
     }
     
-    /* เปลี่ยนสีตัวหนังสือเป็นสีขาวเมื่อมีพื้นหลังสีน้ำเงิน */
+    /* ลบกรอบ Selected Row ออกเมื่อเซลล์นั้น Active */
+    .search-row.selected-row .main-box.active-unit::after {
+        display: none;
+    }
+    
+    /* เปลี่ยนสีตัวหนังสือเป็นสีขาวเมื่อActive */
     .unit-box.active-unit .p-name, .unit-box.active-unit .p-price, .unit-box.active-unit .alt-price { color: var(--white-color) !important; }
     .unit-box.active-unit .u-name, .unit-box.active-unit .alt-name { color: rgba(255,255,255,0.85) !important; }
 </style>
@@ -4829,7 +4858,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const app = window.POS_APP;
         if (!app) return;
 
-        console.log("Applying Seamless Table-like UI Patch V12...");
+        console.log("Applying Premium Seamless Dropdown UI Patch V13...");
 
         app.state.selectedUnitIndex = 0;
 
@@ -4898,9 +4927,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 rowDiv.querySelectorAll('.unit-box').forEach(box => {
                     box.onmouseenter = () => {
-                        this.state.selectedSearchIndex = parseInt(box.dataset.pindex, 10);
-                        this.state.selectedUnitIndex = parseInt(box.dataset.uindex, 10);
-                        this.updateSelectedSearchResult();
+                        // ปรับ State ให้ตรงกับที่เมาส์ชี้ เพื่อให้คีย์บอร์ดทำงานต่อได้
+                        app.state.selectedSearchIndex = parseInt(box.dataset.pindex, 10);
+                        app.state.selectedUnitIndex = parseInt(box.dataset.uindex, 10);
+                        app.updateSelectedSearchResult();
                     };
                     
                     box.onclick = (e) => {
@@ -4939,6 +4969,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     boxes.forEach((box, uIndex) => {
                         if (uIndex === this.state.selectedUnitIndex) {
                             box.classList.add('active-unit');
+                            // เลื่อนจอมาโฟกัส (block: 'nearest' ลดการกระตุก)
                             box.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); 
                         } else {
                             box.classList.remove('active-unit');
