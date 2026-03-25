@@ -4725,58 +4725,74 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
 </div>
-    <style id="inline-horizontal-search-css">
-    /* 1. คอนเทนเนอร์หลักของแต่ละแถว */
+    <style id="floating-horizontal-search-css">
+    /* 1. ปลดล็อก Overflow ของ Card ซ้าย เพื่อให้ Dropdown ลอยทะลุกรอบไปหาตะกร้าได้ */
+    .search-column .card,
+    #main-search-area {
+        overflow: visible !important;
+        position: relative;
+    }
+
+    /* 2. เปลี่ยนกล่องผลการค้นหาให้ลอย (Floating Dropdown) ทับหน้าตะกร้า */
+    #search-results.has-results {
+        position: absolute;
+        top: 10px; /* ระยะห่างจากช่องค้นหา */
+        left: 0;
+        width: 600px; /* ความกว้างของกล่องให้ยื่นไปทับตะกร้า */
+        max-width: 90vw;
+        max-height: calc(100vh - 180px);
+        background: var(--white-color);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15); /* เงาเข้มขึ้นเพื่อให้ดูแยกลอยออกมา */
+        border-radius: 12px;
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    /* 3. คอนเทนเนอร์หลักของแต่ละแถว (แนวนอนบรรทัดเดียว) */
     .search-row {
         display: flex;
         flex-direction: row;
         gap: 0.5rem;
-        padding: 0.5rem;
+        padding: 0.5rem 0.8rem;
         border-bottom: 1px solid var(--border-color);
         background: var(--white-color);
-        transition: background 0.2s;
-        overflow-x: auto; /* เลื่อนซ้ายขวาได้ถ้าหน่วยเยอะ */
-        scrollbar-width: none; /* ซ่อน Scrollbar */
+        overflow-x: auto;
+        scrollbar-width: none;
     }
     .search-row::-webkit-scrollbar { display: none; }
-    
-    /* สีพื้นหลังเมื่อแถวนั้นถูกเลือก (ใช้ลูกศรขึ้นลงชี้อยู่) */
-    .search-row.selected-row {
-        background-color: #f8f9fa;
-    }
+    .search-row.selected-row { background-color: #f8f9fa; }
 
-    /* 2. กล่องหน่วยสินค้าทั่วไป */
+    /* 4. กล่องหน่วยสินค้าทั่วไป */
     .unit-box {
         border: 1px solid var(--border-color);
         border-radius: 8px;
-        padding: 0.5rem 0.8rem;
+        padding: 0.6rem 0.8rem;
         cursor: pointer;
         display: flex;
         transition: all 0.15s ease;
         background: var(--white-color);
         user-select: none;
-    }
-
-    /* 2.1 กล่องหน่วยหลัก (ซ้ายสุด) - ขยายเต็มพื้นที่ที่เหลือ */
-    .unit-box.main-box {
-        flex: 1 1 auto; 
-        min-width: 220px;
-        justify-content: space-between;
         align-items: center;
     }
-    .main-box .prod-info {
-        display: flex;
-        flex-direction: column;
+
+    /* 4.1 กล่องหน่วยหลัก (ซ้ายสุด) - โชว์แค่ชื่อและราคา */
+    .unit-box.main-box {
+        flex: 1 1 auto; 
+        min-width: 250px;
+        justify-content: space-between;
     }
     .main-box .p-name {
         font-weight: bold;
         font-size: 1.05em;
         color: var(--dark-text);
-    }
-    .main-box .p-meta {
-        font-size: 0.8em;
-        color: var(--secondary-color);
-        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 250px;
     }
     .main-box .p-price {
         text-align: right;
@@ -4792,7 +4808,7 @@ document.addEventListener('DOMContentLoaded', () => {
         font-weight: normal;
     }
 
-    /* 2.2 กล่องหน่วยรอง (ขวามือ) - ขนาดกะทัดรัด */
+    /* 4.2 กล่องหน่วยรอง (ขวามือ) */
     .unit-box.alt-box {
         flex: 0 0 auto; 
         flex-direction: column;
@@ -4811,7 +4827,7 @@ document.addEventListener('DOMContentLoaded', () => {
         color: var(--success-color);
     }
 
-    /* 3. สถานะเมื่อถูกเลือก (Hover หรือ Keyboard Focus) */
+    /* 5. สถานะเมื่อถูกเลือก (Hover หรือ Keyboard Focus) */
     .unit-box:hover {
         border-color: var(--primary-color);
         box-shadow: 0 2px 6px rgba(0,0,0,0.05);
@@ -4820,19 +4836,23 @@ document.addEventListener('DOMContentLoaded', () => {
         background: var(--primary-color);
         border-color: var(--primary-color);
         transform: scale(1.02);
-        box-shadow: 0 3px 8px rgba(0, 92, 191, 0.25);
+        box-shadow: 0 4px 10px rgba(0, 92, 191, 0.3);
     }
     
-    /* เปลี่ยนสีตัวอักษรให้เป็นสีขาวเมื่อกล่องเป็นสีน้ำเงิน */
     .unit-box.active-unit .p-name,
     .unit-box.active-unit .p-price,
-    .unit-box.active-unit .alt-price {
-        color: var(--white-color) !important;
-    }
-    .unit-box.active-unit .p-meta,
+    .unit-box.active-unit .alt-price { color: var(--white-color) !important; }
     .unit-box.active-unit .u-name,
-    .unit-box.active-unit .alt-name {
-        color: rgba(255, 255, 255, 0.8) !important; /* ขาวโปร่งแสงเล็กน้อย */
+    .unit-box.active-unit .alt-name { color: rgba(255, 255, 255, 0.8) !important; }
+
+    /* Responsive มือถือให้ขยายเต็มจอ */
+    @media (max-width: 768px) {
+        #search-results.has-results {
+            width: calc(100vw - 2rem);
+            left: 0;
+            top: 5px;
+        }
+        .main-box .p-name { max-width: 180px; }
     }
 </style>
 
@@ -4842,19 +4862,17 @@ document.addEventListener("DOMContentLoaded", function() {
         const app = window.POS_APP;
         if (!app) return;
 
-        console.log("Applying Inline Horizontal Search UI Patch V5...");
+        console.log("Applying Floating Inline Horizontal UI Patch V6...");
 
-        // เพิ่ม State สำหรับจัดการการเลือกแนวนอน
         app.state.selectedUnitIndex = 0;
 
-        // ฟังก์ชันช่วยดึงค่า Qty จากช่องค้นหา (เช่นพิมพ์ 5*บาร์โค้ด)
         app.getPendingQty = function() {
             const val = document.getElementById('barcode-input').value.trim();
             const m = val.match(/^(\d+)\s*\*\s*(.+)$/);
             return m ? parseInt(m[1], 10) : 1;
         };
 
-        // 1. จัดกลุ่มผลการค้นหา และเรนเดอร์ UI แนวนอน
+        // 1. เรนเดอร์ UI แนวนอน แบบซ่อนรหัสสินค้าและสต็อก
         app.displaySearchResults = function(results, query) {
             const resultsContainer = document.getElementById('search-results');
             resultsContainer.innerHTML = '';
@@ -4862,7 +4880,6 @@ document.addEventListener("DOMContentLoaded", function() {
             
             if (results.length === 0) return;
 
-            // รีเซ็ตการชี้หน่วยกลับไปที่ 0 เสมอเมื่อมีการค้นหาใหม่
             this.state.selectedUnitIndex = 0;
 
             const groupedMap = new Map();
@@ -4871,9 +4888,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     groupedMap.set(productUnit.productId, {
                         productId: productUnit.productId,
                         productName: productUnit.productName,
-                        productCode: productUnit.productCode,
-                        stock: productUnit.stockInBaseUnits,
-                        baseUnit: productUnit.baseUnit,
                         units: []
                     });
                 }
@@ -4887,18 +4901,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 rowDiv.className = 'search-row';
                 if (pIndex === this.state.selectedSearchIndex) rowDiv.classList.add('selected-row');
 
-                const stockDisplay = `(เหลือ: ${group.stock} ${group.baseUnit})`;
-
-                // --- สร้างกล่องซ้ายสุด (หน่วยหลัก) ---
+                // --- กล่องหน่วยหลัก ---
                 const mainUnit = group.units[0];
                 const isMainActive = (pIndex === this.state.selectedSearchIndex && this.state.selectedUnitIndex === 0) ? 'active-unit' : '';
                 
                 let html = `
                     <div class="unit-box main-box ${isMainActive}" data-pindex="${pIndex}" data-uindex="0">
-                        <div class="prod-info">
-                            <div class="p-name">${this.escapeHtml(group.productName)}</div>
-                            <div class="p-meta">${group.productCode || ''} ${stockDisplay}</div>
-                        </div>
+                        <div class="p-name" title="${this.escapeHtml(group.productName)}">${this.escapeHtml(group.productName)}</div>
                         <div class="p-price">
                             <span class="u-name">/ ${this.escapeHtml(mainUnit.pricingUnit.unitName)}</span>
                             <span class="u-val">${this.formatPrice(mainUnit.price)}</span>
@@ -4906,7 +4915,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     </div>
                 `;
 
-                // --- สร้างกล่องขวา (หน่วยรองที่ 2, 3, ...) ---
+                // --- กล่องหน่วยรอง ---
                 for (let i = 1; i < group.units.length; i++) {
                     const altUnit = group.units[i];
                     const isAltActive = (pIndex === this.state.selectedSearchIndex && this.state.selectedUnitIndex === i) ? 'active-unit' : '';
@@ -4920,15 +4929,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 rowDiv.innerHTML = html;
 
-                // Event เมื่อคลิกเลือกหน่วย
+                // Event เมื่อใช้เมาส์คลิก
                 rowDiv.querySelectorAll('.unit-box').forEach(box => {
                     box.onclick = (e) => {
                         e.stopPropagation();
                         const targetPIndex = parseInt(box.dataset.pindex, 10);
                         const targetUIndex = parseInt(box.dataset.uindex, 10);
-                        
-                        this.state.selectedSearchIndex = targetPIndex;
-                        this.state.selectedUnitIndex = targetUIndex;
                         
                         const qty = this.getPendingQty();
                         this.addToCart(this.state.groupedSearchResults[targetPIndex].units[targetUIndex], qty);
@@ -4940,33 +4946,30 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         };
 
-        // 2. รีเซ็ต UI และล้างค่าค้นหา
+        // 2. รีเซ็ตและซ่อน Dropdown
         app.resetSearchUI = function() {
             document.getElementById('barcode-input').value = '';
             this.state.currentSearchResults = [];
             this.state.groupedSearchResults = [];
             this.state.selectedSearchIndex = -1;
-            this.state.selectedUnitIndex = 0; // เคลียร์พอยเตอร์
+            this.state.selectedUnitIndex = 0;
             this.displaySearchResults([], '');
             this.toggleUIVisibility();
             this.focusSearchIfReady();
         };
 
-        // 3. ฟังก์ชันอัปเดต CSS ทันทีเมื่อกดคีย์บอร์ดเลื่อน (ไม่ต้องโหลดซ้ำทั้งหน้า)
+        // 3. เลื่อนหน้าจอและไฮไลท์กล่องหน่วย
         app.updateSelectedSearchResult = function() {
             const rows = document.querySelectorAll('.search-row');
             rows.forEach((row, pIndex) => {
                 if (pIndex === this.state.selectedSearchIndex) {
                     row.classList.add('selected-row');
-                    // เลื่อนหน้าจอตาม
                     row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
                     
-                    // เลื่อนไฮไลท์หน่วย
                     const boxes = row.querySelectorAll('.unit-box');
                     boxes.forEach((box, uIndex) => {
                         if (uIndex === this.state.selectedUnitIndex) {
                             box.classList.add('active-unit');
-                            // เลื่อนขอบแนวนอนหากหน่วยล้นจอ
                             box.scrollIntoView({ inline: 'nearest', behavior: 'smooth', block: 'nearest' });
                         } else {
                             box.classList.remove('active-unit');
@@ -4979,7 +4982,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         };
 
-        // 4. Override Keyboard Controller เต็มรูปแบบ (ซ้าย ขวา ขึ้น ลง)
+        // 4. ควบคุมคีย์บอร์ดทั้งหมด
         app.handleSearchKeyDown = function(e) {
             const qty = this.getPendingQty();
 
@@ -4987,7 +4990,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 e.preventDefault();
                 const inputValue = document.getElementById('barcode-input').value.trim();
                 
-                // เอาสินค้าตำแหน่ง Row ปัจจุบัน และ Unit ปัจจุบัน ยัดลงตะกร้าเลย
                 if (this.state.groupedSearchResults && this.state.groupedSearchResults.length > 0 && this.state.selectedSearchIndex !== -1) {
                     const group = this.state.groupedSearchResults[this.state.selectedSearchIndex];
                     const selectedUnit = group.units[this.state.selectedUnitIndex] || group.units[0];
@@ -5004,8 +5006,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 
                 this.state.selectedSearchIndex += 1;
                 if (this.state.selectedSearchIndex >= this.state.groupedSearchResults.length) this.state.selectedSearchIndex = 0;
-                
-                this.state.selectedUnitIndex = 0; // เลื่อนขึ้น/ลง รีเซ็ตมาหน่วยแรกสุดเสมอ
+                this.state.selectedUnitIndex = 0; 
                 this.updateSelectedSearchResult();
             } 
             else if (e.key === 'ArrowUp') {
@@ -5014,20 +5015,18 @@ document.addEventListener("DOMContentLoaded", function() {
                 
                 this.state.selectedSearchIndex -= 1;
                 if (this.state.selectedSearchIndex < 0) this.state.selectedSearchIndex = this.state.groupedSearchResults.length - 1;
-                
-                this.state.selectedUnitIndex = 0; // เลื่อนขึ้น/ลง รีเซ็ตมาหน่วยแรกสุดเสมอ
+                this.state.selectedUnitIndex = 0;
                 this.updateSelectedSearchResult();
             } 
             else if (e.key === 'ArrowRight') {
                 if (!this.state.groupedSearchResults || this.state.groupedSearchResults.length === 0 || this.state.selectedSearchIndex === -1) return;
                 const group = this.state.groupedSearchResults[this.state.selectedSearchIndex];
                 
-                // ถ้ามีหน่วยมากกว่า 1 ให้เลื่อนขวาได้
                 if (group.units.length > 1) {
                     e.preventDefault();
                     this.state.selectedUnitIndex += 1;
                     if (this.state.selectedUnitIndex >= group.units.length) {
-                        this.state.selectedUnitIndex = 0; // วนกลับมาซ้ายสุด
+                        this.state.selectedUnitIndex = 0;
                     }
                     this.updateSelectedSearchResult();
                 }
@@ -5040,12 +5039,25 @@ document.addEventListener("DOMContentLoaded", function() {
                     e.preventDefault();
                     this.state.selectedUnitIndex -= 1;
                     if (this.state.selectedUnitIndex < 0) {
-                        this.state.selectedUnitIndex = group.units.length - 1; // วนไปขวาสุด
+                        this.state.selectedUnitIndex = group.units.length - 1;
                     }
                     this.updateSelectedSearchResult();
                 }
             }
+            else if (e.key === 'Escape') {
+                e.preventDefault();
+                this.resetSearchUI();
+            }
         };
+
+        // คลิกที่ว่างๆ ปิดผลการค้นหา
+        document.addEventListener('click', (e) => {
+            const resultsContainer = document.getElementById('search-results');
+            const searchInput = document.getElementById('barcode-input');
+            if (resultsContainer.classList.contains('has-results') && !e.target.closest('#search-results') && e.target !== searchInput) {
+                app.resetSearchUI();
+            }
+        });
 
     }, 1000);
 });
