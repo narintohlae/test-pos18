@@ -4726,67 +4726,76 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 </div>
     <style id="perfect-inline-search-css">
-    /* 🚀 1. แก้ปัญหา Z-Index โดนตะกร้าบัง (ดันคอลัมน์ซ้ายให้ลอยเหนือคอลัมน์ขวา) */
+    /* 🚀 1. แก้ปัญหา Z-Index โดนตะกร้าบัง */
     .search-column {
         position: relative;
-        z-index: 100 !important; /* ให้ฝั่งค้นหาอยู่บนสุด */
+        z-index: 100 !important; 
     }
     .cart-column {
         position: relative;
-        z-index: 1 !important; /* ให้อยู่ใต้ฝั่งค้นหา */
+        z-index: 1 !important; 
     }
     
-    /* ปลดล็อกให้กล่องผลลัพธ์ทะลุกรอบ Card ออกไปได้ */
+    /* ปลดล็อกให้กล่องผลลัพธ์ทะลุกรอบได้ */
     .search-column .card,
     #main-search-area {
         position: relative;
         overflow: visible !important;
     }
 
-    /* 2. กรอบหลักโปร่งใส ลอยทับทั้ง 2 ฝั่ง */
+    /* 2. กรอบหลักโปร่งใส ลอยทับทั้ง 2 ฝั่ง และซ่อน Scrollbar กวนใจ */
     #search-results.has-results {
         position: absolute;
         top: 0;
         left: 0;
-        width: 800px; /* ความกว้างเผื่อให้ทะลุไปฝั่งตะกร้า */
+        width: 800px; 
         max-width: 95vw;
         max-height: calc(100vh - 180px);
         z-index: 2000;
         background: transparent;
         border: none;
-        pointer-events: none; /* ให้เมาส์ทะลุผ่านพื้นที่ว่างได้ */
+        pointer-events: none; 
         display: flex;
         flex-direction: column;
-        gap: 6px;
-        padding-top: 5px;
+        gap: 2px; /* ลดช่องว่างระหว่างแถวให้ดูกระชับขึ้น */
+        padding-top: 6px; 
         padding-bottom: 20px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: none; /* Firefox */
+    }
+    #search-results::-webkit-scrollbar {
+        display: none; /* Chrome/Edge/Safari */
     }
 
-    /* แถวแนวนอน */
+    /* 3. แถวแนวนอน */
     .search-row {
         display: flex;
         flex-direction: row;
         gap: 0.5rem;
-        pointer-events: none; /* ทะลุผ่าน */
+        /* 🌟 สำคัญ: ลบ Padding แนวนอนออก เพื่อให้ขอบกล่องซ้ายสุดตรงกับช่องค้นหาเป๊ะ */
+        padding: 2px 0; 
+        pointer-events: none; 
     }
 
-    /* กล่องหน่วย (ทั้งหลักและรอง) */
+    /* 4. กล่องหน่วย (ทั้งหลักและรอง) */
     .unit-box {
-        pointer-events: auto; /* ให้คลิก/โฮเวอร์ได้เฉพาะที่ตัวกล่อง */
+        pointer-events: auto; 
         background: var(--white-color);
         border: 1px solid var(--border-color);
         border-radius: 8px;
-        padding: 0.6rem 0.8rem;
+        padding: 0.5rem 0.8rem; /* ปรับความสูงให้ใกล้เคียงกับช่องค้นหา */
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         transition: all 0.15s ease;
         display: flex;
         align-items: center;
     }
 
-    /* กล่องหน่วยหลัก (ซ้ายสุด) - จะถูก JS บังคับความกว้างให้เท่ากรอบค้นหาพอดี */
+    /* 4.1 กล่องหน่วยหลัก (ซ้ายสุด) - JS จะบังคับ Width ให้เป๊ะเอง */
     .unit-box.main-box {
         justify-content: space-between;
+        box-sizing: border-box !important; /* 🌟 สำคัญ: ป้องกัน Border/Padding ทำให้ขนาดเพี้ยน */
     }
     .main-box .p-name {
         font-weight: bold;
@@ -4794,13 +4803,13 @@ document.addEventListener('DOMContentLoaded', () => {
         color: var(--dark-text);
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis;
+        text-overflow: ellipsis; /* ถ้าชื่อยาวไปให้เป็น ... */
     }
     .main-box .p-price {
         font-weight: bold;
         color: var(--success-color);
         white-space: nowrap;
-        flex-shrink: 0;
+        flex-shrink: 0; /* ป้องกันราคาโดนบีบ */
         margin-left: 10px;
     }
     .main-box .u-name {
@@ -4809,11 +4818,12 @@ document.addEventListener('DOMContentLoaded', () => {
         font-weight: normal;
     }
 
-    /* กล่องหน่วยรอง (ขวามือ) - ลอยทับตะกร้า */
+    /* 4.2 กล่องหน่วยรอง (ขวามือ) - ลอยทับตะกร้า */
     .unit-box.alt-box {
         flex-direction: column;
         justify-content: center;
         min-width: 80px;
+        flex-shrink: 0;
         background: var(--light-bg);
     }
     .alt-box .alt-name {
@@ -4849,14 +4859,14 @@ document.addEventListener('DOMContentLoaded', () => {
     .unit-box.active-unit .u-name,
     .unit-box.active-unit .alt-name { color: rgba(255,255,255,0.8) !important; }
 
-    /* ปรับ Responsive สำหรับจอมือถือ */
+    /* สำหรับหน้าจอมือถือ */
     @media (max-width: 992px) {
         #search-results.has-results {
             width: 100vw;
         }
         .unit-box.main-box {
             width: auto !important;
-            flex: 1;
+            flex: 1 1 auto !important;
         }
     }
 </style>
@@ -4867,7 +4877,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const app = window.POS_APP;
         if (!app) return;
 
-        console.log("Applying Perfect Inline Hover UI Patch V8 (Z-Index Fixed)...");
+        console.log("Applying Pixel-Perfect Inline Hover UI Patch V9...");
 
         app.state.selectedUnitIndex = 0;
 
@@ -4877,7 +4887,7 @@ document.addEventListener("DOMContentLoaded", function() {
             return m ? parseInt(m[1], 10) : 1;
         };
 
-        // 1. เรนเดอร์ UI: หน่วยหลักอยู่ในกรอบ หน่วยรองลอยออกไป
+        // 1. เรนเดอร์ UI: ดึงความกว้างช่องค้นหามาล็อคขนาดกล่อง
         app.displaySearchResults = function(results, query) {
             const resultsContainer = document.getElementById('search-results');
             resultsContainer.innerHTML = '';
@@ -4887,7 +4897,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             this.state.selectedUnitIndex = 0;
 
-            // ดึงความกว้างของช่องค้นหามาใช้บังคับขนาดกล่องหน่วยหลัก!
+            // 🌟 ดึงความกว้างที่แท้จริงของช่องค้นหา
             const searchInputEl = document.getElementById('barcode-input');
             const mainBoxWidth = searchInputEl ? searchInputEl.offsetWidth : 300;
 
@@ -4910,12 +4920,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 rowDiv.className = 'search-row';
                 if (pIndex === this.state.selectedSearchIndex) rowDiv.classList.add('selected-row');
 
-                // --- กล่องซ้ายสุด (หน่วยหลัก) ---
+                // --- กล่องซ้ายสุด: กำหนด Width เท่ากับช่องค้นหาแป๊ะ ---
                 const mainUnit = group.units[0];
                 const isMainActive = (pIndex === this.state.selectedSearchIndex && this.state.selectedUnitIndex === 0) ? 'active-unit' : '';
                 
                 let html = `
-                    <div class="unit-box main-box ${isMainActive}" data-pindex="${pIndex}" data-uindex="0" style="width: ${mainBoxWidth}px;">
+                    <div class="unit-box main-box ${isMainActive}" data-pindex="${pIndex}" data-uindex="0" style="flex: 0 0 ${mainBoxWidth}px; width: ${mainBoxWidth}px;">
                         <div class="p-name" title="${this.escapeHtml(group.productName)}">${this.escapeHtml(group.productName)}</div>
                         <div class="p-price">
                             <span class="u-name">/ ${this.escapeHtml(mainUnit.pricingUnit.unitName)}</span>
@@ -4924,7 +4934,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     </div>
                 `;
 
-                // --- กล่องขวามือ (หน่วยรอง) ---
+                // --- กล่องขวามือ (ลอยทับตะกร้า) ---
                 for (let i = 1; i < group.units.length; i++) {
                     const altUnit = group.units[i];
                     const isAltActive = (pIndex === this.state.selectedSearchIndex && this.state.selectedUnitIndex === i) ? 'active-unit' : '';
@@ -4972,7 +4982,7 @@ document.addEventListener("DOMContentLoaded", function() {
             this.focusSearchIfReady();
         };
 
-        // 3. สลับสี CSS 
+        // 3. สลับสี CSS (แบบลื่นไหล)
         app.updateSelectedSearchResult = function() {
             const rows = document.querySelectorAll('.search-row');
             rows.forEach((row, pIndex) => {
@@ -4995,7 +5005,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         };
 
-        // 4. ควบคุมคีย์บอร์ด
+        // 4. ควบคุมคีย์บอร์ดทั้งหมด
         app.handleSearchKeyDown = function(e) {
             const qty = this.getPendingQty();
 
@@ -5065,6 +5075,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         };
 
+        // คลิกพื้นที่ว่างปิด Dropdown
         document.addEventListener('click', (e) => {
             const resultsContainer = document.getElementById('search-results');
             const searchInput = document.getElementById('barcode-input');
