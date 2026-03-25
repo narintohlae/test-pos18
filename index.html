@@ -5131,6 +5131,395 @@ document.addEventListener("DOMContentLoaded", function() {
     }, 1000);
 });
 </script>
+    <style id="popover-search-ui-css">
+    /* หน้าต่าง Popover สำหรับเลือกหน่วย */
+    #unit-selection-popover {
+        --arrow-top: 20px; /* สร้างตัวแปร CSS สำหรับคุมความสูงลูกศร */
+        
+        position: fixed;
+        z-index: 1050;
+        background: var(--white-color);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border-radius: 12px;
+        padding: 0;
+        width: 280px;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateX(-15px);
+        transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+    }
+    #unit-selection-popover.show {
+        display: flex;
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* ลูกศรชี้กลับไปที่สินค้า (Triangle) โดยใช้ var(--arrow-top) */
+    #unit-selection-popover::before {
+        content: '';
+        position: absolute;
+        left: -9px;
+        top: var(--arrow-top);
+        border-top: 9px solid transparent;
+        border-bottom: 9px solid transparent;
+        border-right: 9px solid var(--border-color);
+        transition: top 0.2s ease;
+    }
+    #unit-selection-popover::after {
+        content: '';
+        position: absolute;
+        left: -8px;
+        top: var(--arrow-top);
+        border-top: 9px solid transparent;
+        border-bottom: 9px solid transparent;
+        border-right: 9px solid var(--white-color);
+        transition: top 0.2s ease;
+    }
+
+    .popover-header {
+        background: var(--light-bg);
+        padding: 0.8rem 1rem;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: bold;
+        color: var(--primary-color);
+        font-size: 1.1em;
+    }
+
+    .popover-body {
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    /* ปุ่มเลือกหน่วยใน Popover */
+    .popover-unit-btn {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: transparent;
+        border: none;
+        padding: 0.8rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+        text-align: left;
+        transition: background-color 0.2s, color 0.2s;
+        font-family: inherit;
+    }
+    .popover-unit-btn:hover {
+        background-color: #f0f7ff;
+    }
+    .popover-unit-btn.selected-unit {
+        background-color: var(--primary-color);
+        color: var(--white-color);
+        font-weight: bold;
+    }
+    .popover-unit-btn .u-price {
+        color: var(--success-color);
+        font-weight: bold;
+    }
+    .popover-unit-btn.selected-unit .u-price {
+        color: #a8f0b6;
+    }
+
+    /* ป้ายแจ้งว่าสินค้านี้มีหลายหน่วย */
+    .multi-unit-badge {
+        background: var(--warning-color);
+        color: var(--dark-text);
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 0.8em;
+        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .search-item.selected .multi-unit-badge {
+        background: #fff;
+        color: var(--primary-color);
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        #unit-selection-popover {
+            position: fixed;
+            bottom: 0;
+            left: 0 !important;
+            top: auto !important;
+            width: 100vw;
+            border-radius: 20px 20px 0 0;
+            transform: translateY(100%);
+        }
+        #unit-selection-popover.show {
+            transform: translateY(0);
+        }
+        #unit-selection-popover::before, #unit-selection-popover::after {
+            display: none;
+        }
+    }
+</style>
+
+<div id="unit-selection-popover">
+    <div class="popover-header" id="popover-product-name">ชื่อสินค้า</div>
+    <div class="popover-body" id="popover-unit-list"></div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(function() {
+        const app = window.POS_APP;
+        if (!app) return;
+
+        console.log("Applying Popover Unit Search UI Patch V3.1...");
+
+        app.state.isUnitPopoverOpen = false;
+        app.state.selectedPopoverUnitIndex = 0;
+        app.state.currentPopoverGroup = null;
+        app.state.pendingQty = 1;
+
+        // 1. จัดกลุ่มผลการค้นหา
+        app.displaySearchResults = function(results, query) {
+            const resultsContainer = document.getElementById('search-results');
+            resultsContainer.innerHTML = '';
+            resultsContainer.classList.toggle('has-results', results.length > 0);
+            
+            if (results.length === 0) return;
+
+            const groupedMap = new Map();
+            results.forEach((productUnit) => {
+                if (!groupedMap.has(productUnit.productId)) {
+                    groupedMap.set(productUnit.productId, {
+                        productId: productUnit.productId,
+                        productName: productUnit.productName,
+                        productCode: productUnit.productCode,
+                        stock: productUnit.stockInBaseUnits,
+                        baseUnit: productUnit.baseUnit,
+                        units: []
+                    });
+                }
+                groupedMap.get(productUnit.productId).units.push(productUnit);
+            });
+
+            this.state.groupedSearchResults = Array.from(groupedMap.values()).slice(0, 20);
+
+            this.state.groupedSearchResults.forEach((group, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'search-item';
+                itemDiv.dataset.index = index;
+                if (index === this.state.selectedSearchIndex) itemDiv.classList.add('selected');
+                
+                const unitCount = group.units.length;
+                const stockDisplay = `(เหลือ: ${group.stock} ${group.baseUnit})`;
+                
+                const unitBadge = unitCount > 1 
+                    ? `<span class="multi-unit-badge">${unitCount} หน่วย <span>➔</span></span>`
+                    : `<span class="price">${this.formatPrice(group.units[0].price)}</span>`;
+
+                itemDiv.innerHTML = `
+                    <div>
+                        <strong style="font-size:1.1em;">${this.escapeHtml(group.productName)}</strong>
+                        <div class="sub-text">${group.productCode || ''} ${stockDisplay}</div>
+                    </div>
+                    ${unitBadge}
+                `;
+                
+                itemDiv.onclick = (e) => {
+                    e.stopPropagation();
+                    this.state.selectedSearchIndex = index;
+                    this.updateSelectedSearchResult();
+                    this.handleProductSelection(group, itemDiv);
+                };
+                
+                resultsContainer.appendChild(itemDiv);
+            });
+        };
+
+        // 2. ตรวจสอบการเลือกสินค้า
+        app.handleProductSelection = function(group, anchorEl) {
+            const inputValue = document.getElementById('barcode-input').value.trim();
+            const quantityPattern = /^(\d+)\s*\*\s*(.+)$/;
+            const match = inputValue.match(quantityPattern);
+            const qty = match ? parseInt(match[1], 10) : 1;
+
+            if (group.units.length === 1) {
+                this.addToCart(group.units[0], qty);
+                this.resetSearchUI();
+            } else {
+                this.showUnitPopover(group, anchorEl, qty);
+            }
+        };
+
+        // 3. เปิด Popover (แก้ปัญหา CSS Rules แล้ว)
+        app.showUnitPopover = function(group, anchorEl, qty) {
+            this.state.isUnitPopoverOpen = true;
+            this.state.currentPopoverGroup = group;
+            this.state.pendingQty = qty;
+            this.state.selectedPopoverUnitIndex = 0;
+
+            const popover = document.getElementById('unit-selection-popover');
+            document.getElementById('popover-product-name').textContent = group.productName;
+            
+            const listContainer = document.getElementById('popover-unit-list');
+            listContainer.innerHTML = group.units.map((u, i) => {
+                const isSelected = (i === 0) ? 'selected-unit' : '';
+                return `
+                    <button type="button" class="popover-unit-btn ${isSelected}" data-index="${i}">
+                        <span>${this.escapeHtml(u.pricingUnit.unitName)}</span>
+                        <span class="u-price">${this.formatPrice(u.price)}</span>
+                    </button>
+                `;
+            }).join('');
+
+            listContainer.querySelectorAll('.popover-unit-btn').forEach((btn, i) => {
+                btn.onclick = () => {
+                    this.addToCart(group.units[i], this.state.pendingQty);
+                    this.resetSearchUI();
+                };
+            });
+
+            if (window.innerWidth > 992) {
+                const rect = anchorEl.getBoundingClientRect();
+                let topPos = rect.top;
+                
+                popover.style.display = 'flex'; 
+                popover.style.opacity = '0';
+                const popHeight = popover.offsetHeight;
+                
+                // คำนวณตำแหน่งและตั้งค่า CSS Variable สำหรับลูกศร
+                if (topPos + popHeight > window.innerHeight) {
+                    topPos = window.innerHeight - popHeight - 20;
+                    // ขยับลูกศรชี้ลงไปหาไอเทมที่กด
+                    popover.style.setProperty('--arrow-top', `${rect.top - topPos + 15}px`);
+                } else {
+                    // ลูกศรอยู่ด้านบนปกติ
+                    popover.style.setProperty('--arrow-top', `20px`);
+                }
+
+                popover.style.top = `${topPos}px`;
+                popover.style.left = `${rect.right + 15}px`;
+            }
+
+            popover.classList.add('show');
+            popover.style.opacity = '1';
+        };
+
+        // 4. รีเซ็ต UI
+        app.resetSearchUI = function() {
+            const popover = document.getElementById('unit-selection-popover');
+            popover.classList.remove('show');
+            setTimeout(() => { popover.style.display = 'none'; }, 200);
+
+            this.state.isUnitPopoverOpen = false;
+            document.getElementById('barcode-input').value = '';
+            this.state.currentSearchResults = [];
+            this.state.groupedSearchResults = [];
+            this.state.selectedSearchIndex = -1;
+            this.displaySearchResults([], '');
+            this.toggleUIVisibility();
+            this.focusSearchIfReady();
+        };
+
+        // 5. ไฮไลท์ใน Popover
+        app.updatePopoverHighlight = function() {
+            const btns = document.querySelectorAll('.popover-unit-btn');
+            btns.forEach((btn, i) => {
+                if (i === this.state.selectedPopoverUnitIndex) {
+                    btn.classList.add('selected-unit');
+                    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    btn.classList.remove('selected-unit');
+                }
+            });
+        };
+
+        // 6. ควบคุมด้วย Keyboard
+        app.handleSearchKeyDown = function(e) {
+            if (this.state.isUnitPopoverOpen) {
+                if (e.key === 'Escape' || e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    this.resetSearchUI(); // ถ้ากด Esc ให้ปิดและกลับมาช่องค้นหา
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    this.state.selectedPopoverUnitIndex = Math.min(this.state.selectedPopoverUnitIndex + 1, this.state.currentPopoverGroup.units.length - 1);
+                    this.updatePopoverHighlight();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    this.state.selectedPopoverUnitIndex = Math.max(this.state.selectedPopoverUnitIndex - 1, 0);
+                    this.updatePopoverHighlight();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const selectedUnit = this.state.currentPopoverGroup.units[this.state.selectedPopoverUnitIndex];
+                    this.addToCart(selectedUnit, this.state.pendingQty);
+                    this.resetSearchUI();
+                }
+                return;
+            }
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const inputValue = document.getElementById('barcode-input').value.trim();
+                
+                if (this.state.groupedSearchResults && this.state.groupedSearchResults.length > 0 && this.state.selectedSearchIndex !== -1) {
+                    const group = this.state.groupedSearchResults[this.state.selectedSearchIndex];
+                    const anchorEl = document.querySelector(`.search-item[data-index="${this.state.selectedSearchIndex}"]`);
+                    this.handleProductSelection(group, anchorEl);
+                } else if (this.getActiveCart().length > 0 && inputValue === '') {
+                    document.getElementById('discount-input').focus();
+                    document.getElementById('discount-input').select();
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (!this.state.groupedSearchResults || this.state.groupedSearchResults.length === 0) return;
+                this.state.selectedSearchIndex += 1;
+                if (this.state.selectedSearchIndex >= this.state.groupedSearchResults.length) this.state.selectedSearchIndex = 0;
+                this.updateSelectedSearchResult();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (!this.state.groupedSearchResults || this.state.groupedSearchResults.length === 0) return;
+                this.state.selectedSearchIndex -= 1;
+                if (this.state.selectedSearchIndex < 0) this.state.selectedSearchIndex = this.state.groupedSearchResults.length - 1;
+                this.updateSelectedSearchResult();
+            } else if (e.key === 'ArrowRight' && this.state.selectedSearchIndex !== -1) {
+                e.preventDefault();
+                const group = this.state.groupedSearchResults[this.state.selectedSearchIndex];
+                if(group.units.length > 1) {
+                    const anchorEl = document.querySelector(`.search-item[data-index="${this.state.selectedSearchIndex}"]`);
+                    this.handleProductSelection(group, anchorEl);
+                }
+            }
+        };
+
+        app.updateSelectedSearchResult = function() {
+            const items = document.querySelectorAll('.search-item');
+            items.forEach((item) => {
+                if (parseInt(item.dataset.index, 10) === this.state.selectedSearchIndex) {
+                    item.classList.add('selected');
+                    item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        };
+
+        document.addEventListener('click', (e) => {
+            if (app.state.isUnitPopoverOpen && !e.target.closest('#unit-selection-popover') && !e.target.closest('.search-item')) {
+                const popover = document.getElementById('unit-selection-popover');
+                popover.classList.remove('show');
+                app.state.isUnitPopoverOpen = false;
+                app.focusSearchIfReady(); // ให้กลับมาโฟกัสช่องค้นหา
+            }
+        });
+
+    }, 1000);
+});
+</script>
 </body></html>
 
 <script>
