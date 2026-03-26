@@ -4731,41 +4731,78 @@ document.addEventListener('DOMContentLoaded', () => {
     .search-column .card, #main-search-area { position: relative !important; z-index: 999999 !important; overflow: visible !important; }
     .cart-column { position: relative !important; z-index: 1 !important; }
 
-    /* 🎨 2. กล่องผลลัพธ์หลัก (กว้างพอดีช่องค้นหาเป๊ะๆ) */
+    /* 🎨 2. กล่องผลลัพธ์หลัก (แก้ไขระบบ Scroll ล้นจอ) */
     #search-results.has-results {
         position: absolute;
         top: 0; left: 0;
         width: 100%; 
+        
+        /* 🌟 MAGIC TRICK: ขยายพื้นที่รองรับ Pop-out ให้กว้างออกไปทางขวา 🌟 */
+        box-sizing: content-box !important;
+        padding-right: 400px !important; 
+        margin-right: -400px !important; 
+        
+        /* กำหนดความสูงให้ไม่ล้นจอ และเปิดใช้งานการเลื่อน (Scroll) */
         max-height: calc(100vh - 180px);
+        overflow-y: auto;
+        overflow-x: hidden; 
+        
+        /* ป้องกันการคลิกโดนพื้นที่ล่องหน ให้ทะลุไปคลิกตะกร้าได้ */
+        pointer-events: none; 
         z-index: 950 !important;
         
+        /* ซ่อน Scrollbar ด้านขวาสุด เพื่อความสวยงาม */
+        scrollbar-width: none; 
+        
+        /* ย้าย Background ไปไว้ที่แถว (Row) เพื่อไม่ให้บังตะกร้า */
+        background: transparent;
+        border: none;
+        
+        display: flex; flex-direction: column;
+        
+        /* ใช้ drop-shadow สร้างเงารวมให้ทั้งหมด (แทน box-shadow เดิม) */
+        filter: drop-shadow(0 12px 24px rgba(0,0,0,0.08)); 
+    }
+    
+    /* ซ่อน Scrollbar ของ Chrome/Safari/Edge */
+    #search-results.has-results::-webkit-scrollbar {
+        display: none; 
+    }
+
+    /* 3. แถวสินค้า (Row) - รับหน้าที่เป็นฉากหลังแทนกล่องใหญ่ */
+    .search-row {
+        position: relative; 
+        width: 100%; /* กว้างเท่ากับขนาดกล่องจริง ไม่รวม Padding 400px */
+        display: flex; flex-direction: row;
+        
+        /* ย้ายพื้นหลังและเส้นขอบมาไว้ที่บรรทัดแทน */
         background: rgba(255, 255, 255, 0.95); 
         backdrop-filter: blur(12px); 
         -webkit-backdrop-filter: blur(12px);
         
-        /* 🌟 ปรับเส้นขอบกล่องใหญ่ให้อ่อนลง */
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        border-radius: 12px; 
-        box-shadow: 0 12px 30px rgba(0,0,0,0.08); 
-        
-        display: flex; flex-direction: column;
-        padding: 4px 0; 
-        overflow: visible; 
-    }
-
-    /* 3. แถวสินค้า (Row) */
-    .search-row {
-        position: relative; 
-        width: 100%;
-        display: flex; flex-direction: row;
-        background: transparent;
+        border-left: 1px solid rgba(0, 0, 0, 0.08);
+        border-right: 1px solid rgba(0, 0, 0, 0.08);
         border-bottom: 1px solid rgba(0, 0, 0, 0.03); 
+        
         transition: background 0.2s ease;
-    }
-    .search-row:last-child {
-        border-bottom: none; 
+        /* เปิดการรับคลิกเมาส์อีกครั้ง */
+        pointer-events: auto; 
     }
     
+    /* ประกอบร่างแถวแรกและแถวสุดท้ายให้เป็นกล่องมนๆ เหมือนเดิม */
+    .search-row:first-child {
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        padding-top: 4px;
+    }
+    .search-row:last-child {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08); 
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        padding-bottom: 4px;
+    }
+
     /* 4. กล่องหลัก (หน่วยแรก) */
     .main-cell {
         width: 100%;
@@ -4782,32 +4819,31 @@ document.addEventListener('DOMContentLoaded', () => {
         border: 1px solid rgba(0, 0, 0, 0.06);
     }
 
-    /* 🌟 5. กล่องห่อหุ้มหน่วยเสริม (สร้างเป็น "ถาดรอง" ให้เด่นชัดจากตะกร้า) 🌟 */
+    /* 🌟 5. กล่องห่อหุ้มหน่วยเสริม (ถาดรอง) 🌟 */
     .alt-units-wrapper {
         position: absolute;
-        left: calc(100% + 8px); /* ขยับออกขวาเล็กน้อยให้มีที่ว่างสำหรับลูกศร */
+        left: calc(100% + 8px); 
         top: 50%;
         transform: translateY(-50%); 
         display: none; 
         align-items: center;
         gap: 4px; 
-        padding: 6px; /* เพิ่ม Padding สร้างเป็นถาด */
-        z-index: 1000; /* ดันให้ลอยเหนือตะกร้าแน่นอน */
+        padding: 6px; 
+        z-index: 1000; 
         
-        /* ใส่พื้นหลังสีขาวขุ่นให้ถาดรอง เพื่อบังตะกร้าด้านหลัง */
         background: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
         border: 1px solid rgba(0, 0, 0, 0.08);
         border-radius: 10px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); /* เงาเข้มขึ้นให้ดูลอยตัว */
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); 
     }
 
-    /* 🌟 ลูกเล่นติ่งลูกศรชี้กลับไปที่กล่องหลัก (Tooltip Arrow) 🌟 */
+    /* 🌟 ลูกเล่นติ่งลูกศรชี้กลับไปที่กล่องหลัก 🌟 */
     .alt-units-wrapper::before {
         content: '';
         position: absolute;
-        left: -5px; /* ยื่นออกไปทางซ้ายของถาด */
+        left: -5px; 
         top: 50%;
         transform: translateY(-50%) rotate(45deg);
         width: 10px;
@@ -4834,14 +4870,14 @@ document.addEventListener('DOMContentLoaded', () => {
         background: var(--white-color);
         border: 1px solid rgba(0, 0, 0, 0.06);
         padding: 0.4rem 0.8rem;
-        border-radius: 6px; /* ปรับให้โค้งรับกับถาดรอง */
+        border-radius: 6px; 
         display: flex; align-items: center; gap: 8px;
         cursor: pointer;
         white-space: nowrap;
         transition: all 0.2s ease;
     }
 
-    /* 7. Typography - ตัวบาง (Normal) คลีนๆ */
+    /* 7. Typography */
     .product-name-single { 
         font-weight: 400; 
         color: var(--dark-text);
@@ -4864,23 +4900,20 @@ document.addEventListener('DOMContentLoaded', () => {
     /* 🎨 สถานะ Active (Keyboard & Hover) */
     /* ================================= */
     
-    /* 🌟 เมื่อแถวถูกเลือก (Row Level) ให้รวบรวมเป็นกลุ่มเดียวกัน 🌟 */
     .search-row:hover .main-cell, 
     .search-row.selected-row .main-cell,
     .search-row:hover .alt-cell,
     .search-row.selected-row .alt-cell {
-        background: #f8f9fa; /* สีเทาอ่อนสุดๆ */
+        background: #f8f9fa; 
         border-color: rgba(0, 0, 0, 0.1);
     }
 
-    /* Hover ตอนชี้เมาส์ที่หน่วยเสริมแต่ละอัน */
     .alt-cell:hover {
-        border-color: rgba(0, 123, 255, 0.3); /* สีฟ้าอ่อนๆ */
+        border-color: rgba(0, 123, 255, 0.3); 
         background: #f0f7ff !important;
         transform: translateY(-1px);
     }
 
-    /* 🌟 สถานะเมื่อถูกเลือกจริงๆ (Active Unit) 🌟 */
     .main-cell.active-unit,
     .alt-cell.active-unit {
         background: var(--primary-color) !important;
