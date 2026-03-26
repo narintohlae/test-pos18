@@ -4742,29 +4742,32 @@ document.addEventListener('DOMContentLoaded', () => {
         background: rgba(255, 255, 255, 0.95); 
         backdrop-filter: blur(12px); 
         -webkit-backdrop-filter: blur(12px);
-        border: 1px solid var(--border-color);
+        
+        /* 🌟 ปรับเส้นขอบกล่องใหญ่ให้อ่อนลง */
+        border: 1px solid rgba(0, 0, 0, 0.08);
         border-radius: 12px; 
-        box-shadow: 0 12px 30px rgba(0,0,0,0.12); 
+        box-shadow: 0 12px 30px rgba(0,0,0,0.08); /* ปรับเงาให้นุ่มขึ้น */
         
         display: flex; flex-direction: column;
         padding: 4px 0; 
         overflow: visible; 
     }
 
-    /* 3. แถวสินค้า (Row) - 🌟 เพิ่มเส้นแบ่งบรรทัดที่ดูบางเบา */
+    /* 3. แถวสินค้า (Row) */
     .search-row {
         position: relative; 
         width: 100%;
         display: flex; flex-direction: row;
         background: transparent;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05); /* เส้นคั่นมินิมอล */
+        /* 🌟 เส้นคั่นระหว่างบรรทัดบางเบาที่สุด */
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03); 
         transition: background 0.2s ease;
     }
     .search-row:last-child {
-        border-bottom: none; /* บรรทัดสุดท้ายไม่ต้องมีเส้น */
+        border-bottom: none; 
     }
     
-    /* 4. กล่องหลัก (หน่วยแรก) - 🌟 ปรับให้มีพื้นหลังขาวเหมือนหน่วยเสริม */
+    /* 4. กล่องหลัก (หน่วยแรก) */
     .main-cell {
         width: 100%;
         padding: 0.7rem 1rem; 
@@ -4774,14 +4777,14 @@ document.addEventListener('DOMContentLoaded', () => {
         box-sizing: border-box;
         border-radius: 8px;
         margin: 2px 4px; 
-        transition: background-color 0.15s;
+        transition: all 0.15s;
         
-        /* เพิ่มให้เหมือน alt-cell */
         background: var(--white-color);
-        border: 1px solid var(--border-color);
+        /* 🌟 ปรับกรอบกล่องหลักให้จางลง (Hairline) */
+        border: 1px solid rgba(0, 0, 0, 0.06);
     }
 
-    /* 🌟 5. กล่องห่อหุ้มหน่วยเสริม (ลอยอยู่ด้านขวานอกกรอบ) */
+    /* 5. กล่องห่อหุ้มหน่วยเสริม (ลอยอยู่ด้านขวานอกกรอบ) */
     .alt-units-wrapper {
         position: absolute;
         left: 100%; 
@@ -4794,7 +4797,6 @@ document.addEventListener('DOMContentLoaded', () => {
         z-index: 10;
     }
 
-    /* 🌟 โชว์หน่วยเสริม เฉพาะตอนแถวนี้ถูกเลือก หรือ Hover */
     .search-row.selected-row .alt-units-wrapper,
     .search-row:hover .alt-units-wrapper {
         display: flex;
@@ -4809,17 +4811,18 @@ document.addEventListener('DOMContentLoaded', () => {
     /* 6. กล่องหน่วยเสริมแต่ละอัน (Pills) */
     .alt-cell {
         background: var(--white-color);
-        border: 1px solid var(--border-color);
+        /* 🌟 ปรับกรอบกล่องเสริมให้จางลง (Hairline) */
+        border: 1px solid rgba(0, 0, 0, 0.06);
         padding: 0.4rem 0.8rem;
         border-radius: 8px;
         display: flex; align-items: center; gap: 8px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* ปรับเงาให้นุ่มขึ้น */
         cursor: pointer;
         white-space: nowrap;
         transition: all 0.2s ease;
     }
 
-    /* 7. Typography - 🌟 ปรับเป็นตัวบาง (Normal) ทั้งหมดเพื่อให้คลีนสุดๆ */
+    /* 7. Typography - ตัวบาง (Normal) คลีนๆ */
     .product-name-single { 
         font-weight: 400; 
         color: var(--dark-text);
@@ -4842,34 +4845,32 @@ document.addEventListener('DOMContentLoaded', () => {
     /* 🎨 สถานะ Active (Keyboard & Hover) */
     /* ================================= */
     
-    /* Hover ตอนชี้เมาส์ที่แถว ให้พื้นหลังกล่องหลักเป็นสีเทาอ่อนๆ สบายตา */
+    /* Hover ตอนชี้เมาส์ที่แถว */
     .search-row:hover .main-cell, .search-row.selected-row .main-cell {
         background: #f8f9fa; 
-        border-color: #e2e8f0;
+        /* 🌟 กรอบตอน Hover เข้มขึ้นมาแค่นิดเดียว */
+        border-color: rgba(0, 0, 0, 0.1);
     }
 
     /* Hover ตอนชี้เมาส์ที่หน่วยเสริม */
     .alt-cell:hover {
-        border-color: var(--primary-color);
+        border-color: rgba(0, 123, 255, 0.3); /* สีฟ้าอ่อนๆ */
         background: #f0f7ff;
         transform: translateY(-1px);
     }
 
-    /* 🌟 สถานะเมื่อถูกเลือก (Active) 🌟 
-       บังคับใช้ร่วมกันทั้งกล่องหลัก (.main-cell) และกล่องเสริม (.alt-cell) */
+    /* 🌟 สถานะเมื่อถูกเลือก (Active) 🌟 */
     .main-cell.active-unit,
     .alt-cell.active-unit {
         background: var(--primary-color) !important;
         border-color: var(--primary-color) !important;
-        box-shadow: 0 6px 16px rgba(0, 92, 191, 0.3) !important;
+        box-shadow: 0 4px 12px rgba(0, 92, 191, 0.25) !important;
     }
 
-    /* ขยายขนาดนิดหน่อยเฉพาะกล่องเสริมตอน active ให้ดูมีมิติเด้งออกมา */
     .alt-cell.active-unit {
         transform: scale(1.05); 
     }
 
-    /* บังคับเปลี่ยนสีตัวอักษรทุกตัวในกล่องที่ Active เป็นสีขาวล้วน 100% */
     .main-cell.active-unit .product-name-single, 
     .main-cell.active-unit .sub-text, 
     .main-cell.active-unit .cell-price,
