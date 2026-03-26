@@ -4765,17 +4765,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     /* 4. กล่องหลัก (หน่วยแรก) */
-    .main-cell {
-        width: 100%;
-        padding: 0.7rem 1rem; /* เพิ่มช่องว่างแนวตั้งให้ดูโปร่งขึ้น */
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: space-between;
-        gap: 12px;
-        box-sizing: border-box;
-        border-radius: 8px;
-        margin: 2px 4px; /* เว้นขอบไม่ให้ติดเส้นคั่นเกินไป */
-        transition: background-color 0.15s;
-    }
+/* 4. กล่องหลัก (หน่วยแรก) */
+.main-cell {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    margin: 2px 4px;
+    transition: background-color 0.15s;
+    
+    /* เพิ่ม 2 บรรทัดนี้เพื่อให้เหมือน .alt-cell */
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+}
 
     /* 🌟 5. กล่องห่อหุ้มหน่วยเสริม (ลอยอยู่ด้านขวานอกกรอบ) */
     .alt-units-wrapper {
@@ -4842,17 +4847,17 @@ document.addEventListener('DOMContentLoaded', () => {
         background: #f4f8ff; 
     }
 
-/* เมื่อหน่วยหลักถูกเลือก (ลูกศรชี้อยู่) */
-    .main-cell.active-unit {
-        /* ใช้ rgba เพื่อดึงสีหลักมาทำโปร่งแสง 70% (ทำให้อ่อนลง 30%) */
-        background: rgba(0, 92, 191, 0.7) !important; 
-        border-radius: 8px;
-    }
-    .main-cell.active-unit .product-name-single, 
-    .main-cell.active-unit .sub-text, 
-    .main-cell.active-unit .cell-price {
-        color: var(--white-color) !important; 
-    }
+/* เมื่อหน่วยหลักถูกเลือก (ลูกศรชี้อยู่) - ปรับให้เหมือนหน่วยเสริม */
+.main-cell.active-unit {
+    background: var(--primary-color);
+    box-shadow: 0 6px 16px rgba(0, 92, 191, 0.3);
+    border-radius: 8px;
+}
+.main-cell.active-unit .product-name-single, 
+.main-cell.active-unit .sub-text, 
+.main-cell.active-unit .cell-price {
+    color: var(--white-color); /* เปลี่ยนข้อความเป็นสีขาว */
+}
     
     /* เมื่อหน่วยเสริมถูกเลือก (กดลูกศรขวามาถึง) */
     .alt-cell:hover {
