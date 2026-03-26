@@ -4764,23 +4764,27 @@ document.addEventListener('DOMContentLoaded', () => {
         border-bottom: none; /* บรรทัดสุดท้ายไม่ต้องมีเส้น */
     }
     
-    /* 4. กล่องหลัก (หน่วยแรก) */
-/* 4. กล่องหลัก (หน่วยแรก) */
-.main-cell {
-    width: 100%;
-    padding: 0.7rem 1rem;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px;
-    box-sizing: border-box;
-    border-radius: 8px;
-    margin: 2px 4px;
-    transition: background-color 0.15s;
+/* ================================= */
+    /* 🎨 สถานะ Active (Keyboard & Hover) */
+    /* ================================= */
     
-    /* เพิ่ม 2 บรรทัดนี้เพื่อให้เหมือน .alt-cell */
-    background: var(--white-color);
-    border: 1px solid var(--border-color);
-}
+    /* 1. ตอนแค่อยู่ในบรรทัดเดียวกัน (Hover) ให้พื้นหลังยังขาว แต่เปลี่ยนสีกรอบเป็นสีฟ้า */
+    .search-row:hover .main-cell, .search-row.selected-row .main-cell {
+        background: var(--white-color) !important; 
+        border-color: var(--primary-color);
+    }
+
+    /* 2. เมื่อหน่วยหลักถูกเลือกจริงๆ (ลูกศรชี้อยู่) ให้เป็นสีฟ้าทึบและตัวหนังสือสีขาว */
+    .main-cell.active-unit {
+        background: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 6px 16px rgba(0, 92, 191, 0.3) !important;
+    }
+    .main-cell.active-unit .product-name-single, 
+    .main-cell.active-unit .sub-text, 
+    .main-cell.active-unit .cell-price {
+        color: var(--white-color) !important;
+    }
 
     /* 🌟 5. กล่องห่อหุ้มหน่วยเสริม (ลอยอยู่ด้านขวานอกกรอบ) */
     .alt-units-wrapper {
