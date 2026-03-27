@@ -2221,11 +2221,14 @@ async importFromGoogleSheet(isAutomatic = false) {
                 });
             }
 
+// ดึงค่าจากคอลัมน์ "หน่วยขายหลัก" ใน Google Sheet ถ้าเว้นว่างไว้ จะดึง unit1 มาใช้แทน
+            const sheetMainUnit = String(getVal(row, 'หน่วยขายหลัก') || unit1).trim();
+
             const productData = {
                 productCode: finalCode,
                 productName: name,
                 baseUnit: unit1,
-                mainSellingUnit: unit1,
+                mainSellingUnit: sheetMainUnit, // <--- อัปเดตให้ใช้ค่าจาก Sheet
                 cost: baseCost, 
                 pricingUnits: pricingUnits, 
                 updatedAt: now
