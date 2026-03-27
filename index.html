@@ -2221,14 +2221,22 @@ async importFromGoogleSheet(isAutomatic = false) {
                 });
             }
 
-// ดึงค่าจากคอลัมน์ "หน่วยขายหลัก" ใน Google Sheet ถ้าเว้นว่างไว้ จะดึง unit1 มาใช้แทน
-            const sheetMainUnit = String(getVal(row, 'หน่วยขายหลัก') || unit1).trim();
+// 1. ดึงชื่อหน่วยจากคอลัมน์ "หน่วยขายหลัก" ใน Sheet (ถ้าไม่มี ให้กลับไปใช้หน่วย 1)
+            const sheetMainUnit = String(getVal(row, 'หน่วยขายหลัก', 'หน่วยขาย') || unit1).trim();
 
+            // 2. 🌟 ไม้ตาย: ดัน "หน่วยขายหลัก" ให้ขึ้นไปอยู่ตำแหน่งที่ 1 เสมอ (UI จะดึงอันนี้ไปแสดงอัตโนมัติ)
+            pricingUnits.sort((a, b) => {
+                if (a.unitName === sheetMainUnit) return -1;
+                if (b.unitName === sheetMainUnit) return 1;
+                return 0;
+            });
+
+            // 3. จัดเตรียมข้อมูลเพื่อบันทึก
             const productData = {
                 productCode: finalCode,
                 productName: name,
                 baseUnit: unit1,
-                mainSellingUnit: sheetMainUnit, // <--- อัปเดตให้ใช้ค่าจาก Sheet
+                mainSellingUnit: sheetMainUnit,
                 cost: baseCost, 
                 pricingUnits: pricingUnits, 
                 updatedAt: now
