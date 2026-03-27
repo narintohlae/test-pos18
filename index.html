@@ -4989,16 +4989,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 rowDiv.className = 'search-row';
                 if (pIndex === this.state.selectedSearchIndex) rowDiv.classList.add('selected-row');
 
-                // 🌟 กล่องหลัก
+// 🌟 กล่องหลัก
                 const mainUnit = group.units[0];
                 const isMainActive = (pIndex === this.state.selectedSearchIndex && this.state.selectedUnitIndex === 0) ? 'active-unit' : '';
                 
                 let html = `
                     <div class="search-unit-cell main-cell ${isMainActive}" data-pindex="${pIndex}" data-uindex="0">
                         <span class="product-name-single" title="${this.escapeHtml(group.productName)}">${this.escapeHtml(group.productName)}</span>
-                        <div class="price-unit-group">
+                        <div class="price-unit-group" style="gap: 2px;">
                             <span class="cell-price">${this.formatPrice(mainUnit.price)}</span>
-                            <span class="sub-text">${this.escapeHtml(mainUnit.pricingUnit.unitName)}</span>
+                            <span class="sub-text">/${this.escapeHtml(mainUnit.pricingUnit.unitName)}</span>
                         </div>
                     </div>
                 `;
@@ -5010,9 +5010,9 @@ document.addEventListener("DOMContentLoaded", function() {
                         const altUnit = group.units[i];
                         const isAltActive = (pIndex === this.state.selectedSearchIndex && this.state.selectedUnitIndex === i) ? 'active-unit' : '';
                         html += `
-                            <div class="search-unit-cell alt-cell ${isAltActive}" data-pindex="${pIndex}" data-uindex="${i}">
+                            <div class="search-unit-cell alt-cell ${isAltActive}" data-pindex="${pIndex}" data-uindex="${i}" style="gap: 2px;">
                                 <span class="cell-price">${this.formatPrice(altUnit.price)}</span>
-                                <span class="sub-text">${this.escapeHtml(altUnit.pricingUnit.unitName)}</span>
+                                <span class="sub-text">/${this.escapeHtml(altUnit.pricingUnit.unitName)}</span>
                             </div>
                         `;
                     }
