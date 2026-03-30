@@ -1110,6 +1110,114 @@ input[type="radio"].radio, .radio{ width:16px; height:16px; border:var(--border)
         display: none !important;
     }
 }
+    <style id="premium-ui-pack-2">
+    /* =========================================
+       ✨ 1. Premium Cart Tabs (แท็บบิลแคปซูลลอยตัว)
+       ========================================= */
+    #cart-tabs { 
+        gap: 10px; padding: 4px 4px 12px 4px; 
+    }
+    .tab-button {
+        background: #f8f9fa; border: 1px solid #e9ecef;
+        border-radius: 20px; padding: 0.6rem 1.2rem;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        color: #6c757d; font-weight: 500;
+        margin-bottom: 0;
+    }
+    .tab-button:hover {
+        transform: translateY(-2px); background: #ffffff;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.06);
+        color: var(--primary-color);
+    }
+    /* แท็บที่ถูกเลือก (Active Glow) */
+    .tab-button.active {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #00449e 100%);
+        color: white; border: none;
+        box-shadow: 0 6px 16px rgba(0, 92, 191, 0.35);
+        transform: scale(1.05) translateY(-2px);
+        font-weight: bold;
+    }
+    /* ปุ่ม X ปิดแท็บ */
+    .close-tab-btn {
+        background: rgba(255,255,255,0.2); border-radius: 50%;
+        width: 22px; height: 22px; line-height: 22px; text-align: center;
+        margin-left: 8px; padding: 0;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: inline-block;
+    }
+    .tab-button.active .close-tab-btn { color: white; }
+    .close-tab-btn:hover { 
+        background: #ff4d4f !important; color: white !important; 
+        transform: rotate(90deg) scale(1.2); /* ลูกเล่นหมุนตอน Hover */
+    }
+
+    /* =========================================
+       ✨ 2. Premium Cart Items (ตะกร้าสินค้ามีมิติ)
+       ========================================= */
+    #cart-items { padding: 4px; }
+    #cart-items li {
+        background: #ffffff; border: 1px solid #f0f0f0;
+        border-radius: 12px; margin-bottom: 8px;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+    }
+    /* Hover Lift Effect */
+    #cart-items li:hover {
+        transform: scale(1.005) translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        border-color: #d9e2ec;
+        z-index: 2; position: relative;
+    }
+    /* ช่องกรอกตัวเลขในตะกร้า */
+    #cart-items .item-input {
+        background: #f8f9fa; border: 1px solid transparent;
+        transition: all 0.2s; border-radius: 8px;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+    }
+    #cart-items .item-input:focus {
+        background: #ffffff; border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
+        transform: scale(1.05); /* ขยายช่องตอนคลิกพิมพ์ */
+    }
+    /* ปุ่มถังขยะลบสินค้า */
+    .delete-item-btn {
+        background: #fff1f0; color: #ff4d4f; border-radius: 10px;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .delete-item-btn:hover {
+        background: #ff4d4f; color: #ffffff;
+        transform: scale(1.15) rotate(8deg); /* ลูกเล่นเด้งเอียงๆ */
+        box-shadow: 0 4px 10px rgba(255, 77, 79, 0.3);
+    }
+
+    /* =========================================
+       ✨ 3. Premium Summary Cards (กล่องสรุปยอด Glassmorphism)
+       ========================================= */
+    .summary-grid { gap: 1.2rem; }
+    .summary-item {
+        background: linear-gradient(145deg, #ffffff 0%, #f4f6f9 100%);
+        border: 1px solid rgba(255,255,255,0.8);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+        border-radius: 16px;
+        position: relative; overflow: hidden;
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .summary-item:hover { 
+        transform: translateY(-4px) scale(1.02); 
+        box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    }
+    /* แถบสีเรืองแสงด้านบนกล่องสรุป */
+    .summary-item::before {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), #00c6ff);
+        opacity: 0.8;
+    }
+    /* แยกสีแถบด้านบนตามประเภทกล่องให้ดูโปร */
+    .summary-item:nth-child(2)::before { background: linear-gradient(90deg, var(--warning-color), #ff9800); }
+    .summary-item:nth-child(3)::before { background: linear-gradient(90deg, var(--success-color), #00e676); }
+    .summary-item:nth-child(4)::before { background: linear-gradient(90deg, #00aaff, #0055ff); }
+</style>
 </style>
 
 
