@@ -4784,215 +4784,165 @@ document.addEventListener('DOMContentLoaded', () => {
     .search-column .card, #main-search-area { position: relative !important; z-index: 999999 !important; overflow: visible !important; }
     .cart-column { position: relative !important; z-index: 1 !important; }
 
-    /* 🎨 2. กล่องผลลัพธ์หลัก (แก้ไขระบบ Scroll ล้นจอ) */
+    /* 🎨 2. กล่องผลลัพธ์หลัก */
     #search-results.has-results {
-        position: absolute;
-        top: 0; left: 0;
-        width: 100%; 
-        
-        /* 🌟 MAGIC TRICK: ขยายพื้นที่รองรับ Accordion ให้กว้างออกไปทางขวา 🌟 */
+        position: absolute; top: 0; left: 0; width: 100%; 
         box-sizing: content-box !important;
-        padding-right: 400px !important; 
-        margin-right: -400px !important; 
-        
-        /* กำหนดความสูงให้ไม่ล้นจอ และเปิดใช้งานการเลื่อน (Scroll) */
+        padding-right: 400px !important; margin-right: -400px !important; 
         max-height: calc(100vh - 180px);
-        overflow-y: auto;
-        overflow-x: hidden; 
-        
-        /* ป้องกันการคลิกโดนพื้นที่ล่องหน ให้ทะลุไปคลิกตะกร้าได้ */
-        pointer-events: none; 
-        z-index: 950 !important;
-        
-        /* ซ่อน Scrollbar ด้านขวาสุด เพื่อความสวยงาม */
+        overflow-y: auto; overflow-x: hidden; 
+        pointer-events: none; z-index: 950 !important;
         scrollbar-width: none; 
-        
-        /* ย้าย Background ไปไว้ที่แถว (Row) เพื่อไม่ให้บังตะกร้า */
-        background: transparent;
-        border: none;
-        
+        background: transparent; border: none;
         display: flex; flex-direction: column;
-        
-        /* ใช้ drop-shadow สร้างเงารวมให้ทั้งหมด */
-        filter: drop-shadow(0 12px 24px rgba(0,0,0,0.08)); 
+        filter: drop-shadow(0 15px 35px rgba(0,0,0,0.08)); 
+        padding-top: 10px; /* เว้นที่ว่างด้านบนให้เงา */
     }
-    
-    /* ซ่อน Scrollbar ของ Chrome/Safari/Edge */
-    #search-results.has-results::-webkit-scrollbar {
-        display: none; 
-    }
+    #search-results.has-results::-webkit-scrollbar { display: none; }
 
-    /* 3. แถวสินค้า (Row) - ปรับเป็น inline-flex เพื่อให้กางออกแนวนอนได้ */
+    /* 3. แถวสินค้า (Floating Card Effect) */
     .search-row {
         position: relative; 
-        width: max-content; /* ให้ขยายความกว้างตามเนื้อหาที่กางออก */
-        min-width: 100%;
-        display: inline-flex; 
-        flex-direction: row;
-        align-items: center;
+        width: max-content; min-width: 100%;
+        display: inline-flex; flex-direction: row; align-items: center;
         
-        /* ย้ายพื้นหลังและเส้นขอบมาไว้ที่บรรทัดแทน */
-        background: rgba(255, 255, 255, 0.95); 
-        backdrop-filter: blur(12px); 
-        -webkit-backdrop-filter: blur(12px);
+        background: rgba(255, 255, 255, 0.7); 
+        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         
-        border-left: 1px solid rgba(0, 0, 0, 0.08);
-        border-right: 1px solid rgba(0, 0, 0, 0.08);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.03); 
+        border-left: 1px solid rgba(255, 255, 255, 0.8);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.04); 
         
-        transition: background 0.2s ease;
-        /* เปิดการรับคลิกเมาส์อีกครั้ง */
+        /* เปลี่ยนสีพื้นหลังนิดๆ เวลา Hover */
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         pointer-events: auto; 
     }
-    
-    /* ประกอบร่างแถวแรกและแถวสุดท้ายให้เป็นกล่องมนๆ เหมือนเดิม */
     .search-row:first-child {
-        border-top: 1px solid rgba(0, 0, 0, 0.08);
-        border-top-left-radius: 12px;
-        border-top-right-radius: 12px;
-        padding-top: 4px;
+        border-top: 1px solid rgba(255, 255, 255, 0.8);
+        border-top-left-radius: 16px; border-top-right-radius: 16px;
     }
     .search-row:last-child {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.08); 
-        border-bottom-left-radius: 12px;
-        border-bottom-right-radius: 12px;
-        padding-bottom: 4px;
+        border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;
+        border-bottom: none;
     }
 
-    /* 4. กล่องหลัก (ห้ามหดตัวตอนกาง) */
+    /* เมื่อ Hover ทั้งแถวให้ยกตัวขึ้นเล็กน้อย */
+    .search-row:hover, .search-row.selected-row {
+        background: rgba(255, 255, 255, 0.95);
+        z-index: 10;
+        transform: translateY(-1px) scale(1.002);
+    }
+
+    /* 4. กล่องหลัก */
     .main-cell {
-        flex-shrink: 0; /* ห้ามหดตัว */
-        width: auto;
-        min-width: 250px; /* กำหนดขั้นต่ำไม่ให้เล็กเกินไป */
-        padding: 0.7rem 1rem; 
+        flex-shrink: 0; width: auto; min-width: 260px;
+        padding: 0.8rem 1.2rem; 
         cursor: pointer;
-        display: flex; align-items: center; justify-content: space-between;
-        gap: 12px;
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
         box-sizing: border-box;
-        border-radius: 8px;
-        margin: 2px 4px; 
-        transition: all 0.15s;
-        
+        border-radius: 12px;
+        margin: 4px; 
+        transition: all 0.25s ease;
         background: var(--white-color);
-        border: 1px solid rgba(0, 0, 0, 0.06);
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
     }
 
-    /* 🌟 ป้ายบอกจำนวนหน่วยเสริมตอนหุบอยู่ 🌟 */
+    /* 🌟 อนิเมชันกระเพื่อม (Pulse) ให้ป้ายบอกจำนวน 🌟 */
+    @keyframes softPulse {
+        0% { box-shadow: 0 0 0 0 rgba(0, 92, 191, 0.15); transform: scale(1); }
+        50% { box-shadow: 0 0 0 5px rgba(0, 92, 191, 0); transform: scale(1.05); }
+        100% { box-shadow: 0 0 0 0 rgba(0, 92, 191, 0); transform: scale(1); }
+    }
+
     .expand-indicator {
-        font-size: 0.75em;
-        color: var(--secondary-color);
-        background: #e9ecef;
-        padding: 2px 6px;
-        border-radius: 10px;
-        display: inline-flex;
-        align-items: center;
-        gap: 2px;
+        font-size: 0.75em; font-weight: bold;
+        color: var(--primary-color);
+        background: linear-gradient(135deg, #e8f0fe 0%, #d4e3fc 100%);
+        padding: 4px 8px;
+        border-radius: 20px;
+        display: inline-flex; align-items: center; gap: 4px;
         margin-left: 8px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        white-space: nowrap;
-        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy hide */
+        white-space: nowrap; overflow: hidden;
+        animation: softPulse 2s infinite;
+        border: 1px solid rgba(255,255,255,0.6);
     }
     
-    /* ให้ป้ายหุบหายไป เมื่อ Accordion กางออก */
     .search-row:hover .expand-indicator,
     .search-row.selected-row .expand-indicator {
-        max-width: 0;
-        opacity: 0;
-        padding: 0;
-        margin: 0;
+        max-width: 0; opacity: 0; padding: 0; margin: 0; border: none;
+        animation: none; transform: scale(0);
     }
 
-    /* 🌟 5. Horizontal Accordion Wrapper (หุบไว้ก่อน) 🌟 */
+    /* 🌟 5. Premium Horizontal Accordion Wrapper 🌟 */
     .alt-units-wrapper {
-        display: flex; 
-        align-items: center;
-        gap: 4px; 
+        display: flex; align-items: center; gap: 6px; 
         
-        /* สไตล์ตอนหุบ (ซ่อนตัว) */
-        max-width: 0; 
-        opacity: 0;
-        overflow: hidden; 
-        padding: 0;
-        margin-left: 0;
+        max-width: 0; opacity: 0; overflow: hidden; 
+        padding: 0; margin-left: -10px; /* ให้เริ่มจากจมลงไปในกล่องหลักนิดๆ */
         white-space: nowrap;
         
-        /* อนิเมชั่นสไลด์แนวนอน */
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        /* 🎯 อนิเมชันเด้งดึ๋งแบบ Apple (Spring Physics) */
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         
-        background: rgba(250, 250, 250, 0.98);
-        border: 1px solid transparent;
-        border-radius: 8px;
+        background: rgba(240, 244, 248, 0.6);
+        border-radius: 12px;
     }
 
-    /* เมื่อ Hover หรือใช้ Keyboard เลื่อนมาโดน ให้สไลด์กางออก */
+    /* กางออกอย่างอลังการ */
     .search-row.selected-row .alt-units-wrapper,
     .search-row:hover .alt-units-wrapper {
-        max-width: 800px; /* ขนาดสูงสุดที่ยอมให้กางออก */
-        opacity: 1;
-        padding: 4px 6px;
-        margin-left: 4px;
-        border-color: rgba(0, 0, 0, 0.08);
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        max-width: 800px; opacity: 1;
+        padding: 6px; margin-left: 4px;
+        background: rgba(248, 249, 250, 0.85);
+        box-shadow: inset 3px 0 8px -3px rgba(0,0,0,0.04);
     }
 
     /* 6. กล่องหน่วยเสริมแต่ละอัน (Pills) */
     .alt-cell {
         background: var(--white-color);
-        border: 1px solid rgba(0, 0, 0, 0.06);
-        padding: 0.4rem 0.8rem;
-        border-radius: 6px; 
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 0.5rem 0.9rem;
+        border-radius: 10px; 
         display: flex; align-items: center; gap: 8px;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: all 0.2s ease;
+        cursor: pointer; white-space: nowrap;
+        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
     }
 
     /* 7. Typography */
     .product-name-single { 
-        font-weight: 400; 
-        color: var(--dark-text);
+        font-weight: 600; color: #2d3748;
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        flex-grow: 1; font-size: 0.95em;
+        flex-grow: 1; font-size: 1em; letter-spacing: 0.2px;
     }
     .price-unit-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-    .cell-price { 
-        font-weight: 400; 
-        color: var(--success-color); 
-        font-size: 1em; 
-    }
-    .sub-text { 
-        font-weight: 400; 
-        font-size: 0.85em; 
-        color: var(--secondary-color); 
-    }
+    .cell-price { font-weight: bold; color: var(--success-color); font-size: 1.05em; }
+    .sub-text { font-weight: 500; font-size: 0.85em; color: #718096; }
 
     /* ================================= */
-    /* 🎨 สถานะ Active (Keyboard & Hover) */
+    /* 🎨 Premium Active & Hover States */
     /* ================================= */
-    
     .search-row:hover .main-cell, 
-    .search-row.selected-row .main-cell,
-    .search-row:hover .alt-cell,
-    .search-row.selected-row .alt-cell {
-        background: #f8f9fa; 
-        border-color: rgba(0, 0, 0, 0.1);
+    .search-row.selected-row .main-cell {
+        border-color: rgba(0, 123, 255, 0.15);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
     }
 
     .alt-cell:hover {
         border-color: rgba(0, 123, 255, 0.3); 
-        background: #f0f7ff !important;
-        transform: translateY(-1px);
+        background: #f0f7ff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.1);
     }
 
+    /* 💎 เปลี่ยน Active State เป็นแบบ Gradient Glow */
     .main-cell.active-unit,
     .alt-cell.active-unit {
-        background: var(--primary-color) !important;
-        border-color: var(--primary-color) !important;
-        box-shadow: 0 4px 12px rgba(0, 92, 191, 0.25) !important;
-    }
-
-    .alt-cell.active-unit {
-        transform: scale(1.05); 
+        background: linear-gradient(135deg, var(--primary-color) 0%, #00449e 100%) !important;
+        border-color: transparent !important;
+        box-shadow: 0 6px 15px rgba(0, 92, 191, 0.35) !important;
+        transform: scale(1.03) translateY(-1px); 
     }
 
     .main-cell.active-unit .product-name-single, 
@@ -5000,14 +4950,10 @@ document.addEventListener('DOMContentLoaded', () => {
     .main-cell.active-unit .cell-price,
     .alt-cell.active-unit .sub-text, 
     .alt-cell.active-unit .cell-price {
-        color: var(--white-color) !important;
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
-    
-    /* ให้สีของลูกศร Indicator เป็นสีขาวด้วยเวลา Active */
-    .main-cell.active-unit .expand-indicator {
-        background: rgba(255,255,255,0.2);
-        color: #fff;
-    }
+</style>
 </style>
 </style>
 <script>
