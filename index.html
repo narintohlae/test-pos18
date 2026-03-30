@@ -1218,195 +1218,190 @@ input[type="radio"].radio, .radio{ width:16px; height:16px; border:var(--border)
     .summary-item:nth-child(3)::before { background: linear-gradient(90deg, var(--success-color), #00e676); }
     .summary-item:nth-child(4)::before { background: linear-gradient(90deg, #00aaff, #0055ff); }
 
-<style id="hyper-practical-production-ui">
+<style id="friendly-enterprise-pos-ui">
     /* =========================================
-       🛑 1. RESET: ปิดความสวยงามที่ไม่จำเป็นทั้งหมด
+       🚀 1. โครงสร้างหลัก (Zero Lag, No Distraction)
        ========================================= */
     * {
-        transition: none !important;
+        /* ตัดแอนิเมชันยืดยาดทิ้ง แต่คงความนุ่มนวลเวลา Hover ไว้ 0.1s (ไวมาก) */
+        transition: background-color 0.1s ease, border-color 0.1s ease, color 0.1s ease !important;
         animation: none !important;
     }
 
-    /* โครงสร้างหลัก */
     .search-column { position: relative !important; z-index: 900 !important; }
     .search-column .card, #main-search-area { position: relative !important; z-index: 999999 !important; overflow: visible !important; }
     .cart-column { position: relative !important; z-index: 1 !important; }
 
     /* =========================================
-       ⚡ 2. ผลลัพธ์การค้นหา (Strict Data Grid)
+       ⚡ 2. ผลลัพธ์การค้นหา (Smart Data Grid)
        ========================================= */
     #search-results.has-results {
         position: absolute; top: 0; left: 0; width: 100%; 
         box-sizing: content-box !important; padding-right: 400px !important; margin-right: -400px !important; 
         max-height: calc(100vh - 150px); overflow-y: auto; overflow-x: hidden; 
-        pointer-events: none; z-index: 950 !important; scrollbar-width: auto; /* เปิด Scrollbar ให้เห็นชัดๆ */
+        pointer-events: none; z-index: 950 !important; scrollbar-width: auto;
         
         background: #ffffff; 
-        border: 2px solid #000000; /* กรอบดำหนาบอกขอบเขตชัดเจน */
+        border: 1px solid #94a3b8; /* ขอบสีเทาเข้ม ชัดเจนแต่ไม่ดำปิ๊ดปี๋ */
+        border-radius: 6px;
         display: flex; flex-direction: column;
-        box-shadow: 5px 5px 0px rgba(0,0,0,0.2); /* เงาแบบ Solid เน้นมิติชัดๆ */
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12); /* เงาสวยๆ ให้ลอยขึ้นมา */
     }
 
-    /* แถวสินค้า (ตารางดิบๆ) */
     .search-row {
         position: relative; width: max-content; min-width: 100%;
         display: inline-flex; flex-direction: row; align-items: stretch;
         
         background: #ffffff; 
-        border-bottom: 1px solid #cccccc; /* เส้นคั่นบางๆ */
+        border-bottom: 1px solid #e2e8f0; /* เส้นคั่นบางๆ สบายตา */
         pointer-events: auto; 
     }
-    /* ตารางม้าลายแบบจางๆ */
-    .search-row:nth-child(even) { background: #f4f4f4; }
+    .search-row:nth-child(even) { background: #f8fafc; } /* ตารางม้าลายโทนสว่าง */
     
-    /* 🎯 โฟกัส (High Contrast: น้ำเงิน-ขาว-เหลือง) */
+    /* 🎯 แถวที่ลูกศรคีย์บอร์ดชี้อยู่ (Highlight ชัดเจน) */
     .search-row:hover, .search-row.selected-row { 
-        background: #0052cc !important; /* น้ำเงินเข้ม */
-        color: #ffffff !important;
+        background: #eff6ff !important; /* พื้นฟ้าอ่อน */
         z-index: 10;
-        outline: 2px solid #000000; /* ตีเส้นขอบทับเวลาเลือก */
+        outline: 2px solid #3b82f6; /* ขอบน้ำเงินชัดเจน */
         outline-offset: -2px;
     }
 
-    /* เซลล์หลัก */
     .main-cell {
-        flex-shrink: 0; width: auto; min-width: 320px;
-        padding: 4px 8px; /* บีบ Padding ให้แคบสุดๆ เน้นข้อมูล */
+        flex-shrink: 0; width: auto; min-width: 300px;
+        padding: 6px 12px; 
         cursor: pointer;
         display: flex; align-items: center; justify-content: space-between; gap: 8px;
     }
 
-    /* ป้ายบอกจำนวน (Text ธรรมดา) */
+    /* ป้ายบอกจำนวน (อ่านง่าย ไม่กวนตา) */
     .expand-indicator {
-        font-family: ui-monospace, Consolas, "Courier New", monospace; font-size: 0.85em; font-weight: bold;
-        color: #000000; background: #e0e0e0; 
-        padding: 0 4px; border: 1px solid #999999;
+        font-size: 0.85em; font-weight: 600;
+        color: #475569; background: #e2e8f0; 
+        padding: 2px 8px; border-radius: 4px;
         display: inline-flex; align-items: center; margin-left: auto;
     }
-    /* ซ่อนป้ายทันทีเมื่อเลือก */
-    .search-row:hover .expand-indicator, .search-row.selected-row .expand-indicator {
-        display: none; 
-    }
+    .search-row:hover .expand-indicator, .search-row.selected-row .expand-indicator { display: none; }
 
-    /* Accordion (โผล่พรวดทันที เป็นคอลัมน์ตารางต่อกัน) */
+    /* Accordion (โผล่ทันที ไม่มี Delay) */
     .alt-units-wrapper {
-        display: none; /* ซ่อนสนิท */
+        display: none; 
         align-items: stretch; 
-        background: #e6f0ff; /* สีพื้นหลังเวลาไม่ Active */
-        border-left: 2px solid #000000; /* เส้นแบ่งหลัก/รอง */
+        background: #ffffff; 
+        border-left: 2px dashed #94a3b8; /* ใช้เส้นประแบ่งหน่วยหลัก/รอง ให้ดูเป็นระเบียบ */
     }
     .search-row.selected-row .alt-units-wrapper, .search-row:hover .alt-units-wrapper {
-        display: flex; /* โผล่ 0ms */
+        display: flex; 
     }
 
-    /* เซลล์หน่วยเสริม */
     .alt-cell {
-        padding: 4px 8px; 
+        padding: 6px 12px; 
         display: flex; align-items: center; gap: 8px;
         cursor: pointer; white-space: nowrap;
-        border-right: 1px solid #999999;
+        border-right: 1px solid #e2e8f0;
     }
     .alt-cell:last-child { border-right: none; }
 
     /* =========================================
-       🔤 3. Typography (เน้นตัวเลข)
+       🔤 3. Typography (อ่านง่าย มองปราดเดียวรู้เรื่อง)
        ========================================= */
-    .product-name-single { font-weight: bold; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .product-name-single { font-weight: 600; font-size: 15px; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .price-unit-group { display: flex; align-items: baseline; gap: 4px; flex-shrink: 0; }
     
-    /* ตัวเลขใช้ Monospace ทั้งหมด */
-    .cell-price { 
-        font-family: ui-monospace, Consolas, "Courier New", monospace; 
-        font-weight: bold; font-size: 16px; color: #d32f2f; /* แดงเข้ม */
+    /* ตัวเลขบังคับ Monospace ทุกจุด */
+    .cell-price, .col-qty, .col-price, .col-total, .payment-amount, .summary-item .value { 
+        font-family: ui-monospace, Consolas, "Courier New", monospace !important; 
+        font-weight: 700; 
+        letter-spacing: -0.5px;
     } 
-    .sub-text { font-size: 12px; color: #666666; }
+    .cell-price { color: #dc2626; font-size: 16px; } /* สีแดงอิฐ สำหรับราคา */
+    .sub-text { font-size: 13px; color: #64748b; }
 
-    /* สีเมื่อถูกเลือก (Override) */
-    .search-row.selected-row .main-cell, .search-row.selected-row .alt-cell {
-        background: transparent !important; /* ให้ใช้สีของ .search-row แทน */
-    }
-    .search-row.selected-row .product-name-single { color: #ffffff !important; }
-    .search-row.selected-row .cell-price { color: #ffeb3b !important; /* สีเหลืองสว่างตัดกับพื้นน้ำเงิน */ }
-    .search-row.selected-row .sub-text { color: #cccccc !important; }
-
-    /* Active เฉพาะหน่วยที่ลูกศรชี้อยู่ */
+    /* สีเมื่อถูกเลือก (Active State - น้ำเงิน/เหลือง) */
     .main-cell.active-unit, .alt-cell.active-unit {
-        background: #000000 !important; /* ดำสนิท */
+        background: #1d4ed8 !important; /* น้ำเงินเข้ม */
     }
-    .main-cell.active-unit .product-name-single { color: #ffffff !important; }
-    .main-cell.active-unit .cell-price, .alt-cell.active-unit .cell-price { color: #00ff00 !important; /* เขียวสะท้อนแสง */ }
+    .main-cell.active-unit .product-name-single, 
+    .main-cell.active-unit .sub-text,
+    .alt-cell.active-unit .sub-text { color: #ffffff !important; }
+    
+    /* ราคาจะเด้งเป็นสีเหลืองเมื่อถูก Focus (มองเห็นง่ายมาก) */
+    .main-cell.active-unit .cell-price, .alt-cell.active-unit .cell-price { color: #fde047 !important; }
 
     /* =========================================
-       ⚙️ 4. UI องค์รวม (เหลี่ยม, ดิบ, ชัดเจน)
+       ⚙️ 4. UI องค์รวม (สะอาด เป็นระเบียบ ถนอมสายตา)
        ========================================= */
     .card {
-        border-radius: 0 !important;
-        border: 1px solid #000000 !important;
-        box-shadow: none !important;
+        border-radius: 8px !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
     }
 
-    /* ตะกร้าสินค้า (Data Table 100%) */
-    #cart-items li {
-        border-radius: 0 !important; border: none !important;
-        border-bottom: 1px solid #cccccc !important;
-        padding: 2px 4px !important; /* แคบสุดๆ */
-        font-size: 14px !important;
+    /* ตะกร้าสินค้า (Ledger View) */
+    .cart-header-row {
+        background: #f1f5f9; padding: 8px !important; 
+        border-radius: 6px; border: 1px solid #e2e8f0;
+        color: #475569; font-weight: bold; margin-bottom: 4px;
     }
-    #cart-items li:nth-child(even) { background-color: #f9f9f9 !important; }
-    #cart-items li:hover { background-color: #e6f0ff !important; outline: 1px solid #0052cc; }
+    #cart-items li {
+        border-radius: 4px !important; border: 1px solid transparent !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        margin-bottom: 0 !important;
+        padding: 4px 8px !important;
+    }
+    #cart-items li:nth-child(even) { background-color: #f8fafc !important; }
+    #cart-items li:hover { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; }
     
-    /* Input ในตะกร้าและระบบ */
+    /* 🌟 ช่องกรอกตัวเลข (Yellow Focus) 🌟 */
     input, select {
-        border-radius: 0 !important;
-        border: 1px solid #999999 !important;
-        padding: 4px 6px !important;
+        border-radius: 6px !important;
+        border: 1px solid #94a3b8 !important;
+        padding: 6px 10px !important;
         background: #ffffff !important;
+        color: #0f172a !important;
         font-family: ui-monospace, Consolas, "Courier New", monospace !important; /* บังคับตัวเลขช่องกรอกเป็น Monospace */
     }
     input:focus, select:focus {
-        border: 2px solid #0052cc !important; /* กรอบหนาเวลาพิมพ์ */
+        border: 2px solid #2563eb !important; /* กรอบน้ำเงินหนา 2px */
+        background: #fef9c3 !important; /* 🌟 เปลี่ยนพื้นหลังเป็นสีเหลืองอ่อน รู้ทันทีว่าเคอร์เซอร์อยู่ไหน 🌟 */
         outline: none !important;
-        background: #ffffcc !important; /* พื้นหลังเหลืองอ่อนเวลากำลังพิมพ์ */
     }
-    
-    .item-input { height: 24px !important; font-size: 14px !important; } /* ลดขนาดช่องกรอกในตะกร้า */
+    .item-input { height: 28px !important; font-size: 15px !important; text-align: center; }
 
-    /* ปุ่มกด */
+    /* ปุ่มกด (Solid & Clear) */
     button {
-        border-radius: 0 !important; /* ทิ้งความโค้งมน */
-        font-weight: bold !important; text-transform: uppercase;
-        border: 1px solid #000000 !important;
-        box-shadow: 2px 2px 0px #000000 !important; /* ปุ่มแบบ Brutalism กดแล้วยุบ */
+        border-radius: 6px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        padding: 8px 16px;
     }
-    button:active:not(:disabled) {
-        transform: translate(2px, 2px) !important;
-        box-shadow: 0px 0px 0px #000000 !important;
-    }
+    button:hover:not(:disabled) { filter: brightness(0.95); transform: translateY(-1px) !important; }
+    button:active:not(:disabled) { transform: translateY(1px) !important; box-shadow: none !important; }
     
-    button.finish-sale { background: #107c41 !important; color: white !important; } /* สีเขียว Excel */
-    button.clear-cart { background: #d32f2f !important; color: white !important; }
+    button.finish-sale { background: #059669 !important; color: white !important; font-size: 1.1em !important; }
+    button.clear-cart { background: #dc2626 !important; color: white !important; }
 
     /* แท็บบิล */
-    #cart-tabs { gap: 0; padding-bottom: 0; border-bottom: 2px solid #000000; }
+    #cart-tabs { gap: 4px; padding-bottom: 0; border-bottom: 2px solid #cbd5e1; }
     .tab-button {
-        background: #e0e0e0 !important; border: 1px solid #000000 !important;
-        border-bottom: none !important; border-radius: 0 !important;
-        color: #000000; font-weight: bold; padding: 4px 12px;
-        box-shadow: none !important;
+        background: #e2e8f0 !important; border: 1px solid #cbd5e1 !important;
+        border-bottom: none !important; border-radius: 6px 6px 0 0 !important;
+        color: #475569; font-weight: 600; padding: 6px 16px;
     }
     .tab-button.active {
-        background: #ffffff !important; color: #0052cc !important;
-        border-top: 4px solid #0052cc !important;
-        margin-bottom: -2px; padding-bottom: 6px;
+        background: #ffffff !important; color: #1d4ed8 !important;
+        border-top: 3px solid #2563eb !important;
+        margin-bottom: -2px; padding-bottom: 8px; /* ทับเส้นขอบล่างพอดี */
     }
 
     /* Modals */
-    .modal-overlay { background-color: rgba(0, 0, 0, 0.7) !important; backdrop-filter: none !important; }
+    .modal-overlay { background-color: rgba(15, 23, 42, 0.5) !important; }
     .modal-content {
-        border-radius: 0 !important; border: 2px solid #000000 !important;
-        box-shadow: 8px 8px 0px rgba(0,0,0,0.5) !important;
+        border-radius: 8px !important; border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
     }
-    .modal-header, .modal-footer { background: #f4f4f4 !important; border-color: #000000 !important; }
+    .modal-header { background: #f8fafc !important; border-bottom: 1px solid #e2e8f0 !important; }
+    .modal-footer { background: #f8fafc !important; border-top: 1px solid #e2e8f0 !important; }
 </style>
 <style>
 /* === Cart-aligned utility bar: app-sidebar + auth-status (Oct 18, 2025) === */
