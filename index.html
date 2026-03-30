@@ -1217,6 +1217,187 @@ input[type="radio"].radio, .radio{ width:16px; height:16px; border:var(--border)
     .summary-item:nth-child(2)::before { background: linear-gradient(90deg, var(--warning-color), #ff9800); }
     .summary-item:nth-child(3)::before { background: linear-gradient(90deg, var(--success-color), #00e676); }
     .summary-item:nth-child(4)::before { background: linear-gradient(90deg, #00aaff, #0055ff); }
+<style id="premium-ui-pack-full-system">
+    /* =========================================
+       ✨ 1. หน้าต่าง Modals (Glassmorphism & Spring)
+       ========================================= */
+    .modal-overlay {
+        /* ฉากหลังเบลอสวยงาม */
+        background-color: rgba(15, 23, 42, 0.45) !important;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+    .modal-content {
+        border-radius: 24px !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
+        border: 1px solid rgba(255, 255, 255, 0.5) !important;
+        /* อนิเมชันเด้งดึ๋งตอนเปิด */
+        animation: modalSpringOpen 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes modalSpringOpen {
+        0% { transform: scale(0.85) translateY(30px); opacity: 0; }
+        100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .modal-header {
+        background: rgba(255, 255, 255, 0.8);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+    }
+    .modal-footer {
+        background: rgba(248, 250, 252, 0.8) !important;
+        border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
+        border-bottom-left-radius: 24px;
+        border-bottom-right-radius: 24px;
+    }
+
+    /* =========================================
+       ✨ 2. ปุ่มกด (Interactive Premium Buttons)
+       ========================================= */
+    button {
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.3px;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
+    }
+    button:hover:not(:disabled) {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+    }
+    button:active:not(:disabled) {
+        transform: translateY(1px) scale(0.96) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.06) !important;
+    }
+    
+    /* ปุ่มชำระเงิน / ยืนยัน (ไล่สี Gradient สวยๆ) */
+    button.finish-sale {
+        background: linear-gradient(135deg, var(--success-color) 0%, #20c997 100%) !important;
+        border: none !important;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25) !important;
+    }
+    button.finish-sale:hover:not(:disabled) {
+        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4) !important;
+    }
+    /* ปุ่มล้างตะกร้า / ลบ (สีแดงไล่ระดับ) */
+    button.clear-cart {
+        background: linear-gradient(135deg, var(--danger-color) 0%, #ff6b6b 100%) !important;
+        border: none !important;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25) !important;
+    }
+
+    /* =========================================
+       ✨ 3. ช่องกรอกข้อมูล (Inputs & Selects)
+       ========================================= */
+    input, select {
+        border-radius: 12px !important;
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        transition: all 0.3s ease !important;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.01) !important;
+    }
+    input:hover, select:hover {
+        background: #ffffff !important;
+        border-color: #94a3b8 !important;
+    }
+    input:focus, select:focus {
+        background: #ffffff !important;
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15) !important;
+        transform: translateY(-1px);
+    }
+    
+    /* กรอบค้นหาหลัก */
+    .search-column .card .input-with-icon input {
+        font-size: 1.1em;
+        padding-top: 12px; padding-bottom: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
+    }
+
+    /* =========================================
+       ✨ 4. ตารางข้อมูล (History & Stock In)
+       ========================================= */
+    #history-table, .table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    #history-table th, .table th {
+        background: rgba(248, 250, 252, 0.9) !important;
+        backdrop-filter: blur(8px);
+        border-bottom: 2px solid #e2e8f0 !important;
+        text-transform: uppercase;
+        font-size: 0.85em !important;
+        letter-spacing: 0.5px;
+        color: #64748b;
+    }
+    #history-table tr, .table tbody tr, .product-list-row:not(.product-list-header) {
+        transition: all 0.25s ease !important;
+        background: #ffffff;
+    }
+    /* แถวตารางกระโดดขึ้นนิดๆ เวลา Hover */
+    #history-table tr:hover, .table tbody tr:hover, .product-list-row:not(.product-list-header):hover {
+        background: #f0f7ff !important;
+        transform: scale(1.005);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.08) !important;
+        z-index: 2; position: relative;
+        border-radius: 8px;
+    }
+
+    /* =========================================
+       ✨ 5. เมนูด้านข้าง (Sidebar Menu)
+       ========================================= */
+    .sidebar-btn {
+        border-radius: 12px !important;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+    .sidebar-btn:hover {
+        background: #f1f5f9 !important;
+        color: var(--primary-color) !important;
+        transform: translateX(4px); /* สไลด์ไปขวาเบาๆ */
+    }
+    .sidebar-btn.active {
+        background: linear-gradient(135deg, #eff6ff 0%, #e0eaf5 100%) !important;
+        color: var(--primary-color) !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
+        border-left: 4px solid var(--primary-color) !important;
+        border-top-left-radius: 4px !important;
+        border-bottom-left-radius: 4px !important;
+    }
+
+    /* =========================================
+       ✨ 6. แถบเลื่อน (Custom Scrollbar สไตล์ macOS)
+       ========================================= */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #94a3b8;
+    }
+
+    /* =========================================
+       ✨ 7. กล่องเวลาค้นหา (Quick Range Pills)
+       ========================================= */
+    #quick-range .btn-range {
+        border-radius: 20px !important;
+        padding: 0.5rem 1rem !important;
+        font-weight: 500;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+    #quick-range .btn-range.active {
+        background: var(--primary-color) !important;
+        color: white !important;
+        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3) !important;
+        transform: scale(1.05);
+    }
 </style>
 </style>
 
