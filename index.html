@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -4777,102 +4778,82 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
 </div>
-/* ===================================================
-       🌟 2026 Enterprise UI: Floating Action Menu
-    =================================================== */
+ <style id="row-popout-search-css">
+    /* 🚀 1. ทลายกำแพง Z-Index */
+    .search-column { position: relative !important; z-index: 900 !important; }
+    .search-column .card, #main-search-area { position: relative !important; z-index: 999999 !important; overflow: visible !important; }
+    .cart-column { position: relative !important; z-index: 1 !important; }
 
-    /* 1. กล่องหลักแบบคลีนๆ */
-    .main-cell {
-        position: relative;
-        z-index: 10;
-        background: #ffffff;
-        border: 1px solid #e2e8f0; /* เส้นขอบบางๆ สไตล์โมเดิร์น */
-        border-radius: 10px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-        padding-right: 16px; /* เผื่อที่ให้ Indicator */
-        transition: all 0.2s ease;
-    }
-
-    /* 2. Indicator (เส้นจับด้านขวา) บอกใบ้แบบเรียบหรู */
-    .main-cell.has-alt-units::after {
-        content: '';
+    /* 🎨 2. กล่องผลลัพธ์หลัก (แก้ไขระบบ Scroll ล้นจอ) */
+    #search-results.has-results {
         position: absolute;
-        right: 6px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 3px;
-        height: 16px;
-        background-color: #cbd5e1; /* สีเทาอ่อนๆ */
-        border-radius: 4px;
-        transition: all 0.2s ease;
-    }
-
-    /* 3. ถาดเมนูย่อย (ลอยตัวออกมาอย่างอิสระ) */
-    .alt-units-wrapper {
-        position: absolute;
-        top: 50%;
-        left: 100%; /* เริ่มต้นที่ขอบขวาพอดี */
+        top: 0; left: 0;
+        width: 100%; 
         
-        /* ซ่อนโดยการย่อขนาดนิดนึง และขยับถอยหลังไปซ่อนใต้กล่องหลัก */
-        transform: translateY(-50%) translateX(-15px) scale(0.95);
-        transform-origin: left center;
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 6px;
+        /* 🌟 MAGIC TRICK: ขยายพื้นที่รองรับ Pop-out ให้กว้างออกไปทางขวา 🌟 */
+        box-sizing: content-box !important;
+        padding-right: 400px !important; 
+        margin-right: -400px !important; 
         
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        /* เงาฟุ้งแบบสมจริง (Smooth Blur Shadow) */
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+        /* กำหนดความสูงให้ไม่ล้นจอ และเปิดใช้งานการเลื่อน (Scroll) */
+        max-height: calc(100vh - 180px);
+        overflow-y: auto;
+        overflow-x: hidden; 
         
-        z-index: 20;
-        /* Animation น้ำหนักสปริงแบบ Apple/Vercel */
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    /* 🌟 เมื่อ Active: สไลด์เมนูออกมา และละลาย Indicator ทิ้งไป 🌟 */
-    .search-row.selected-row .alt-units-wrapper,
-    .search-row:hover .alt-units-wrapper {
-        opacity: 1;
-        visibility: visible;
-        pointer-events: auto;
-        /* สไลด์ออกมาเว้นระยะห่าง 8px */
-        transform: translateY(-50%) translateX(8px) scale(1); 
-    }
-
-    .search-row.selected-row .main-cell.has-alt-units::after,
-    .search-row:hover .main-cell.has-alt-units::after {
-        opacity: 0;
-        transform: translateY(-50%) scaleY(0.4); /* ยุบตัวลงและจางหายไป */
-    }
-
-    .search-row.selected-row .main-cell,
-    .search-row:hover .main-cell {
-        border-color: #cbd5e1;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-    }
-
-    /* 4. สไตล์ของหน่วยย่อยด้านใน */
-    .alt-cell {
+        /* ป้องกันการคลิกโดนพื้นที่ล่องหน ให้ทะลุไปคลิกตะกร้าได้ */
+        pointer-events: none; 
+        z-index: 950 !important;
+        
+        /* ซ่อน Scrollbar ด้านขวาสุด เพื่อความสวยงาม */
+        scrollbar-width: none; 
+        
+        /* ย้าย Background ไปไว้ที่แถว (Row) เพื่อไม่ให้บังตะกร้า */
         background: transparent;
-        border: 1px solid transparent;
-        border-radius: 8px;
-        padding: 6px 10px;
-        transition: all 0.15s ease;
+        border: none;
+        
+        display: flex; flex-direction: column;
+        
+        /* ใช้ drop-shadow สร้างเงารวมให้ทั้งหมด (แทน box-shadow เดิม) */
+        filter: drop-shadow(0 12px 24px rgba(0,0,0,0.08)); 
     }
     
-    .alt-cell:hover, 
-    .alt-cell.active-unit {
-        background: #f1f5f9; /* พื้นหลังเทาฟ้าอ่อนๆ */
-        border-color: #e2e8f0;
-        color: var(--primary-color) !important;
-        transform: translateY(0); /* ยกเลิกการเด้งของเก่า ให้ดูนิ่งและแพงขึ้น */
+    /* ซ่อน Scrollbar ของ Chrome/Safari/Edge */
+    #search-results.has-results::-webkit-scrollbar {
+        display: none; 
+    }
+
+    /* 3. แถวสินค้า (Row) - รับหน้าที่เป็นฉากหลังแทนกล่องใหญ่ */
+    .search-row {
+        position: relative; 
+        width: 100%; /* กว้างเท่ากับขนาดกล่องจริง ไม่รวม Padding 400px */
+        display: flex; flex-direction: row;
+        
+        /* ย้ายพื้นหลังและเส้นขอบมาไว้ที่บรรทัดแทน */
+        background: rgba(255, 255, 255, 0.95); 
+        backdrop-filter: blur(12px); 
+        -webkit-backdrop-filter: blur(12px);
+        
+        border-left: 1px solid rgba(0, 0, 0, 0.08);
+        border-right: 1px solid rgba(0, 0, 0, 0.08);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03); 
+        
+        transition: background 0.2s ease;
+        /* เปิดการรับคลิกเมาส์อีกครั้ง */
+        pointer-events: auto; 
+    }
+    
+    /* ประกอบร่างแถวแรกและแถวสุดท้ายให้เป็นกล่องมนๆ เหมือนเดิม */
+    .search-row:first-child {
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        padding-top: 4px;
+    }
+    .search-row:last-child {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08); 
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        padding-bottom: 4px;
     }
 
     /* 4. กล่องหลัก (หน่วยแรก) */
@@ -5004,55 +4985,6 @@ document.addEventListener('DOMContentLoaded', () => {
     .alt-cell.active-unit .cell-price {
         color: var(--white-color) !important;
     }
-/* ===================================================
-       🌟 เอฟเฟกต์ขอบกระดาษเหลื่อมทางด้านขวา
-    =================================================== */
-    
-    .main-cell.has-alt-units {
-        position: relative;
-        z-index: 2;
-    }
-
-    /* สร้างขอบแผ่นที่ 2 โผล่ออกมาทางขวา 4px */
-    .main-cell.has-alt-units::after {
-        content: '';
-        position: absolute;
-        top: 4px;
-        bottom: 4px;
-        right: -4px; 
-        width: 10px; /* ความกว้างซ่อนอยู่ใต้กล่องหลัก โผล่มาแค่ส่วน right */
-        background: #fdfdfd;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        border-radius: 6px;
-        z-index: -1; /* ให้อยู่ด้านหลังแผ่นหลัก */
-        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    /* สร้างขอบแผ่นที่ 3 โผล่ออกมาทางขวา 7px ให้ดูมีมิติหลายหน่วย */
-    .main-cell.has-alt-units::before {
-        content: '';
-        position: absolute;
-        top: 8px;
-        bottom: 8px;
-        right: -7px;
-        width: 10px;
-        background: #f5f6f8;
-        border: 1px solid rgba(0, 0, 0, 0.06);
-        border-radius: 6px;
-        z-index: -2;
-        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    /* เมื่อ Hover ที่แถวสินค้า หรือใช้คีย์บอร์ดเลื่อนมาโดน
-       ให้ขอบที่เหลื่อมอยู่หดกลับเข้าไปซ่อนหลังกล่องหลัก (เพราะกล่อง alt-units-wrapper จะเด้งออกมาแทน) */
-    .search-row.selected-row .main-cell.has-alt-units::after,
-    .search-row.selected-row .main-cell.has-alt-units::before,
-    .search-row:hover .main-cell.has-alt-units::after,
-    .search-row:hover .main-cell.has-alt-units::before {
-        right: 0;
-        opacity: 0;
-        visibility: hidden;
-    }
 </style>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -5099,16 +5031,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 rowDiv.className = 'search-row';
                 if (pIndex === this.state.selectedSearchIndex) rowDiv.classList.add('selected-row');
 
-// 🌟 กล่องหลัก (Minimalist 2026)
+// 🌟 กล่องหลัก
                 const mainUnit = group.units[0];
                 const isMainActive = (pIndex === this.state.selectedSearchIndex && this.state.selectedUnitIndex === 0) ? 'active-unit' : '';
-                const altClass = group.units.length > 1 ? 'has-alt-units' : '';
                 
                 let html = `
-                    <div class="search-unit-cell main-cell ${isMainActive} ${altClass}" data-pindex="${pIndex}" data-uindex="0">
+                    <div class="search-unit-cell main-cell ${isMainActive}" data-pindex="${pIndex}" data-uindex="0">
                         <span class="product-name-single" title="${this.escapeHtml(group.productName)}">${this.escapeHtml(group.productName)}</span>
-                        <div class="price-unit-group" style="gap: 6px;">
-                            <span class="cell-price" style="font-weight: 600;">${this.formatPrice(mainUnit.price)}</span>
+                        <div class="price-unit-group" style="gap: 2px;">
+                            <span class="cell-price">${this.formatPrice(mainUnit.price)}</span>
                             <span class="sub-text">/${this.escapeHtml(mainUnit.pricingUnit.unitName)}</span>
                         </div>
                     </div>
