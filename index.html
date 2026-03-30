@@ -4778,7 +4778,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
 </div>
- <style id="row-popout-search-css">
+<style id="row-popout-search-css">
     /* 🚀 1. ทลายกำแพง Z-Index */
     .search-column { position: relative !important; z-index: 900 !important; }
     .search-column .card, #main-search-area { position: relative !important; z-index: 999999 !important; overflow: visible !important; }
@@ -4790,7 +4790,7 @@ document.addEventListener('DOMContentLoaded', () => {
         top: 0; left: 0;
         width: 100%; 
         
-        /* 🌟 MAGIC TRICK: ขยายพื้นที่รองรับ Pop-out ให้กว้างออกไปทางขวา 🌟 */
+        /* 🌟 MAGIC TRICK: ขยายพื้นที่รองรับ Accordion ให้กว้างออกไปทางขวา 🌟 */
         box-sizing: content-box !important;
         padding-right: 400px !important; 
         margin-right: -400px !important; 
@@ -4813,7 +4813,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         display: flex; flex-direction: column;
         
-        /* ใช้ drop-shadow สร้างเงารวมให้ทั้งหมด (แทน box-shadow เดิม) */
+        /* ใช้ drop-shadow สร้างเงารวมให้ทั้งหมด */
         filter: drop-shadow(0 12px 24px rgba(0,0,0,0.08)); 
     }
     
@@ -4822,11 +4822,14 @@ document.addEventListener('DOMContentLoaded', () => {
         display: none; 
     }
 
-    /* 3. แถวสินค้า (Row) - รับหน้าที่เป็นฉากหลังแทนกล่องใหญ่ */
+    /* 3. แถวสินค้า (Row) - ปรับเป็น inline-flex เพื่อให้กางออกแนวนอนได้ */
     .search-row {
         position: relative; 
-        width: 100%; /* กว้างเท่ากับขนาดกล่องจริง ไม่รวม Padding 400px */
-        display: flex; flex-direction: row;
+        width: max-content; /* ให้ขยายความกว้างตามเนื้อหาที่กางออก */
+        min-width: 100%;
+        display: inline-flex; 
+        flex-direction: row;
+        align-items: center;
         
         /* ย้ายพื้นหลังและเส้นขอบมาไว้ที่บรรทัดแทน */
         background: rgba(255, 255, 255, 0.95); 
@@ -4856,9 +4859,11 @@ document.addEventListener('DOMContentLoaded', () => {
         padding-bottom: 4px;
     }
 
-    /* 4. กล่องหลัก (หน่วยแรก) */
+    /* 4. กล่องหลัก (ห้ามหดตัวตอนกาง) */
     .main-cell {
-        width: 100%;
+        flex-shrink: 0; /* ห้ามหดตัว */
+        width: auto;
+        min-width: 250px; /* กำหนดขั้นต่ำไม่ให้เล็กเกินไป */
         padding: 0.7rem 1rem; 
         cursor: pointer;
         display: flex; align-items: center; justify-content: space-between;
@@ -4872,50 +4877,62 @@ document.addEventListener('DOMContentLoaded', () => {
         border: 1px solid rgba(0, 0, 0, 0.06);
     }
 
-    /* 🌟 5. กล่องห่อหุ้มหน่วยเสริม (ถาดรอง) 🌟 */
+    /* 🌟 ป้ายบอกจำนวนหน่วยเสริมตอนหุบอยู่ 🌟 */
+    .expand-indicator {
+        font-size: 0.75em;
+        color: var(--secondary-color);
+        background: #e9ecef;
+        padding: 2px 6px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        margin-left: 8px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    
+    /* ให้ป้ายหุบหายไป เมื่อ Accordion กางออก */
+    .search-row:hover .expand-indicator,
+    .search-row.selected-row .expand-indicator {
+        max-width: 0;
+        opacity: 0;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* 🌟 5. Horizontal Accordion Wrapper (หุบไว้ก่อน) 🌟 */
     .alt-units-wrapper {
-        position: absolute;
-        left: calc(100% + 8px); 
-        top: 50%;
-        transform: translateY(-50%); 
-        display: none; 
+        display: flex; 
         align-items: center;
         gap: 4px; 
-        padding: 6px; 
-        z-index: 1000; 
         
-        background: rgba(255, 255, 255, 0.98);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        border-radius: 10px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); 
+        /* สไตล์ตอนหุบ (ซ่อนตัว) */
+        max-width: 0; 
+        opacity: 0;
+        overflow: hidden; 
+        padding: 0;
+        margin-left: 0;
+        white-space: nowrap;
+        
+        /* อนิเมชั่นสไลด์แนวนอน */
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        
+        background: rgba(250, 250, 250, 0.98);
+        border: 1px solid transparent;
+        border-radius: 8px;
     }
 
-    /* 🌟 ลูกเล่นติ่งลูกศรชี้กลับไปที่กล่องหลัก 🌟 */
-    .alt-units-wrapper::before {
-        content: '';
-        position: absolute;
-        left: -5px; 
-        top: 50%;
-        transform: translateY(-50%) rotate(45deg);
-        width: 10px;
-        height: 10px;
-        background: #ffffff;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-        border-left: 1px solid rgba(0, 0, 0, 0.08);
-        z-index: -1;
-    }
-
+    /* เมื่อ Hover หรือใช้ Keyboard เลื่อนมาโดน ให้สไลด์กางออก */
     .search-row.selected-row .alt-units-wrapper,
     .search-row:hover .alt-units-wrapper {
-        display: flex;
-        animation: popRight 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; 
-    }
-
-    @keyframes popRight {
-        0% { opacity: 0; transform: translate(-10px, -50%) scale(0.95); }
-        100% { opacity: 1; transform: translate(0, -50%) scale(1); }
+        max-width: 800px; /* ขนาดสูงสุดที่ยอมให้กางออก */
+        opacity: 1;
+        padding: 4px 6px;
+        margin-left: 4px;
+        border-color: rgba(0, 0, 0, 0.08);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
 
     /* 6. กล่องหน่วยเสริมแต่ละอัน (Pills) */
@@ -4985,6 +5002,13 @@ document.addEventListener('DOMContentLoaded', () => {
     .alt-cell.active-unit .cell-price {
         color: var(--white-color) !important;
     }
+    
+    /* ให้สีของลูกศร Indicator เป็นสีขาวด้วยเวลา Active */
+    .main-cell.active-unit .expand-indicator {
+        background: rgba(255,255,255,0.2);
+        color: #fff;
+    }
+</style>
 </style>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
