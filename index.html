@@ -4984,47 +4984,54 @@ document.addEventListener('DOMContentLoaded', () => {
     .alt-cell.active-unit .cell-price {
         color: var(--white-color) !important;
     }
-     /* ===================================================
-       🌟 UI สินค้ามีหลายหน่วย (Stacked Cards Effect)
+/* ===================================================
+       🌟 เอฟเฟกต์ขอบกระดาษเหลื่อมทางด้านขวา
     =================================================== */
     
-    /* เอฟเฟกต์กระดาษซ้อนกัน (เหลื่อมๆ ออกมา) */
     .main-cell.has-alt-units {
         position: relative;
-        /* ใช้ box-shadow สร้างเลเยอร์แผ่นกระดาษซ้อนด้านล่างขวา 2 ชั้น */
-        box-shadow:
-            3px 3px 0px -1px #ffffff,
-            3px 3px 0px 0px rgba(0,0,0,0.15),
-            6px 6px 0px -2px #ffffff,
-            6px 6px 0px -1px rgba(0,0,0,0.1);
-        margin-bottom: 6px; /* เผื่อพื้นที่ให้รอยเหลื่อมด้านล่าง */
+        z-index: 2;
+    }
+
+    /* สร้างขอบแผ่นที่ 2 โผล่ออกมาทางขวา 4px */
+    .main-cell.has-alt-units::after {
+        content: '';
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        right: -4px; 
+        width: 10px; /* ความกว้างซ่อนอยู่ใต้กล่องหลัก โผล่มาแค่ส่วน right */
+        background: #fdfdfd;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 6px;
+        z-index: -1; /* ให้อยู่ด้านหลังแผ่นหลัก */
         transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* เมื่อ Hover หรือใช้คีย์บอร์ดเลือกแผ่นนี้ ให้แผ่นที่ซ้อนยุบหายไป (เพราะหน่วยย่อยจะเด้งออกมาด้านขวาแทน) */
-    .search-row.selected-row .main-cell.has-alt-units,
-    .search-row:hover .main-cell.has-alt-units {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* เปลี่ยนเป็นเงาฟุ้งๆ ธรรมดา */
-        transform: translate(2px, 2px); /* ขยับกล่องหลักลงมานิดนึงให้ดูมีมิติเหมือนกดลงไป */
+    /* สร้างขอบแผ่นที่ 3 โผล่ออกมาทางขวา 7px ให้ดูมีมิติหลายหน่วย */
+    .main-cell.has-alt-units::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        bottom: 8px;
+        right: -7px;
+        width: 10px;
+        background: #f5f6f8;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 6px;
+        z-index: -2;
+        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* ป้าย +X บอกจำนวนหน่วยที่ซ่อนอยู่ */
-    .alt-badge {
-        font-size: 0.75em;
-        font-weight: bold;
-        background: #e7f1ff;
-        color: var(--primary-color);
-        padding: 2px 6px;
-        border-radius: 8px;
-        margin-left: 2px;
-        transition: opacity 0.2s, transform 0.2s;
-    }
-
-    /* ซ่อนป้าย +X เมื่อแผ่หน่วยอื่นออกมาแล้ว */
-    .search-row.selected-row .alt-badge,
-    .search-row:hover .alt-badge {
+    /* เมื่อ Hover ที่แถวสินค้า หรือใช้คีย์บอร์ดเลื่อนมาโดน
+       ให้ขอบที่เหลื่อมอยู่หดกลับเข้าไปซ่อนหลังกล่องหลัก (เพราะกล่อง alt-units-wrapper จะเด้งออกมาแทน) */
+    .search-row.selected-row .main-cell.has-alt-units::after,
+    .search-row.selected-row .main-cell.has-alt-units::before,
+    .search-row:hover .main-cell.has-alt-units::after,
+    .search-row:hover .main-cell.has-alt-units::before {
+        right: 0;
         opacity: 0;
-        transform: scale(0.8);
+        visibility: hidden;
     }
 </style>
 <script>
@@ -5076,18 +5083,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 const mainUnit = group.units[0];
                 const isMainActive = (pIndex === this.state.selectedSearchIndex && this.state.selectedUnitIndex === 0) ? 'active-unit' : '';
                 
-                // [NEW] เช็คว่ามีหน่วยอื่นไหม เพื่อใส่ Class ทำเอฟเฟกต์เหลื่อม และสร้างป้ายบอกจำนวน
-                const hasAlt = group.units.length > 1;
-                const altClass = hasAlt ? 'has-alt-units' : '';
-                const badgeHtml = hasAlt ? `<span class="alt-badge">+${group.units.length - 1}</span>` : '';
+                // เช็คว่ามีหน่วยย่อยหรือไม่ เพื่อใส่ Class
+                const altClass = group.units.length > 1 ? 'has-alt-units' : '';
                 
                 let html = `
                     <div class="search-unit-cell main-cell ${isMainActive} ${altClass}" data-pindex="${pIndex}" data-uindex="0">
                         <span class="product-name-single" title="${this.escapeHtml(group.productName)}">${this.escapeHtml(group.productName)}</span>
-                        <div class="price-unit-group" style="gap: 4px;">
+                        <div class="price-unit-group" style="gap: 2px;">
                             <span class="cell-price">${this.formatPrice(mainUnit.price)}</span>
                             <span class="sub-text">/${this.escapeHtml(mainUnit.pricingUnit.unitName)}</span>
-                            ${badgeHtml}
                         </div>
                     </div>
                 `;
