@@ -25,7 +25,46 @@
         /* [ADJUSTED] ระยะห่างหลักแบบกระชับ */
         --gap: 1.2rem;
     }
+/* ---------------------------------------------------
+   ปรับแต่งช่องจำนวน + หน่วย (Cart Quantity with Unit)
+--------------------------------------------------- */
+.qty-with-unit {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.qty-with-unit .item-input {
+    width: 55px !important;
+    margin: 0 !important;
+    text-align: center;
+}
+.qty-with-unit .unit-text {
+    font-size: 0.85em;
+    color: var(--secondary-color);
+    white-space: nowrap;
+    text-align: left;
+}
 
+/* ขยายความกว้างของคอลัมน์ "จำนวน" ให้มีพื้นที่แสดงชื่อหน่วย (ขยายเป็น 110px) */
+.cart-header-row {
+    grid-template-columns: 25px 2fr 110px 90px 90px 35px !important;
+}
+#cart-items li {
+    grid-template-columns: 25px 2fr 110px 90px 90px 35px !important;
+}
+
+/* ปรับ Responsive สำหรับหน้าจอขนาดเล็ก */
+@media (max-width: 768px) {
+    .cart-header-row, #cart-items li {
+        grid-template-columns: 30px 1.5fr 100px 80px 80px 40px !important;
+    }
+}
+@media (max-width: 576px) {
+    .cart-header-row, #cart-items li {
+        grid-template-columns: 25px 2fr 100px 1fr !important;
+    }
+}
     body {
         font-family: 'Sarabun', sans-serif;
         background-color: var(--light-bg);
@@ -2241,7 +2280,6 @@ async importFromGoogleSheet(isAutomatic = false) {
                 pricingUnits: pricingUnits, 
                 updatedAt: now
             };
-
             const existing = existingMap.get(finalCode);
             
             if (existing) {
@@ -2949,8 +2987,11 @@ updateCartDisplay() {
             // แปลง Input ตรงคอลัมน์ราคา ให้เป็น Div ธรรมดา
             li.innerHTML = `
                 <div class="col-seq">${idx + 1}</div>
-                <div class="col-name"><strong>${this.escapeHtml(item.productUnit.display)}</strong> <span class="sub-text" style="color: var(--secondary-color);">(เหลือ: ${stock}${costDisplay})</span></div>
-                <div class="col-qty"><input type="number" class="item-input" value="${item.quantity}" onchange="POS_APP.editItemQuantity(${idx}, this.value)" onclick="this.select()"></div>
+<div class="col-name"><strong>${this.escapeHtml(item.productUnit.productName)}</strong> <span class="sub-text" style="color: var(--secondary-color);">(เหลือ: ${stock}${costDisplay})</span></div>
+<div class="col-qty qty-with-unit">
+    <input type="number" class="item-input" value="${item.quantity}" onchange="POS_APP.editItemQuantity(${idx}, this.value)" onclick="this.select()">
+    <span class="unit-text">${this.escapeHtml(item.productUnit.pricingUnit.unitName)}</span>
+</div>
 <div class="col-price">
                     <input type="number" step="any" class="item-input" value="${parseFloat(pUnit.toFixed(2))}" onchange="POS_APP.editItemPrice(${idx}, this.value)" onclick="this.select()" style="width: 100%; color:var(--secondary-color);">
                 </div>
