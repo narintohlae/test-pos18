@@ -1322,204 +1322,201 @@ h2 .auth-status-badge.offline .dot { background: #999; }
     cursor: pointer;
 }
 </style>
-<style id="supermarket-pos-theme">
+<style id="cyberpunk-pos-theme">
     /* ====================================================
-       SUPERMARKET POS THEME (REVISED PROPORTIONS)
+       GALACTIC HUD / CYBERPUNK POS THEME (NEVER EXISTED BEFORE)
        ==================================================== */
     
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
     :root {
-        --primary-color: #0f172a; 
-        --success-color: #10b981; 
-        --danger-color: #ef4444;  
-        --warning-color: #f59e0b;
-        --light-bg: #f1f5f9;      
+        /* เปลี่ยนสีระบบทั้งหมดเป็น Neon */
+        --neon-cyan: #00f3ff;
+        --neon-pink: #ff00ff;
+        --neon-green: #39ff14;
+        --dark-void: #05050a;
+        --glass-bg: rgba(0, 15, 30, 0.4);
+        
+        --primary-color: var(--neon-cyan);
+        --success-color: var(--neon-green);
+        --danger-color: var(--neon-pink);
+        --warning-color: #ffeb3b;
+        --light-bg: transparent;
     }
 
+    /* 1. เปลี่ยนพื้นหลังให้เหมือนหน้าจอโฮโลแกรม */
     body {
-        font-size: 1.05em; /* ลดลงมานิดนึงจาก 1.1em เพื่อไม่ให้ล้นจอ 1080p */
-        background-color: #e2e8f0; 
+        font-family: 'Share Tech Mono', 'Sarabun', monospace !important;
+        background-color: var(--dark-void);
+        background-image: 
+            linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+        background-size: 30px 30px; /* ลายตาราง Radar */
+        color: var(--neon-cyan);
+        text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
     }
 
-    /* 1. สัดส่วน Layout ซ้าย-ขวา */
-    .app-layout {
-        grid-template-columns: 32% 68% !important; /* ปรับให้ฝั่งรายการค้นหาแคบลงนิด ฝั่งบิลกว้างขึ้น */
+    /* เพิ่มเอฟเฟกต์ Scanline กวาดหน้าจอ */
+    body::after {
+        content: " ";
+        display: block;
+        position: absolute;
+        top: 0; left: 0; bottom: 0; right: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        z-index: 2;
+        background-size: 100% 2px, 3px 100%;
+        pointer-events: none;
     }
-    
+
+    /* 2. กล่องทุกใบโปร่งแสง (Glassmorphism) */
     .card {
-        border-radius: 16px; 
-        border: none;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        padding: 1.2rem !important; /* ลด padding นอกสุดลง เพื่อเพิ่มพื้นที่ด้านใน */
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 243, 255, 0.3) !important;
+        border-radius: 0 !important; /* ยกเลิกขอบมน เป็นขอบเหลี่ยมแบบ Tech */
+        box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.1), 0 0 15px rgba(0, 243, 255, 0.05);
+        clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%); /* ตัดมุมล่างขวา */
     }
 
-    /* 2. ช่องค้นหา */
+    h2, h3, h4 {
+        color: var(--neon-cyan) !important;
+        border-bottom: 1px solid var(--neon-cyan) !important;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    /* 3. ช่องสแกนบาร์โค้ดแบบ Terminal */
     #barcode-input {
-        font-size: 1.4rem;
-        padding: 0.8rem 1rem;
-        height: 55px;
-        border: 2px solid #cbd5e1;
-        border-radius: 12px;
-        font-weight: bold;
-        background-color: #f8fafc;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 1.5rem;
+        background: rgba(0, 0, 0, 0.5) !important;
+        color: var(--neon-pink) !important;
+        border: 1px solid var(--neon-pink) !important;
+        border-radius: 0 !important;
+        text-shadow: 0 0 8px var(--neon-pink);
+        box-shadow: inset 0 0 10px rgba(255, 0, 255, 0.2);
     }
     #barcode-input:focus {
-        border-color: #3b82f6;
-        background-color: #ffffff;
-        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        outline: none;
+        border-color: var(--neon-cyan) !important;
+        box-shadow: 0 0 15px var(--neon-cyan), inset 0 0 10px var(--neon-cyan);
+        color: var(--neon-cyan) !important;
+        text-shadow: 0 0 8px var(--neon-cyan);
     }
+    #barcode-input::placeholder { color: rgba(0, 243, 255, 0.3); }
 
-    /* 3. จัดการ Grid ตะกร้าสินค้าใหม่ให้สมส่วน (สำคัญมาก) */
-    /* ขยายความกว้างคอลัมน์ จำนวน, ราคา และ ยอดรวม ให้พอดีกับตัวเลขที่ใหญ่ขึ้น */
-    .cart-header-row,
-    #cart-items li {
-        display: grid !important;
-        /* เรียงลำดับ: ลำดับ | ชื่อสินค้า | จำนวน | ราคา/หน่วย | รวม | ลบ */
-        grid-template-columns: 35px 3fr 90px 110px 120px 45px !important;
-        gap: 0.5rem;
-        align-items: center;
-    }
-
+    /* 4. รายการสินค้า (Data Logs) */
     .cart-header-row {
-        font-size: 1.05em;
-        padding: 0.8rem 0.5rem !important;
-        border-bottom: 2px solid var(--primary-color) !important;
-        color: var(--primary-color);
-        background-color: transparent !important;
+        color: var(--neon-pink) !important;
+        border-bottom: 1px dashed var(--neon-pink) !important;
+        text-shadow: 0 0 5px var(--neon-pink);
     }
-
     #cart-items li {
-        font-size: 1.1em; 
-        padding: 0.6rem 0.5rem !important;
-        border-radius: 8px !important;
-        border-bottom: 1px dashed #cbd5e1 !important; 
-        background-color: #ffffff !important;
-        margin-bottom: 2px !important;
+        background: transparent !important;
+        border: 1px solid rgba(0, 243, 255, 0.1) !important;
+        border-left: 4px solid var(--neon-cyan) !important;
+        border-radius: 0 !important;
+        margin-bottom: 8px !important;
+        transition: all 0.3s;
     }
     #cart-items li:hover {
-        background-color: #f8fafc !important;
+        background: rgba(0, 243, 255, 0.1) !important;
+        border-left: 4px solid var(--neon-pink) !important;
+        transform: translateX(10px); /* เลื่อนโฮโลแกรมตอนเอาเมาส์ชี้ */
     }
-
-    /* ปรับช่อง Input ในตารางไม่ให้ล้น */
-    .col-qty .item-input {
-        font-size: 1.1em;
-        font-weight: bold;
-        height: 36px;
-        width: 100% !important; /* ให้เต็มช่อง 90px พอดี */
-        border-radius: 6px;
-        border: 1px solid #cbd5e1;
-        background-color: #f1f5f9;
-        text-align: center;
+    .col-name strong { color: #fff; text-shadow: 0 0 5px #fff; }
+    
+    .item-input {
+        background: rgba(0,0,0,0.5) !important;
+        color: var(--neon-cyan) !important;
+        border: 1px solid rgba(0, 243, 255, 0.3) !important;
+        border-radius: 0 !important;
+        font-family: 'Share Tech Mono', monospace;
     }
-    .col-price .item-input, .col-total .item-input {
-        font-size: 1.05em;
-        font-weight: bold;
-        width: 100% !important;
-        background: transparent;
-        border: none;
-        padding: 0;
-        text-align: right;
-    }
-
+    
     .delete-item-btn {
-        width: 34px !important;
-        height: 34px !important;
-        margin: auto;
-        background-color: #fee2e2 !important; /* พื้นหลังแดงอ่อนๆ ให้กดง่าย */
-        color: #dc2626 !important;
+        background: transparent !important;
+        color: var(--neon-pink) !important;
+        border: 1px solid var(--neon-pink) !important;
+        border-radius: 0 !important;
+        box-shadow: 0 0 5px var(--neon-pink);
     }
     .delete-item-btn:hover {
-        background-color: #fca5a5 !important;
-        color: white !important;
+        background: var(--neon-pink) !important;
+        color: #000 !important;
     }
 
-    /* 4. กล่องสรุปยอด (Grand Total) ให้กระชับ ไม่กินที่รายการสินค้าเกินไป */
+    /* 5. กล่องสรุปยอด (Core Reactor) */
     .totals-section {
-        background-color: var(--primary-color);
-        border-radius: 16px;
-        padding: 1.2rem 1.5rem !important; /* ลด padding บนล่างลง */
-        margin-top: auto; /* ดันลงล่างสุดเสมอ */
-        color: #ffffff;
-        display: flex;
-        flex-direction: column;
-        border-top: none;
-        box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
+        background: rgba(0, 0, 0, 0.6) !important;
+        border: 1px solid var(--neon-green);
+        box-shadow: inset 0 0 30px rgba(57, 255, 20, 0.1);
+        border-radius: 0 !important;
+        clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
     }
-    .totals-summary {
-        width: 100% !important;
-    }
-    .total-row {
-        font-size: 1.2em; /* ลดจาก 1.4em */
-        color: #cbd5e1; 
-        margin-bottom: 0.4rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
+    .total-row label { color: rgba(255,255,255,0.7); }
+    .total-row span { color: var(--neon-cyan); }
     
     #cart-total {
-        font-size: 3.2em !important; /* ปรับขนาดให้พอดีจอ ไม่ล้นเกิน */
-        color: var(--success-color) !important;
-        font-weight: 900;
-        line-height: 1;
-        text-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+        font-size: 4rem !important;
+        color: var(--neon-green) !important;
+        text-shadow: 0 0 10px var(--neon-green), 0 0 30px var(--neon-green) !important;
+        animation: pulseCore 2s infinite alternate;
     }
 
-    #discount-input {
-        background: rgba(255,255,255,0.1);
-        color: #fff;
-        border: 1px solid rgba(255,255,255,0.2);
-        font-size: 1.1em;
-        height: 38px;
-        border-radius: 6px;
-        width: 120px !important; /* ฟิกซ์ความกว้างไม่ให้ดัน layout */
+    @keyframes pulseCore {
+        0% { text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green); }
+        100% { text-shadow: 0 0 20px var(--neon-green), 0 0 40px var(--neon-green), 0 0 60px var(--neon-green); }
     }
 
-    /* 5. ปุ่ม Action ชำระเงิน */
-    .button-group-2 {
-        display: grid !important;
-        grid-template-columns: 1fr 2.5fr !important; /* ปุ่มชำระเงินกว้างกว่าล้างตะกร้า 2.5 เท่า */
-        gap: 0.8rem;
-        margin-top: 1rem !important;
-        width: 100% !important;
-    }
+    /* 6. ปุ่ม Action ชำระเงิน (Command Execution) */
     .button-group-2 button {
-        height: 60px !important; /* ความสูงกำลังดี */
-        font-size: 1.3em !important;
-        border-radius: 10px;
+        background: transparent !important;
+        border: 2px solid;
+        border-radius: 0 !important;
+        font-family: 'Share Tech Mono', monospace;
         text-transform: uppercase;
-        font-weight: bold;
+        letter-spacing: 3px;
+        position: relative;
+        overflow: hidden;
+        transition: 0.2s;
     }
     button.finish-sale {
-        background-color: var(--success-color);
-        box-shadow: 0 4px 0 #059669; 
+        border-color: var(--neon-green) !important;
+        color: var(--neon-green) !important;
+        box-shadow: inset 0 0 15px rgba(57, 255, 20, 0.2), 0 0 15px rgba(57, 255, 20, 0.2) !important;
     }
-    button.finish-sale:active {
-        transform: translateY(4px) !important;
-        box-shadow: 0 0 0 #059669 !important;
-    }
-    button.clear-cart {
-        background-color: #334155; 
-        box-shadow: 0 4px 0 #1e293b;
-        color: #f1f5f9;
-    }
-    button.clear-cart:active {
-        transform: translateY(4px) !important;
-        box-shadow: 0 0 0 #1e293b !important;
+    button.finish-sale:hover {
+        background: var(--neon-green) !important;
+        color: #000 !important;
+        box-shadow: 0 0 30px var(--neon-green) !important;
     }
     
-    /* 6. ปรับแถบแท็บ (Tabs) ให้เนียนตา */
-    .cart-tabs-container {
-        border-bottom: 2px solid #e2e8f0;
-        background-color: transparent;
-        padding-bottom: 0;
-        margin-bottom: 0.5rem;
+    button.clear-cart {
+        border-color: var(--neon-pink) !important;
+        color: var(--neon-pink) !important;
+        box-shadow: inset 0 0 15px rgba(255, 0, 255, 0.2), 0 0 15px rgba(255, 0, 255, 0.2) !important;
     }
+    button.clear-cart:hover {
+        background: var(--neon-pink) !important;
+        color: #000 !important;
+        box-shadow: 0 0 30px var(--neon-pink) !important;
+    }
+
+    /* แต่ง Tabs ด้านบน */
     .tab-button {
-        font-size: 1.05em;
-        border-bottom: 3px solid transparent;
-        border-radius: 8px 8px 0 0;
-        padding: 0.6rem 1.2rem;
+        color: rgba(0, 243, 255, 0.5) !important;
+        border: 1px solid rgba(0, 243, 255, 0.2) !important;
+        border-radius: 0 !important;
+        font-family: 'Share Tech Mono', monospace;
+    }
+    .tab-button.active {
+        color: var(--neon-cyan) !important;
+        background: rgba(0, 243, 255, 0.1) !important;
+        border-color: var(--neon-cyan) !important;
+        box-shadow: 0 -2px 10px rgba(0, 243, 255, 0.2) !important;
     }
 </style>
 </head>
