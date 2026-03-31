@@ -1070,10 +1070,10 @@ input[type="radio"].radio, .radio{ width:16px; height:16px; border:var(--border)
         display: none !important;
     }
 }
-<style id="pharmacy-modern-theme">
+<style id="pharmacy-spatial-hybrid-theme">
     /* =========================================================
-       💊 MODERN PHARMACY POS UI 💊
-       Clean, Trustworthy, Medical Aesthetics
+       💊 MODERN PHARMACY + SPATIAL SEARCH UI 💊
+       Clean, Trustworthy Medical Aesthetics + Holographic Search
        ========================================================= */
 
     :root {
@@ -1151,21 +1151,6 @@ input[type="radio"].radio, .radio{ width:16px; height:16px; border:var(--border)
         outline: none;
     }
 
-    /* --- Search Results --- */
-    .search-item {
-        border-radius: var(--radius-item);
-        border: 1px solid transparent;
-        border-bottom: 1px solid #f1f5f9;
-        margin-bottom: 4px;
-        padding: 0.8rem 1rem;
-    }
-    .search-item:hover, .search-item.selected {
-        background-color: var(--primary-light);
-        border-color: var(--primary-color);
-        color: var(--primary-hover);
-    }
-    .search-item .price { color: var(--primary-color); font-weight: 700; }
-
     /* --- Cart Items (Clean Medical List) --- */
     .cart-header-row {
         background-color: #f8fafc;
@@ -1186,7 +1171,6 @@ input[type="radio"].radio, .radio{ width:16px; height:16px; border:var(--border)
     #cart-items li:last-child { border-bottom: none; }
     #cart-items li:hover { background-color: #f8fafc; }
     
-    /* Highlight items safely */
     #cart-items li.highlight-quantity {
         background-color: #fef3c7 !important;
         border-left: 4px solid var(--warning-color) !important;
@@ -1196,7 +1180,6 @@ input[type="radio"].radio, .radio{ width:16px; height:16px; border:var(--border)
     button, .btn {
         border-radius: var(--radius-item);
         font-weight: bold;
-        text-transform: whitespace;
         transition: all 0.2s;
     }
     
@@ -1204,19 +1187,18 @@ input[type="radio"].radio, .radio{ width:16px; height:16px; border:var(--border)
     button.finish-sale {
         background-color: var(--success-color) !important;
         color: white !important;
-        border-radius: var(--radius-pill) !important; /* Capsule button */
+        border-radius: var(--radius-pill) !important;
         padding: 0.8rem 2rem !important;
         font-size: 1.2em !important;
         box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2) !important;
         border: none !important;
     }
     button.finish-sale:hover {
-        background-color: #059669 !important; /* Darker Emerald */
+        background-color: #059669 !important;
         transform: translateY(-2px);
         box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3) !important;
     }
 
-    /* Sidebar Buttons */
     .sidebar-btn {
         border-radius: var(--radius-item);
         color: var(--secondary-color);
@@ -1227,7 +1209,7 @@ input[type="radio"].radio, .radio{ width:16px; height:16px; border:var(--border)
         border: 1px solid var(--primary-color);
     }
 
-    /* --- Totals Section (Like a Prescription Receipt) --- */
+    /* --- Totals Section --- */
     .totals-section {
         background-color: #f8fafc;
         border: 1px solid var(--border-color);
@@ -1242,43 +1224,124 @@ input[type="radio"].radio, .radio{ width:16px; height:16px; border:var(--border)
     }
 
     /* --- Modals --- */
-    .modal-overlay {
-        background-color: rgba(30, 41, 59, 0.5); /* Slate overlay */
-        backdrop-filter: blur(4px);
+    .modal-overlay { background-color: rgba(30, 41, 59, 0.5); backdrop-filter: blur(4px); }
+    .modal-content { border-radius: var(--radius-card); border: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+    .modal-header { background-color: var(--primary-color); color: white; }
+    .modal-header h3 { color: white; border-bottom: none; }
+    .modal-footer { background-color: #f8fafc; }
+
+    .auth-status-badge { border-radius: var(--radius-pill); border: 1px solid var(--border-color); background: var(--surface-color); }
+    .tab-button { border-radius: var(--radius-pill); margin-right: 4px; }
+    .tab-button.active { background-color: var(--primary-color); color: white; border-bottom: none; }
+
+    /* =========================================================
+       🚀 🛸 SPATIAL SEARCH RESULTS (Floating Islands & Holographics)
+       ========================================================= */
+       
+    .search-column { position: relative !important; z-index: 900 !important; }
+    .search-column .card, #main-search-area { position: relative !important; z-index: 999999 !important; overflow: visible !important; }
+    .cart-column { position: relative !important; z-index: 1 !important; }
+
+    #search-results.has-results {
+        position: absolute; top: 0; left: 0; width: 100%; 
+        box-sizing: content-box !important; padding-right: 400px !important; margin-right: -400px !important; 
+        max-height: calc(100vh - 180px); overflow-y: auto; overflow-x: hidden; 
+        pointer-events: none; z-index: 950 !important; scrollbar-width: none; background: transparent; border: none;
+        display: flex; flex-direction: column; gap: 8px; /* เว้นระยะให้ลอยเป็นเกาะ */
+        filter: drop-shadow(0 15px 35px rgba(0,0,0,0.1)); 
+        padding-top: 12px; padding-left: 4px; /* เผื่อที่ให้กล่องเด้ง */
     }
-    .modal-content {
-        border-radius: var(--radius-card);
-        border: none;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    #search-results.has-results::-webkit-scrollbar { display: none; }
+
+    /* แต่ละแถวเป็นแคปซูลแยกกัน (Floating Pills) */
+    .search-row {
+        position: relative; width: max-content; min-width: calc(100% - 8px);
+        display: inline-flex; flex-direction: row; align-items: center;
+        background: rgba(255, 255, 255, 0.55); 
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 20px; /* มนกลิ๊ก */
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1);
+        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        pointer-events: auto; 
+        padding: 4px;
     }
-    .modal-header {
-        background-color: var(--primary-color);
-        color: white;
-    }
-    .modal-header h3 {
-        color: white;
-        border-bottom: none;
-    }
-    .modal-footer {
-        background-color: #f8fafc;
+    .search-row:first-child, .search-row:last-child { border-radius: 20px; border-bottom: 1px solid rgba(255,255,255,0.8); padding-bottom: 4px; padding-top: 4px;}
+    
+    .search-row:hover, .search-row.selected-row { 
+        background: rgba(255, 255, 255, 0.85); 
+        transform: translateY(-2px) scale(1.01);
+        z-index: 10;
+        box-shadow: 0 12px 24px rgba(0,0,0,0.06), inset 0 1px 1px rgba(255, 255, 255, 1);
     }
 
-    /* Badges */
-    .auth-status-badge {
-        border-radius: var(--radius-pill);
-        border: 1px solid var(--border-color);
-        background: var(--surface-color);
+    .main-cell {
+        flex-shrink: 0; width: auto; min-width: 260px;
+        padding: 0.7rem 1.2rem; cursor: pointer;
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        box-sizing: border-box; border-radius: 16px;
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        background: rgba(255, 255, 255, 0.9); border: 1px solid transparent;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
     }
+
+    /* ป้ายบอกจำนวน (Neon Animated Gradient - Adjusted to Pharmacy Colors) */
+    @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
     
-    /* Tabs */
-    .tab-button {
-        border-radius: var(--radius-pill);
-        margin-right: 4px;
-    }
-    .tab-button.active {
-        background-color: var(--primary-color);
+    .expand-indicator {
+        font-size: 0.75em; font-weight: 700;
+        background: linear-gradient(270deg, var(--primary-color), var(--success-color), var(--info-color));
+        background-size: 200% 200%;
+        animation: gradientShift 3s ease infinite;
         color: white;
-        border-bottom: none;
+        padding: 4px 10px; border-radius: 12px;
+        display: inline-flex; align-items: center; gap: 4px; margin-left: 8px;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); white-space: nowrap; overflow: hidden;
+        box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);
+    }
+    .search-row:hover .expand-indicator, .search-row.selected-row .expand-indicator {
+        max-width: 0; opacity: 0; padding: 0; margin: 0; box-shadow: none; transform: scale(0.5);
+    }
+
+    /* Accordion (Liquid Reveal) */
+    .alt-units-wrapper {
+        display: flex; align-items: center; gap: 6px; 
+        max-width: 0; opacity: 0; overflow: hidden; 
+        padding: 0; margin-left: -20px; white-space: nowrap;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        background: rgba(255, 255, 255, 0.4); border-radius: 16px;
+    }
+    .search-row.selected-row .alt-units-wrapper, .search-row:hover .alt-units-wrapper {
+        max-width: 800px; opacity: 1; padding: 4px 6px; margin-left: 4px;
+        background: rgba(255, 255, 255, 0.7);
+    }
+
+    .alt-cell {
+        background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255,255,255,0.6);
+        padding: 0.5rem 1rem; border-radius: 14px; 
+        display: flex; align-items: center; gap: 8px;
+        cursor: pointer; white-space: nowrap;
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+
+    .product-name-single { font-weight: 700; color: var(--dark-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1; font-size: 1em; letter-spacing: -0.2px; }
+    .price-unit-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .cell-price { font-weight: 800; color: var(--primary-color); font-size: 1.1em; }
+    .sub-text { font-weight: 500; font-size: 0.85em; color: var(--secondary-color); }
+
+    /* สถานะ Active (Pharmacy Glow) */
+    .alt-cell:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 15px rgba(13, 148, 136, 0.15); border-color: var(--primary-light); }
+
+    .main-cell.active-unit, .alt-cell.active-unit {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%) !important;
+        border: 1px solid var(--primary-light) !important;
+        box-shadow: 0 10px 20px rgba(13, 148, 136, 0.4), inset 0 1px 1px rgba(255,255,255,0.4) !important;
+        transform: translateY(-2px) scale(1.03) !important; 
+    }
+    .main-cell.active-unit .product-name-single, .main-cell.active-unit .sub-text, 
+    .main-cell.active-unit .cell-price, .alt-cell.active-unit .sub-text, .alt-cell.active-unit .cell-price {
+        color: #ffffff !important; text-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
     }
 </style>
 <style>
