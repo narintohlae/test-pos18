@@ -1070,38 +1070,33 @@ input[type="radio"].radio, .radio{ width:16px; height:16px; border:var(--border)
         display: none !important;
     }
 }
-<style id="pharmacy-spatial-hybrid-theme">
+<style id="pharmacy-supermarket-practical-theme">
     /* =========================================================
-       💊 MODERN PHARMACY + SPATIAL SEARCH UI 💊
-       Clean, Trustworthy Medical Aesthetics + Holographic Search
+       🏪 PHARMACY + SUPERMARKET PRACTICAL UI 💊
+       Medical Colors + Ultra-Fast, High-Density Supermarket Search
        ========================================================= */
 
     :root {
         /* Pharmacy Palette: Teal & Soft Mint */
-        --primary-color: #0d9488;      /* Medical Teal */
-        --primary-hover: #0f766e;      /* Deep Teal */
-        --primary-light: #ccfbf1;      /* Soft Mint */
+        --primary-color: #0d9488;      
+        --primary-hover: #0f766e;      
+        --primary-light: #ccfbf1;      
         
-        --success-color: #10b981;      /* Emerald Green (Safe/Checkout) */
-        --danger-color: #ef4444;       /* Alert Red */
-        --warning-color: #f59e0b;      /* Warning Amber */
-        --info-color: #0ea5e9;         /* Info Blue */
+        --success-color: #10b981;      
+        --danger-color: #ef4444;       
+        --warning-color: #f59e0b;      
+        --info-color: #0ea5e9;         
         
-        --bg-color: #f4f7f6;           /* Clinical Soft Gray-Green */
-        --surface-color: #ffffff;      /* Pure White */
-        --border-color: #e2e8f0;       /* Light Slate Border */
+        --bg-color: #f4f7f6;           
+        --surface-color: #ffffff;      
+        --border-color: #e2e8f0;       
         
-        --dark-text: #1e293b;          /* Slate 800 for high readability */
-        --secondary-color: #64748b;    /* Slate 500 for secondary info */
+        --dark-text: #1e293b;          
+        --secondary-color: #64748b;    
         
-        /* Subtle, clean shadows */
-        --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
-        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-        
-        /* Radii */
-        --radius-card: 16px;
-        --radius-pill: 999px;          /* Capsule shape */
-        --radius-item: 10px;
+        --radius-card: 12px;
+        --radius-pill: 999px;          
+        --radius-item: 8px;
     }
 
     body {
@@ -1110,239 +1105,203 @@ input[type="radio"].radio, .radio{ width:16px; height:16px; border:var(--border)
         font-family: 'Sarabun', sans-serif;
     }
 
-    /* --- Layout & Cards --- */
-    .app-layout {
-        gap: 1.2rem;
-        padding: 1.2rem;
-        background-color: var(--bg-color);
-    }
+    /* --- Layout & Basic Elements --- */
+    .app-layout { gap: 1rem; padding: 1rem; }
     .search-column, .cart-column { padding: 0; }
-
+    
     .card {
         background-color: var(--surface-color);
         border-radius: var(--radius-card);
         border: 1px solid var(--border-color);
-        box-shadow: var(--shadow-sm);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
 
-    /* --- Headers --- */
     h2, h3 {
         color: var(--primary-hover);
         border-bottom: 2px solid var(--primary-light);
         font-weight: 700;
-        padding-bottom: 0.8rem;
+        padding-bottom: 0.6rem;
     }
-    h2 svg { color: var(--primary-color); }
 
-    /* --- Search Bar (Capsule Style) --- */
+    /* --- Search Bar --- */
     .form-group input#barcode-input {
         border-radius: var(--radius-pill) !important;
         border: 2px solid var(--border-color) !important;
         padding: 0.8rem 1.5rem !important;
-        font-size: 1.1em !important;
+        font-size: 1.15em !important;
         background-color: #f8fafc !important;
         text-align: center;
-        transition: all 0.3s ease;
+        font-weight: bold;
     }
     .form-group input#barcode-input:focus {
         border-color: var(--primary-color) !important;
         background-color: var(--surface-color) !important;
-        box-shadow: 0 0 0 4px var(--primary-light) !important;
+        box-shadow: 0 0 0 3px var(--primary-light) !important;
         outline: none;
     }
 
-    /* --- Cart Items (Clean Medical List) --- */
+    /* --- Cart & Buttons --- */
     .cart-header-row {
         background-color: #f8fafc;
-        border-radius: var(--radius-item);
         border: 1px solid var(--border-color);
-        padding: 0.6rem 0.8rem;
-        color: var(--secondary-color);
-        font-weight: bold;
+        border-radius: var(--radius-item);
     }
     #cart-items li {
         background-color: var(--surface-color);
-        border: none;
         border-bottom: 1px dashed var(--border-color);
-        border-radius: 0;
-        padding: 0.6rem 0.8rem;
-        margin-bottom: 0;
+        padding: 0.5rem 0.8rem;
     }
-    #cart-items li:last-child { border-bottom: none; }
-    #cart-items li:hover { background-color: #f8fafc; }
-    
-    #cart-items li.highlight-quantity {
-        background-color: #fef3c7 !important;
-        border-left: 4px solid var(--warning-color) !important;
-    }
-
-    /* --- Buttons --- */
-    button, .btn {
-        border-radius: var(--radius-item);
-        font-weight: bold;
-        transition: all 0.2s;
-    }
-    
-    /* Primary Checkout Button */
     button.finish-sale {
         background-color: var(--success-color) !important;
         color: white !important;
         border-radius: var(--radius-pill) !important;
         padding: 0.8rem 2rem !important;
         font-size: 1.2em !important;
-        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2) !important;
         border: none !important;
     }
-    button.finish-sale:hover {
-        background-color: #059669 !important;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3) !important;
-    }
-
-    .sidebar-btn {
-        border-radius: var(--radius-item);
-        color: var(--secondary-color);
-    }
-    .sidebar-btn.active {
-        background-color: var(--primary-light);
-        color: var(--primary-hover);
-        border: 1px solid var(--primary-color);
-    }
-
-    /* --- Totals Section --- */
-    .totals-section {
-        background-color: #f8fafc;
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-item);
-        padding: 1.2rem;
-        margin-top: auto;
-    }
-    #cart-total {
-        color: var(--primary-hover);
-        font-size: 2.2em;
-        font-weight: 700;
-    }
-
-    /* --- Modals --- */
-    .modal-overlay { background-color: rgba(30, 41, 59, 0.5); backdrop-filter: blur(4px); }
-    .modal-content { border-radius: var(--radius-card); border: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-    .modal-header { background-color: var(--primary-color); color: white; }
-    .modal-header h3 { color: white; border-bottom: none; }
-    .modal-footer { background-color: #f8fafc; }
-
-    .auth-status-badge { border-radius: var(--radius-pill); border: 1px solid var(--border-color); background: var(--surface-color); }
-    .tab-button { border-radius: var(--radius-pill); margin-right: 4px; }
-    .tab-button.active { background-color: var(--primary-color); color: white; border-bottom: none; }
 
     /* =========================================================
-       🚀 🛸 SPATIAL SEARCH RESULTS (Floating Islands & Holographics)
+       🛒 SUPERMARKET SEARCH RESULTS (PRACTICAL & FAST)
        ========================================================= */
        
     .search-column { position: relative !important; z-index: 900 !important; }
-    .search-column .card, #main-search-area { position: relative !important; z-index: 999999 !important; overflow: visible !important; }
-    .cart-column { position: relative !important; z-index: 1 !important; }
-
+    
+    /* กล่อง Dropdown หลัก - ทึบแสง ชัดเจน ไม่กินพื้นที่ตะกร้า */
     #search-results.has-results {
-        position: absolute; top: 0; left: 0; width: 100%; 
-        box-sizing: content-box !important; padding-right: 400px !important; margin-right: -400px !important; 
-        max-height: calc(100vh - 180px); overflow-y: auto; overflow-x: hidden; 
-        pointer-events: none; z-index: 950 !important; scrollbar-width: none; background: transparent; border: none;
-        display: flex; flex-direction: column; gap: 8px; /* เว้นระยะให้ลอยเป็นเกาะ */
-        filter: drop-shadow(0 15px 35px rgba(0,0,0,0.1)); 
-        padding-top: 12px; padding-left: 4px; /* เผื่อที่ให้กล่องเด้ง */
+        position: absolute !important; 
+        top: calc(100% + 4px) !important; 
+        left: 0 !important; 
+        width: 100% !important; 
+        
+        /* ล้างค่า 3D/Spatial เดิมทิ้งทั้งหมด */
+        padding-right: 0 !important; 
+        margin-right: 0 !important; 
+        box-sizing: border-box !important;
+        
+        max-height: 60vh; 
+        overflow-y: auto; 
+        overflow-x: hidden; 
+        z-index: 1000 !important; 
+        
+        background: #ffffff; 
+        border: 2px solid var(--primary-color);
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        
+        display: block; /* จัดเรียงแนวตั้งแบบปกติ */
+        pointer-events: auto; /* รับคลิกเมาส์ */
     }
-    #search-results.has-results::-webkit-scrollbar { display: none; }
 
-    /* แต่ละแถวเป็นแคปซูลแยกกัน (Floating Pills) */
+    /* แถวสินค้า (Zebra-striping style) */
     .search-row {
-        position: relative; width: max-content; min-width: calc(100% - 8px);
-        display: inline-flex; flex-direction: row; align-items: center;
-        background: rgba(255, 255, 255, 0.55); 
-        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.8);
-        border-radius: 20px; /* มนกลิ๊ก */
-        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1);
-        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-        pointer-events: auto; 
-        padding: 4px;
+        display: flex; 
+        flex-direction: column; 
+        width: 100%; 
+        background: #ffffff;
+        border: none;
+        border-bottom: 1px solid var(--border-color);
+        border-radius: 0;
+        padding: 0;
+        margin: 0;
+        transition: none; /* ไม่มีหน่วงเวลา เน้นเร็ว */
     }
-    .search-row:first-child, .search-row:last-child { border-radius: 20px; border-bottom: 1px solid rgba(255,255,255,0.8); padding-bottom: 4px; padding-top: 4px;}
+    .search-row:last-child { border-bottom: none; }
     
+    /* Hover Row แบบ Supermarket (เน้นบรรทัดให้ชัด) */
     .search-row:hover, .search-row.selected-row { 
-        background: rgba(255, 255, 255, 0.85); 
-        transform: translateY(-2px) scale(1.01);
-        z-index: 10;
-        box-shadow: 0 12px 24px rgba(0,0,0,0.06), inset 0 1px 1px rgba(255, 255, 255, 1);
+        background: #f0fdfa; /* Mint อ่อนๆ */
+        transform: none; /* ปิดแอนิเมชันเด้ง */
+        box-shadow: none;
     }
 
+    /* กล่องข้อมูลหลัก (Product Name & Base Price) */
     .main-cell {
-        flex-shrink: 0; width: auto; min-width: 260px;
-        padding: 0.7rem 1.2rem; cursor: pointer;
-        display: flex; align-items: center; justify-content: space-between; gap: 12px;
-        box-sizing: border-box; border-radius: 16px;
-        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-        background: rgba(255, 255, 255, 0.9); border: 1px solid transparent;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        display: flex; 
+        align-items: center; 
+        justify-content: space-between; 
+        width: 100%;
+        padding: 10px 14px; 
+        cursor: pointer;
+        background: transparent; 
+        border: none;
+        border-left: 4px solid transparent; /* เตรียมไว้ทำ Indicator */
     }
 
-    /* ป้ายบอกจำนวน (Neon Animated Gradient - Adjusted to Pharmacy Colors) */
-    @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-    
-    .expand-indicator {
-        font-size: 0.75em; font-weight: 700;
-        background: linear-gradient(270deg, var(--primary-color), var(--success-color), var(--info-color));
-        background-size: 200% 200%;
-        animation: gradientShift 3s ease infinite;
-        color: white;
-        padding: 4px 10px; border-radius: 12px;
-        display: inline-flex; align-items: center; gap: 4px; margin-left: 8px;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); white-space: nowrap; overflow: hidden;
-        box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);
-    }
-    .search-row:hover .expand-indicator, .search-row.selected-row .expand-indicator {
-        max-width: 0; opacity: 0; padding: 0; margin: 0; box-shadow: none; transform: scale(0.5);
+    /* Active State (ควบคุมผ่าน Keyboard) */
+    .main-cell.active-unit {
+        background: var(--primary-light) !important;
+        border-left-color: var(--primary-color) !important; /* แถบสีด้านซ้ายให้รู้ว่าโฟกัสอยู่ */
     }
 
-    /* Accordion (Liquid Reveal) */
+    /* กล่องรองรับหน่วยอื่นๆ (แสดงเป็น Tag เล็กๆ ใต้ชื่อ แทนที่จะป๊อปอัปบังจอ) */
     .alt-units-wrapper {
-        display: flex; align-items: center; gap: 6px; 
-        max-width: 0; opacity: 0; overflow: hidden; 
-        padding: 0; margin-left: -20px; white-space: nowrap;
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        background: rgba(255, 255, 255, 0.4); border-radius: 16px;
-    }
-    .search-row.selected-row .alt-units-wrapper, .search-row:hover .alt-units-wrapper {
-        max-width: 800px; opacity: 1; padding: 4px 6px; margin-left: 4px;
-        background: rgba(255, 255, 255, 0.7);
+        display: flex !important; 
+        flex-wrap: wrap;
+        align-items: center; 
+        gap: 6px; 
+        max-width: none; 
+        opacity: 1; 
+        padding: 0 14px 10px 14px; /* เว้นระยะด้านล่าง */
+        margin: 0;
+        background: transparent; 
+        border: none;
     }
 
+    /* ซ่อน Alt Units Wrapper ถ้าไม่มีสินค้าให้แสดง เพื่อไม่ให้เปลืองที่ */
+    .alt-units-wrapper:empty { display: none !important; }
+
+    /* ปุ่มกดหน่วยทางเลือก (Alt Unit Tag) */
     .alt-cell {
-        background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255,255,255,0.6);
-        padding: 0.5rem 1rem; border-radius: 14px; 
-        display: flex; align-items: center; gap: 8px;
-        cursor: pointer; white-space: nowrap;
-        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        background: #ffffff; 
+        border: 1px solid var(--border-color);
+        padding: 4px 10px; 
+        border-radius: 6px; 
+        display: inline-flex; 
+        align-items: center; 
+        gap: 6px;
+        cursor: pointer; 
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        transition: background 0.1s; /* เปลี่ยนสีเร็วๆ */
     }
 
-    .product-name-single { font-weight: 700; color: var(--dark-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1; font-size: 1em; letter-spacing: -0.2px; }
-    .price-unit-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-    .cell-price { font-weight: 800; color: var(--primary-color); font-size: 1.1em; }
-    .sub-text { font-weight: 500; font-size: 0.85em; color: var(--secondary-color); }
-
-    /* สถานะ Active (Pharmacy Glow) */
-    .alt-cell:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 15px rgba(13, 148, 136, 0.15); border-color: var(--primary-light); }
-
-    .main-cell.active-unit, .alt-cell.active-unit {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%) !important;
-        border: 1px solid var(--primary-light) !important;
-        box-shadow: 0 10px 20px rgba(13, 148, 136, 0.4), inset 0 1px 1px rgba(255,255,255,0.4) !important;
-        transform: translateY(-2px) scale(1.03) !important; 
+    .alt-cell:hover {
+        background: #f8fafc;
+        border-color: var(--primary-color);
+        transform: none; /* ปิดเด้ง */
     }
-    .main-cell.active-unit .product-name-single, .main-cell.active-unit .sub-text, 
-    .main-cell.active-unit .cell-price, .alt-cell.active-unit .sub-text, .alt-cell.active-unit .cell-price {
-        color: #ffffff !important; text-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+
+    /* Active State ของหน่วยย่อย */
+    .alt-cell.active-unit {
+        background: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: white !important;
     }
+    .alt-cell.active-unit .sub-text, .alt-cell.active-unit .cell-price {
+        color: white !important;
+    }
+
+    /* Typography ภายใน Search Results */
+    .product-name-single { 
+        font-weight: 700; 
+        color: var(--dark-text); 
+        font-size: 1.1em; 
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+        white-space: nowrap; 
+    }
+    .cell-price { 
+        font-weight: 800; 
+        color: var(--primary-color); 
+        font-size: 1.2em; 
+    }
+    .sub-text { 
+        font-weight: 500; 
+        font-size: 0.9em; 
+        color: var(--secondary-color); 
+    }
+    
+    /* ล้างของแถมจาก Spatial ออก */
+    .expand-indicator { display: none !important; }
 </style>
 <style>
 /* === Cart-aligned utility bar: app-sidebar + auth-status (Oct 18, 2025) === */
