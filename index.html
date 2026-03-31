@@ -1070,326 +1070,102 @@ input[type="radio"].radio, .radio{ width:16px; height:16px; border:var(--border)
         display: none !important;
     }
 }
-<style id="google-workspace-theme">
-    /* =========================================================
-       🔍 GOOGLE DESIGN (WORKSPACE / MATERIAL) UI 🔍
-       Clean, Familiar, Google Blue Accent, Search-centric
-       ========================================================= */
-
-    :root {
-        /* Official Google Brand Colors */
-        --gg-blue: #1a73e8;
-        --gg-blue-hover: #174ea6;
-        --gg-blue-light: #e8f0fe;
-        
-        --gg-green: #188038;
-        --gg-green-hover: #137333;
-        --gg-green-light: #e6f4ea;
-        
-        --gg-red: #d93025;
-        --gg-red-hover: #c5221f;
-        --gg-red-light: #fce8e6;
-        
-        --gg-yellow: #f9ab00;
-        
-        /* Surfaces & Text */
-        --gg-bg: #f8f9fa;
-        --gg-surface: #ffffff;
-        --gg-border: #dadce0;
-        --gg-hover: #f1f3f4;
-        
-        --gg-text-main: #202124;
-        --gg-text-sec: #5f6368;
-        
-        /* Radii & Shadows */
-        --gg-radius-card: 8px;
-        --gg-radius-btn: 4px;
-        --gg-radius-pill: 24px;
-        
-        --gg-shadow-sm: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-        --gg-shadow-focus: 0 1px 6px rgba(32,33,36,0.28);
-        --gg-shadow-modal: 0 12px 24px rgba(0,0,0,0.15), 0 8px 10px rgba(0,0,0,0.1);
-    }
-
-    body {
-        background-color: var(--gg-bg) !important;
-        color: var(--gg-text-main) !important;
-        font-family: "Google Sans", Roboto, Arial, sans-serif !important;
-        letter-spacing: 0.2px;
-    }
-
-    /* --- Layout & Cards --- */
-    .app-layout { padding: 16px; gap: 16px; background-color: var(--gg-bg); }
-    .search-column, .cart-column { padding: 0; }
-
-    .card {
-        background-color: var(--gg-surface) !important;
-        border-radius: var(--gg-radius-card) !important;
-        border: 1px solid var(--gg-border) !important;
-        box-shadow: none !important;
-        padding: 20px;
-    }
-
-    /* --- Headers --- */
-    h2, h3 {
-        color: var(--gg-text-main) !important;
-        font-size: 1.3rem !important;
-        font-weight: 400 !important; /* Google prefers lighter header weights */
-        border-bottom: none !important;
-        margin-bottom: 20px !important;
-        padding-bottom: 0 !important;
-        display: flex; align-items: center; gap: 10px;
-    }
-    h2 svg, h3 svg { color: var(--gg-text-sec) !important; width: 22px; height: 22px; }
-
-    /* --- Google Search Bar --- */
-    .form-group input#barcode-input {
-        background-color: var(--gg-surface) !important;
-        color: var(--gg-text-main) !important;
-        border: 1px solid var(--gg-border) !important;
-        border-radius: var(--gg-radius-pill) !important;
-        padding: 12px 24px !important;
-        font-size: 16px !important;
-        transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
-        box-shadow: none !important;
-        text-align: left;
-    }
-    .form-group input#barcode-input:hover {
-        box-shadow: var(--gg-shadow-focus) !important;
-        border-color: transparent !important;
-    }
-    .form-group input#barcode-input:focus {
-        box-shadow: var(--gg-shadow-focus) !important;
-        border-color: transparent !important;
-        outline: none !important;
-    }
-
-    /* --- Standard Inputs --- */
-    input, select, .item-input {
-        background-color: var(--gg-surface) !important;
-        border: 1px solid var(--gg-border) !important;
-        border-radius: var(--gg-radius-btn) !important;
-        padding: 8px 12px !important;
-        color: var(--gg-text-main) !important;
-        font-size: 14px !important;
-        transition: border 0.2s !important;
-    }
-    input:focus, select:focus {
-        border: 2px solid var(--gg-blue) !important;
-        padding: 7px 11px !important; /* offset border width */
-        outline: none !important;
-    }
-
-    /* --- Buttons (Google Standard) --- */
-    button, .btn, .sidebar-btn {
-        background-color: var(--gg-surface) !important;
-        color: var(--gg-blue) !important;
-        border: 1px solid var(--gg-border) !important;
-        border-radius: var(--gg-radius-btn) !important;
-        padding: 8px 16px !important;
-        font-size: 14px !important;
-        font-weight: 500 !important;
-        cursor: pointer;
-        transition: background-color 0.15s, box-shadow 0.15s !important;
-        box-shadow: none !important;
-        transform: none !important; 
-    }
-    button:hover, .btn:hover, .sidebar-btn:hover {
-        background-color: var(--gg-blue-light) !important;
-        border-color: var(--gg-blue-light) !important;
-    }
-
-    /* --- Primary Button (Checkout - Google Green) --- */
-    button.finish-sale {
-        background-color: var(--gg-green) !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: var(--gg-radius-btn) !important;
-        padding: 10px 24px !important;
-        font-size: 15px !important;
-        font-weight: 500 !important;
-        box-shadow: var(--gg-shadow-sm) !important;
-        letter-spacing: 0.25px;
-    }
-    button.finish-sale:hover {
-        background-color: var(--gg-green-hover) !important;
-        box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15) !important;
-    }
-
-    /* Danger Button */
-    button.clear-cart { 
-        background-color: var(--gg-surface) !important; 
-        color: var(--gg-red) !important; 
-        border: 1px solid var(--gg-border) !important;
-    }
-    button.clear-cart:hover { 
-        background-color: var(--gg-red-light) !important; 
-        border-color: transparent !important;
-    }
-
-    /* --- Cart Items (Google Drive List Style) --- */
-    .cart-header-row {
-        background: transparent !important;
-        border: none !important;
-        border-bottom: 1px solid var(--gg-border) !important;
-        color: var(--gg-text-sec) !important;
-        font-weight: 500 !important;
-        font-size: 13px !important;
-        padding: 12px !important;
-        text-transform: none !important;
-    }
-    #cart-items { margin-top: 0 !important; }
-    #cart-items li {
-        background-color: var(--gg-surface) !important;
-        border: none !important;
-        border-bottom: 1px solid var(--gg-border) !important;
-        border-radius: 0 !important;
-        padding: 10px 12px !important;
-        margin: 0 !important;
-        color: var(--gg-text-main) !important;
-        transition: background-color 0.15s !important;
-    }
-    #cart-items li:hover { background-color: var(--gg-hover) !important; }
-    #cart-items li:last-child { border-bottom: none !important; }
-    
-    #cart-items li.highlight-quantity { 
-        background-color: #fef7e0 !important; /* Google Yellow Light */
-        border-left: none !important; 
-    }
-
-    /* --- Search Results Dropdown (Google Omnibox Style) --- */
-    #search-results.has-results {
-        background: var(--gg-surface) !important;
-        border: 1px solid var(--gg-border) !important;
-        border-radius: var(--gg-radius-card) !important;
-        box-shadow: var(--gg-shadow-focus) !important;
-        padding: 8px 0 !important;
-        position: absolute; top: calc(100% + 4px); left: 0; width: 100%; z-index: 1000;
-        max-height: 50vh; overflow-y: auto; overflow-x: hidden;
-    }
-    .search-row {
-        background: transparent !important;
-        border: none !important;
-        border-radius: 0 !important;
-        margin: 0 !important; padding: 0 !important;
-        display: flex; flex-direction: column;
-    }
-    .main-cell { 
-        padding: 10px 20px !important; 
-        border: none !important; 
-        border-radius: 0 !important; 
-        background: transparent !important;
-    }
-    
-    .search-row:hover, .search-row.selected-row, .main-cell.active-unit {
-        background-color: var(--gg-hover) !important;
-    }
-    
-    .alt-units-wrapper { padding: 0 20px 10px 20px !important; background: transparent !important; border: none !important; display: flex; gap: 8px;}
-    .alt-cell {
-        background: var(--gg-surface) !important;
-        border: 1px solid var(--gg-border) !important;
-        border-radius: var(--gg-radius-pill) !important; /* Material Chips */
-        padding: 4px 12px !important;
-        color: var(--gg-text-sec) !important;
-        font-size: 13px !important;
-        font-weight: 500 !important;
-    }
-    .alt-cell:hover { background: var(--gg-hover) !important; color: var(--gg-text-main) !important; }
-    .alt-cell.active-unit { 
-        background: var(--gg-blue-light) !important; 
-        color: var(--gg-blue) !important;
-        border-color: var(--gg-blue-light) !important;
-    }
-    .alt-cell.active-unit .sub-text, .alt-cell.active-unit .cell-price { color: var(--gg-blue) !important; }
-
-    .product-name-single { font-weight: 500; font-size: 15px; color: var(--gg-text-main); }
-    .cell-price { font-weight: 500; color: var(--gg-text-main); font-size: 15px; }
-    .sub-text { font-size: 13px; color: var(--gg-text-sec); }
-    .expand-indicator { display: none !important; }
-
-    /* --- Tabs (Google Material Tabs) --- */
-    #cart-tabs { 
-        border-bottom: 1px solid var(--gg-border) !important; 
-        padding-bottom: 0 !important; 
-        margin-bottom: 16px !important;
-        display: flex; gap: 0;
-    }
-    .tab-button {
-        background: transparent !important;
-        border: none !important;
-        border-radius: 0 !important;
-        margin: 0 16px 0 0 !important;
-        padding: 12px 8px !important;
-        color: var(--gg-text-sec) !important;
-        font-size: 14px !important;
-        font-weight: 500 !important;
-        border-bottom: 3px solid transparent !important;
-    }
-    .tab-button:hover { color: var(--gg-blue) !important; background: var(--gg-blue-light) !important; border-radius: 4px 4px 0 0 !important;}
-    .tab-button.active {
-        color: var(--gg-blue) !important;
-        border-bottom: 3px solid var(--gg-blue) !important;
-    }
-
-    /* --- Totals Section --- */
-    .totals-section {
-        background: transparent !important;
-        border: none !important;
-        border-top: 1px solid var(--gg-border) !important;
-        padding: 20px 0 0 0 !important;
-        margin-top: 16px !important;
-    }
-    .total-row { color: var(--gg-text-sec); font-size: 14px; }
-    #cart-total { 
-        color: var(--gg-text-main) !important; 
-        font-size: 28px !important; 
-        font-weight: 400 !important; 
-    }
-
-    /* --- Modals (Dialogs) --- */
-    .modal-overlay { 
-        background-color: rgba(32, 33, 36, 0.6) !important; /* Google uses solid dark overlay */
-        backdrop-filter: none !important;
-    }
-    .modal-content {
-        background-color: var(--gg-surface) !important;
-        border: none !important;
-        border-radius: var(--gg-radius-card) !important;
-        box-shadow: var(--gg-shadow-modal) !important;
-        padding: 0 !important;
-        overflow: hidden;
-    }
-    .modal-header { background: transparent !important; padding: 24px 24px 16px 24px !important; border-bottom: none !important;}
-    .modal-header h3 { margin: 0 !important; font-size: 20px !important; font-weight: 400 !important; color: var(--gg-text-main) !important;}
-    .modal-body { padding: 0 24px 24px 24px !important; }
-    .modal-footer { 
-        background: transparent !important; 
-        border-top: none !important; 
-        padding: 16px 24px 24px 24px !important; 
-        display: flex; justify-content: flex-end; /* Align buttons right like Google dialogs */
-    }
-
-    /* Status Badges */
-    .auth-status-badge {
-        background: var(--gg-surface) !important;
-        color: var(--gg-text-sec) !important;
-        border: 1px solid var(--gg-border) !important;
-        border-radius: var(--gg-radius-pill) !important;
-        padding: 4px 12px !important;
-        font-weight: 500 !important;
-        font-size: 12px !important;
-    }
-
-    /* --- Scrollbars (Minimal) --- */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { 
-        background-color: #dadce0; 
-        border-radius: 4px; 
-    }
-    ::-webkit-scrollbar-thumb:hover { background-color: #bdc1c6; }
 </style>
+
+
+
+
+
+<style>
+/* === Cart-aligned utility bar: app-sidebar + auth-status (Oct 18, 2025) === */
+/* Tokens */
+:root{
+  --cart-surface: var(--surface-2, #ffffff);
+  --cart-border: var(--border, #e5e7eb);
+  --cart-muted: var(--muted-foreground, #6b7280);
+  --cart-radius: var(--radius, 12px);
+  --ui-height: var(--ui-height, 40px);
+  --ui-font: var(--ui-font, 14px);
+  --ui-icon: var(--ui-icon, 16px);
+}
+
+/* Utility group matches cart cards */
+.cart-tabs-container{ display:flex; align-items:center; }
+.cart-utility{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-left:auto;
+  padding:8px 10px;
+  background: var(--cart-surface);
+  border: 1px solid var(--cart-border);
+  border-radius: var(--cart-radius);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* Sidebar controls as cart chips */
+#app-sidebar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:0;
+}
+#app-sidebar .btn,
+#app-sidebar [role="button"],
+#app-sidebar button{
+  height: calc(var(--ui-height) * 1.05);
+  padding: 0 0.9rem;
+  font-size: calc(var(--ui-font) * 1.05);
+  line-height:1;
+  border: 1px solid var(--cart-border);
+  border-radius: calc(var(--cart-radius) - 4px);
+  background: transparent;
+}
+#app-sidebar .btn:hover,
+#app-sidebar [role="button"]:hover,
+#app-sidebar button:hover{
+  background: rgba(0,0,0,0.03);
+}
+
+/* Auth status as compact pill */
+#auth-status{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  height: calc(var(--ui-height) * 0.9 * 1.05);
+  padding: 0 0.6rem;
+  border: 1px solid var(--cart-border);
+  border-radius: 999px;
+  font-size: calc(var(--ui-font) * 0.95 * 1.05);
+  color: var(--cart-muted);
+  background: #fff;
+}
+#auth-status .dot{
+  width: calc(var(--ui-icon) * 0.38 * 1.05);
+  height: calc(var(--ui-icon) * 0.38 * 1.05);
+  border-radius:50%;
+}
+
+/* Spacing harmony with cart header */
+.cart-header, .cart-tabs-container{
+  gap: 12px;
+}
+
+/* Responsive */
+@media (max-width: 640px){
+  .cart-utility{
+    width:100%;
+    justify-content:space-between;
+    gap:8px;
+    padding:6px 8px;
+  }
+  #app-sidebar{
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+}
+</style>
+
 
 <style id="mobile-pro-overrides">
 @supports (padding: max(0px)) {
