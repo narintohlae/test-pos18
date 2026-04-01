@@ -4735,108 +4735,212 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
 </div>
-<style id="new-search-ui-css">
-    /* 🚀 1. ทลายกำแพง Z-Index และกำหนดกรอบ */
+ <style id="row-popout-search-css">
+    /* 🚀 1. ทลายกำแพง Z-Index */
     .search-column { position: relative !important; z-index: 900 !important; }
     .search-column .card, #main-search-area { position: relative !important; z-index: 999999 !important; overflow: visible !important; }
+    .cart-column { position: relative !important; z-index: 1 !important; }
 
-    /* 🎨 2. กล่องผลลัพธ์หลัก */
+    /* 🎨 2. กล่องผลลัพธ์หลัก (แก้ไขระบบ Scroll ล้นจอ) */
     #search-results.has-results {
         position: absolute;
-        top: calc(100% + 4px);
-        left: 0;
+        top: 0; left: 0;
         width: 100%; 
-        max-height: calc(100vh - 200px);
+        
+        /* 🌟 MAGIC TRICK: ขยายพื้นที่รองรับ Pop-out ให้กว้างออกไปทางขวา 🌟 */
+        box-sizing: content-box !important;
+        padding-right: 400px !important; 
+        margin-right: -400px !important; 
+        
+        /* กำหนดความสูงให้ไม่ล้นจอ และเปิดใช้งานการเลื่อน (Scroll) */
+        max-height: calc(100vh - 180px);
         overflow-y: auto;
-        background: #ffffff;
-        border: 1px solid var(--border-color);
-        border-radius: 10px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-        display: flex; 
-        flex-direction: column;
-        padding: 8px;
-        gap: 8px;
-        z-index: 1000;
-    }
-
-    /* 3. การ์ดสินค้าแต่ละรายการ (Product Card) */
-    .search-row {
-        background: #ffffff;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        transition: all 0.15s ease;
-        cursor: default;
-    }
-
-    /* 🎨 4. สถานะ Active ของแถว (เวลาเลื่อนลูกศรขึ้น/ลง) */
-    .search-row.selected-row, .search-row:hover {
-        background: #f8faff;
-        border-color: #a8c7fa;
-    }
-
-    /* 5. ส่วนหัวการ์ด (ชื่อสินค้าและข้อมูลสต็อก) */
-    .search-product-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 12px;
-    }
-    .search-product-name {
-        font-weight: bold;
-        color: var(--dark-text);
-        font-size: 1.05em;
-        line-height: 1.3;
-    }
-    .search-product-meta {
-        font-size: 0.85em;
-        color: var(--secondary-color);
-        text-align: right;
-        flex-shrink: 0;
-    }
-
-    /* 6. ส่วนปุ่มหน่วยสินค้า (Units Area) */
-    .search-units-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    /* 7. ปุ่มกดแต่ละหน่วย */
-    .search-unit-cell {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: #f1f3f5;
-        border: 1px solid transparent;
-        padding: 6px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.2s;
-        flex-grow: 1; /* ให้ปุ่มขยายเต็มพื้นที่ถ้ามีน้อย */
-        max-width: fit-content;
+        overflow-x: hidden; 
+        
+        /* ป้องกันการคลิกโดนพื้นที่ล่องหน ให้ทะลุไปคลิกตะกร้าได้ */
+        pointer-events: none; 
+        z-index: 950 !important;
+        
+        /* ซ่อน Scrollbar ด้านขวาสุด เพื่อความสวยงาม */
+        scrollbar-width: none; 
+        
+        /* ย้าย Background ไปไว้ที่แถว (Row) เพื่อไม่ให้บังตะกร้า */
+        background: transparent;
+        border: none;
+        
+        display: flex; flex-direction: column;
+        
+        /* ใช้ drop-shadow สร้างเงารวมให้ทั้งหมด (แทน box-shadow เดิม) */
+        filter: drop-shadow(0 12px 24px rgba(0,0,0,0.08)); 
     }
     
-    .search-unit-cell .u-name { color: var(--secondary-color); font-size: 0.9em; }
-    .search-unit-cell .cell-price { color: var(--success-color); font-weight: bold; font-size: 1em; }
+    /* ซ่อน Scrollbar ของ Chrome/Safari/Edge */
+    #search-results.has-results::-webkit-scrollbar {
+        display: none; 
+    }
 
-    /* 🎨 8. สถานะ Active ของปุ่มหน่วย (เวลาเลื่อนลูกศรซ้าย/ขวา หรือ Hover) */
-    .search-unit-cell:hover, 
-    .search-unit-cell.active-unit {
-        background: var(--primary-color);
-        border-color: var(--primary-color);
-        box-shadow: 0 4px 10px rgba(0, 92, 191, 0.2);
+    /* 3. แถวสินค้า (Row) - รับหน้าที่เป็นฉากหลังแทนกล่องใหญ่ */
+    .search-row {
+        position: relative; 
+        width: 100%; /* กว้างเท่ากับขนาดกล่องจริง ไม่รวม Padding 400px */
+        display: flex; flex-direction: row;
+        
+        /* ย้ายพื้นหลังและเส้นขอบมาไว้ที่บรรทัดแทน */
+        background: rgba(255, 255, 255, 0.95); 
+        backdrop-filter: blur(12px); 
+        -webkit-backdrop-filter: blur(12px);
+        
+        border-left: 1px solid rgba(0, 0, 0, 0.08);
+        border-right: 1px solid rgba(0, 0, 0, 0.08);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03); 
+        
+        transition: background 0.2s ease;
+        /* เปิดการรับคลิกเมาส์อีกครั้ง */
+        pointer-events: auto; 
+    }
+    
+    /* ประกอบร่างแถวแรกและแถวสุดท้ายให้เป็นกล่องมนๆ เหมือนเดิม */
+    .search-row:first-child {
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        padding-top: 4px;
+    }
+    .search-row:last-child {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08); 
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        padding-bottom: 4px;
+    }
+
+    /* 4. กล่องหลัก (หน่วยแรก) */
+    .main-cell {
+        width: 100%;
+        padding: 0.7rem 1rem; 
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 12px;
+        box-sizing: border-box;
+        border-radius: 8px;
+        margin: 2px 4px; 
+        transition: all 0.15s;
+        
+        background: var(--white-color);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    /* 🌟 5. กล่องห่อหุ้มหน่วยเสริม (ถาดรอง) 🌟 */
+    .alt-units-wrapper {
+        position: absolute;
+        left: calc(100% + 8px); 
+        top: 50%;
+        transform: translateY(-50%); 
+        display: none; 
+        align-items: center;
+        gap: 4px; 
+        padding: 6px; 
+        z-index: 1000; 
+        
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); 
+    }
+
+    /* 🌟 ลูกเล่นติ่งลูกศรชี้กลับไปที่กล่องหลัก 🌟 */
+    .alt-units-wrapper::before {
+        content: '';
+        position: absolute;
+        left: -5px; 
+        top: 50%;
+        transform: translateY(-50%) rotate(45deg);
+        width: 10px;
+        height: 10px;
+        background: #ffffff;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        border-left: 1px solid rgba(0, 0, 0, 0.08);
+        z-index: -1;
+    }
+
+    .search-row.selected-row .alt-units-wrapper,
+    .search-row:hover .alt-units-wrapper {
+        display: flex;
+        animation: popRight 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; 
+    }
+
+    @keyframes popRight {
+        0% { opacity: 0; transform: translate(-10px, -50%) scale(0.95); }
+        100% { opacity: 1; transform: translate(0, -50%) scale(1); }
+    }
+
+    /* 6. กล่องหน่วยเสริมแต่ละอัน (Pills) */
+    .alt-cell {
+        background: var(--white-color);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px; 
+        display: flex; align-items: center; gap: 8px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+    }
+
+    /* 7. Typography */
+    .product-name-single { 
+        font-weight: 400; 
+        color: var(--dark-text);
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        flex-grow: 1; font-size: 0.95em;
+    }
+    .price-unit-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .cell-price { 
+        font-weight: 400; 
+        color: var(--success-color); 
+        font-size: 1em; 
+    }
+    .sub-text { 
+        font-weight: 400; 
+        font-size: 0.85em; 
+        color: var(--secondary-color); 
+    }
+
+    /* ================================= */
+    /* 🎨 สถานะ Active (Keyboard & Hover) */
+    /* ================================= */
+    
+    .search-row:hover .main-cell, 
+    .search-row.selected-row .main-cell,
+    .search-row:hover .alt-cell,
+    .search-row.selected-row .alt-cell {
+        background: #f8f9fa; 
+        border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .alt-cell:hover {
+        border-color: rgba(0, 123, 255, 0.3); 
+        background: #f0f7ff !important;
         transform: translateY(-1px);
     }
-    
-    .search-unit-cell:hover .u-name, 
-    .search-unit-cell:hover .cell-price,
-    .search-unit-cell.active-unit .u-name, 
-    .search-unit-cell.active-unit .cell-price {
-        color: #ffffff;
+
+    .main-cell.active-unit,
+    .alt-cell.active-unit {
+        background: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 4px 12px rgba(0, 92, 191, 0.25) !important;
+    }
+
+    .alt-cell.active-unit {
+        transform: scale(1.05); 
+    }
+
+    .main-cell.active-unit .product-name-single, 
+    .main-cell.active-unit .sub-text, 
+    .main-cell.active-unit .cell-price,
+    .alt-cell.active-unit .sub-text, 
+    .alt-cell.active-unit .cell-price {
+        color: var(--white-color) !important;
     }
 </style>
 <script>
@@ -5061,6 +5165,35 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
     }, 1000);
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", function() {
+    // ใช้ setTimeout เพื่อรอให้ระบบหลัก (POS_APP) เรนเดอร์เสร็จก่อน
+    setTimeout(function() {
+        const searchInput = document.getElementById('barcode-input');
+        
+        if (searchInput) {
+            searchInput.addEventListener('keydown', function(e) {
+                // ดักจับเมื่อกดปุ่ม Tab (และไม่ได้กด Shift ค้างไว้)
+                if (e.key === 'Tab' && !e.shiftKey) {
+                    
+                    // หาช่องกรอกจำนวน (รายการแรกสุด)
+                    const firstQtyInput = document.querySelector('#cart-items li:first-child .col-qty input');
+                    
+                    /* 💡 หมายเหตุ: หากต้องการให้กระโดดไปที่รายการ "ล่าสุด (ล่างสุด)" แทน ให้เปลี่ยนโค้ดด้านบนเป็น:
+                       const firstQtyInput = document.querySelector('#cart-items li:last-child .col-qty input');
+                    */
+
+                    if (firstQtyInput) {
+                        e.preventDefault(); // ยกเลิกการทำงานปกติของปุ่ม Tab (ที่มักจะกระโดดไปปุ่มอื่น)
+                        firstQtyInput.focus(); // โฟกัสที่ช่องจำนวน
+                        firstQtyInput.select(); // คลุมดำตัวเลขเดิม เพื่อให้พิมพ์ตัวเลขใหม่ทับได้ทันที
+                    }
+                }
+            });
+        }
+    }, 1500); // หน่วงเวลา 1.5 วินาที
 });
 </script>
 </body></html>
