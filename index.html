@@ -2,131 +2,280 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบเช็คสต็อกสินค้า (CSV Version)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ระบบเช็คสต็อกสินค้า (Scanner App)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
+        :root {
+            --primary-color: #4361ee;
+            --success-color: #2ecc71;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #2b2d42;
+            --text-muted: #8d99ae;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            background-color: var(--bg-color);
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            padding-bottom: 20px;
         }
+
         .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
             text-align: center;
-            padding: 10px 0 20px 0;
-            color: #333;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
+
+        .header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
         .search-box {
-            width: 100%;
-            padding: 12px;
+            flex-grow: 1;
+            padding: 14px;
             font-size: 16px;
             border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-sizing: border-box;
+            border-radius: 12px;
+            outline: none;
+            transition: border-color 0.3s;
         }
-        .product-card {
-            background-color: white;
+
+        .search-box:focus {
+            border-color: var(--primary-color);
+        }
+
+        .scan-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2);
+            transition: transform 0.1s;
+        }
+
+        .scan-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ส่วนของกล้องสแกนเนอร์ */
+        #reader-container {
+            display: none;
+            background: white;
             padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #reader {
+            width: 100%;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .close-scanner-btn {
+            background-color: #ef233c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .product-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: transform 0.2s;
+            border-left: 5px solid var(--primary-color);
         }
+
+        .product-card.highlight {
+            animation: highlight-pulse 1s;
+        }
+
+        @keyframes highlight-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 rgba(46, 204, 113, 0.7); }
+            50% { transform: scale(1.02); box-shadow: 0 0 15px rgba(46, 204, 113, 0.7); border-left-color: var(--success-color); }
+            100% { transform: scale(1); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        }
+
         .product-info h3 {
-            margin: 0 0 5px 0;
-            font-size: 16px;
-            color: #2c3e50;
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            color: var(--text-main);
         }
+
         .product-info p {
             margin: 0;
             font-size: 14px;
-            color: #7f8c8d;
+            color: var(--text-muted);
         }
+
         .stock-qty {
-            font-size: 20px;
-            font-weight: bold;
-            color: #27ae60;
-            background: #eafaf1;
-            padding: 10px 15px;
-            border-radius: 8px;
+            text-align: right;
         }
+
+        .stock-qty span {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .qty-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--success-color);
+            background: #eafaf1;
+            padding: 8px 16px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
         .loading {
             text-align: center;
-            color: #666;
+            color: var(--text-muted);
+            padding: 40px 20px;
+        }
+
+        .error-msg {
+            color: #d63031;
+            text-align: center;
+            padding: 20px;
+            background: #ff7675;
+            color: white;
+            border-radius: 12px;
+        }
+
+        /* ซ่อน UI ที่ไม่จำเป็นของไลบรารีกล้อง */
+        #reader__dashboard_section_csr span,
+        #reader__dashboard_section_swaplink {
+            display: none !important;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h2>📦 เช็คสต็อกสินค้า</h2>
+        <h2>📦 ระบบเช็คสต็อก (Scanner)</h2>
     </div>
 
-    <input type="text" id="searchInput" class="search-box" placeholder="ค้นหาชื่อ หรือ รหัสสินค้า..." onkeyup="filterProducts()">
+    <div class="container">
+        <div class="controls">
+            <input type="text" id="searchInput" class="search-box" placeholder="ค้นหารหัส / บาร์โค้ด..." onkeyup="filterProducts()">
+            <button class="scan-btn" onclick="toggleScanner()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h3"></path><path d="M9 4h6"></path><path d="M20 4v3"></path><path d="M20 9v6"></path><path d="M20 20v-3h-3"></path><path d="M15 20H9"></path><path d="M4 20v-3"></path><path d="M4 15V9"></path></svg>
+            </button>
+        </div>
 
-    <div id="loading" class="loading">กำลังโหลดข้อมูล...</div>
-    <div id="productList"></div>
+        <div id="reader-container">
+            <div id="reader"></div>
+            <button class="close-scanner-btn" onclick="stopScanner()">ปิดกล้องสแกนเนอร์</button>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>กำลังดึงข้อมูลสต็อก...</p>
+        </div>
+        <div id="productList"></div>
+    </div>
 
     <script>
-        // ใส่ลิงก์ CSV ของคุณที่นี่
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmXRs6aaAECgHFumMc0sYF-lqyHTEfxjQFCuDYrLzpxtJDhP3HPtXyWLXa2T8XvxYIfO4LVm6fEoFH/pub?output=csv'; 
         
         let productsData = [];
+        let html5QrcodeScanner;
+        let isScanning = false;
 
-        // ฟังก์ชันดึงข้อมูล CSV
-        async function fetchStock() {
-            try {
-                const response = await fetch(CSV_URL);
-                const csvText = await response.text();
-                
-                // ใช้ PapaParse แปลงข้อความ CSV เป็น Array
-                Papa.parse(csvText, {
-                    skipEmptyLines: true,
-                    complete: function(results) {
-                        // สมมติว่า คอลัมน์ A=รหัส(index 0), B=ชื่อ(index 1), C=จำนวน(index 2)
-                        // ตัดแถวแรกทิ้ง (เพราะเป็นหัวข้อตาราง)
-                        const rawData = results.data.slice(1); 
-                        
-                        // จัดรูปแบบข้อมูลใหม่ให้อยู่ในรูป Object
-                        productsData = rawData.map(row => ({
-                            id: row[0] || '-',
-                            name: row[1] || 'ไม่ระบุชื่อ',
-                            qty: row[2] || '0'
-                        }));
+        // ดึงข้อมูล CSV
+        function fetchStock() {
+            Papa.parse(CSV_URL, {
+                download: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const rawData = results.data.slice(1); 
+                    productsData = rawData.map(row => ({
+                        id: (row[0] || '-').trim(),
+                        name: (row[1] || 'ไม่ระบุชื่อ').trim(),
+                        qty: (row[2] || '0').trim()
+                    }));
 
-                        displayProducts(productsData);
-                        document.getElementById('loading').style.display = 'none';
-                    }
-                });
-            } catch (error) {
-                document.getElementById('loading').innerText = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
-                console.error('Error:', error);
-            }
+                    displayProducts(productsData);
+                    document.getElementById('loading').style.display = 'none';
+                },
+                error: function(err) {
+                    const loadingDiv = document.getElementById('loading');
+                    loadingDiv.className = 'error-msg';
+                    loadingDiv.innerHTML = '<b>เกิดข้อผิดพลาดในการดึงข้อมูล</b><br>โปรดตรวจสอบการแชร์ Google Sheet';
+                }
+            });
         }
 
-        // ฟังก์ชันแสดงผลการ์ดสินค้า
-        function displayProducts(products) {
+        // แสดงผลรายการสินค้า
+        function displayProducts(products, highlightId = null) {
             const container = document.getElementById('productList');
             container.innerHTML = '';
             
             if(products.length === 0) {
-                container.innerHTML = '<p style="text-align:center;">ไม่พบข้อมูลสินค้า</p>';
+                container.innerHTML = `
+                    <div style="text-align:center; padding: 40px 20px; color: #8d99ae;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom:10px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <p>ไม่พบสินค้าที่ค้นหา</p>
+                    </div>`;
                 return;
             }
 
             products.forEach(product => {
+                // สร้างคลาส highlight หากตรงกับรหัสที่เพิ่งสแกน
+                const isHighlight = highlightId && product.id.toLowerCase() === highlightId.toLowerCase() ? 'highlight' : '';
+                
                 const card = `
-                    <div class="product-card">
+                    <div class="product-card ${isHighlight}">
                         <div class="product-info">
                             <h3>${product.name}</h3>
-                            <p>รหัส: ${product.id}</p>
+                            <p>รหัส/บาร์โค้ด: ${product.id}</p>
                         </div>
                         <div class="stock-qty">
-                            ${product.qty}
+                            <span>ยอดคงเหลือ</span>
+                            <div class="qty-number">${product.qty}</div>
                         </div>
                     </div>
                 `;
@@ -134,19 +283,84 @@
             });
         }
 
-        // ฟังก์ชันค้นหาสินค้า
-        function filterProducts() {
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
+        // ค้นหาสินค้า
+        function filterProducts(scannedText = null) {
+            const searchInput = document.getElementById('searchInput');
+            if (scannedText !== null) {
+                searchInput.value = scannedText;
+            }
+            
+            const searchText = searchInput.value.toLowerCase().trim();
             const filtered = productsData.filter(product => 
                 product.name.toLowerCase().includes(searchText) || 
-                product.id.toString().toLowerCase().includes(searchText)
+                product.id.toLowerCase().includes(searchText)
             );
-            displayProducts(filtered);
+            
+            // ส่งค่า scannedText ไปให้ฟังก์ชันแสดงผลเพื่อสร้าง Effect กระพริบ
+            displayProducts(filtered, scannedText);
         }
 
-        // โหลดข้อมูลทันทีเมื่อเปิดหน้าเว็บ
+        // ---------- ระบบสแกนเนอร์ ----------
+
+        function toggleScanner() {
+            if (isScanning) {
+                stopScanner();
+            } else {
+                startScanner();
+            }
+        }
+
+        function startScanner() {
+            document.getElementById('reader-container').style.display = 'block';
+            
+            // ตั้งค่าเครื่องสแกน
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+            
+            html5QrcodeScanner.start(
+                { facingMode: "environment" }, // ใช้กล้องหลังมือถือ
+                config,
+                onScanSuccess,
+                onScanFailure
+            ).then(() => {
+                isScanning = true;
+                // เลื่อนหน้าจอขึ้นไปบนสุดเพื่อให้เห็นกล้องชัดเจน
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }).catch(err => {
+                alert("ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตการเข้าถึงกล้อง");
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop().then(() => {
+                    document.getElementById('reader-container').style.display = 'none';
+                    isScanning = false;
+                }).catch(err => {
+                    console.error("Failed to stop scanner", err);
+                });
+            }
+        }
+
+        // เมื่อสแกนสำเร็จ
+        function onScanSuccess(decodedText, decodedResult) {
+            // เล่นเสียงแจ้งเตือนสั้นๆ (ถ้ามี) หรือสั่นมือถือ (ถ้าเบราว์เซอร์รองรับ)
+            if (navigator.vibrate) navigator.vibrate(200);
+
+            // หยุดกล้องชั่วคราว
+            stopScanner();
+            
+            // ค้นหาสินค้าจากบาร์โค้ดที่สแกนได้
+            filterProducts(decodedText);
+        }
+
+        // เมื่อยังหาสแกนไม่เจอ (ทำงานตลอดเวลาที่เปิดกล้อง)
+        function onScanFailure(error) {
+            // ไม่ต้องทำอะไร ปล่อยให้มันสแกนต่อไป
+        }
+
+        // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
         fetchStock();
     </script>
-
 </body>
 </html>
