@@ -57,14 +57,6 @@
         .loading {
             text-align: center;
             color: #666;
-            padding: 20px;
-        }
-        .error-msg {
-            color: #e74c3c;
-            text-align: center;
-            padding: 20px;
-            background: #fde8e8;
-            border-radius: 8px;
         }
     </style>
 </head>
@@ -80,39 +72,40 @@
     <div id="productList"></div>
 
     <script>
-        // ลิงก์ CSV ของคุณ
+        // ใส่ลิงก์ CSV ของคุณที่นี่
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmXRs6aaAECgHFumMc0sYF-lqyHTEfxjQFCuDYrLzpxtJDhP3HPtXyWLXa2T8XvxYIfO4LVm6fEoFH/pub?output=csv'; 
         
         let productsData = [];
 
-        // ฟังก์ชันดึงข้อมูล CSV ด้วย PapaParse
-        function fetchStock() {
-            // ใช้ PapaParse ดึงข้อมูลจาก URL โดยตรงผ่านโหมด download
-            Papa.parse(CSV_URL, {
-                download: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    // ตัดแถวแรกทิ้ง (หัวตาราง)
-                    const rawData = results.data.slice(1); 
-                    
-                    // จัดรูปแบบข้อมูลใหม่ให้อยู่ในรูป Object
-                    // สมมติว่า คอลัมน์ A=รหัส(index 0), B=ชื่อ(index 1), C=จำนวน(index 2)
-                    productsData = rawData.map(row => ({
-                        id: row[0] || '-',
-                        name: row[1] || 'ไม่ระบุชื่อ',
-                        qty: row[2] || '0'
-                    }));
+        // ฟังก์ชันดึงข้อมูล CSV
+        async function fetchStock() {
+            try {
+                const response = await fetch(CSV_URL);
+                const csvText = await response.text();
+                
+                // ใช้ PapaParse แปลงข้อความ CSV เป็น Array
+                Papa.parse(csvText, {
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        // สมมติว่า คอลัมน์ A=รหัส(index 0), B=ชื่อ(index 1), C=จำนวน(index 2)
+                        // ตัดแถวแรกทิ้ง (เพราะเป็นหัวข้อตาราง)
+                        const rawData = results.data.slice(1); 
+                        
+                        // จัดรูปแบบข้อมูลใหม่ให้อยู่ในรูป Object
+                        productsData = rawData.map(row => ({
+                            id: row[0] || '-',
+                            name: row[1] || 'ไม่ระบุชื่อ',
+                            qty: row[2] || '0'
+                        }));
 
-                    displayProducts(productsData);
-                    document.getElementById('loading').style.display = 'none';
-                },
-                error: function(err) {
-                    console.error('PapaParse Error:', err);
-                    const loadingDiv = document.getElementById('loading');
-                    loadingDiv.className = 'error-msg';
-                    loadingDiv.innerHTML = '<b>เกิดข้อผิดพลาดในการดึงข้อมูล</b><br>โปรดตรวจสอบว่าเปิดการแชร์ Google Sheet เป็น "ทุกคนที่มีลิงก์ (Anyone with the link)" แล้ว';
-                }
-            });
+                        displayProducts(productsData);
+                        document.getElementById('loading').style.display = 'none';
+                    }
+                });
+            } catch (error) {
+                document.getElementById('loading').innerText = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+                console.error('Error:', error);
+            }
         }
 
         // ฟังก์ชันแสดงผลการ์ดสินค้า
@@ -121,7 +114,7 @@
             container.innerHTML = '';
             
             if(products.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color: #666;">ไม่พบข้อมูลสินค้า</p>';
+                container.innerHTML = '<p style="text-align:center;">ไม่พบข้อมูลสินค้า</p>';
                 return;
             }
 
