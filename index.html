@@ -1693,6 +1693,44 @@ h2 .auth-status-badge.offline .dot { background: #999; }
             font-size: 1.8rem !important;
         }
     }
+    
+    /* === World-Class Kiosk UI Elements === */
+    .kiosk-idle-screen {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 4rem 1rem; text-align: center; color: var(--text-secondary);
+        opacity: 0; animation: fadeIn 0.8s ease forwards;
+        margin-top: 2rem;
+    }
+    .scanner-icon-anim {
+        margin-bottom: 2rem; position: relative; color: var(--text-primary);
+        opacity: 0.8;
+    }
+    .scan-laser-line {
+        animation: scanMove 1.5s infinite ease-in-out alternate;
+    }
+    
+    @keyframes scanMove {
+        0% { transform: translateY(-6px); opacity: 0.5; }
+        100% { transform: translateY(6px); opacity: 1; }
+    }
+    @keyframes fadeIn {
+        to { opacity: 1; }
+    }
+    @keyframes kioskCardPop {
+        0% { transform: scale(0.9) translateY(40px); opacity: 0; }
+        100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    body::after { /* Flash Success Overlay */
+        content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: radial-gradient(circle at 50% 50%, rgba(50, 200, 100, 0.15), transparent 80%);
+        pointer-events: none; opacity: 0; z-index: 9999;
+        transition: opacity 0.4s ease-out;
+    }
+    body.flash-success::after {
+        opacity: 1;
+        transition: none;
+    }
 </style>
 </head>
 <body>
@@ -1716,7 +1754,21 @@ h2 .auth-status-badge.offline .dot { background: #999; }
             </div>
             
             <div id="main-search-area" style="width: 100%;">
-                <div id="search-results" style="border: none;"></div>
+                <div id="search-results" style="border: none;">
+                    <div class="kiosk-idle-screen">
+                        <div class="scanner-icon-anim">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 7V4h3"></path><path d="M4 17v3h3"></path>
+                                <path d="M20 7V4h-3"></path><path d="M20 17v3h-3"></path>
+                                <line x1="10" y1="8" x2="10" y2="16" stroke="rgba(255,255,255,0.4)"></line>
+                                <line x1="14" y1="8" x2="14" y2="16" stroke="rgba(255,255,255,0.4)"></line>
+                                <line x1="4" y1="12" x2="20" y2="12" class="scan-laser-line" stroke="#32c864" stroke-width="2"></line>
+                            </svg>
+                        </div>
+                        <h2 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.5px;">พร้อมใช้งาน!</h2>
+                        <p style="color: var(--text-secondary); font-size: 1.1rem;">แสกนบาร์โค้ด หรือพิมพ์ชื่อสินค้า...<br>เพื่อตรวจสอบราคาได้เลยครับ</p>
+                    </div>
+                </div>
             </div>
 
             <div id="shortcut-hints">
@@ -3230,55 +3282,71 @@ results.sort((a, b) => {
         const resultsContainer = document.getElementById('search-results');
         resultsContainer.innerHTML = '';
         resultsContainer.classList.toggle('has-results', results.length > 0);
-        if (results.length === 0) return;
         
-        results.slice(0, 10).forEach((productUnit, index) => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'price-checker-card';
-            if (index === this.state.selectedSearchIndex) itemDiv.classList.add('selected');
-            
-            const productName = this.escapeHtml(productUnit.productName);
-            const unitName = this.escapeHtml(productUnit.pricingUnit.unitName || '');
-            let barcodeText = productUnit.barcode ? `<div class="pc-barcode">บาร์โค้ด: ${this.escapeHtml(productUnit.barcode)}</div>` : '';
-            
-            let mainPriceHtml = `
-                <div class="pc-main-price-box">
-                    <div class="pc-label">ราคาขายปลีก</div>
-                    <div><span class="pc-price-huge">${this.formatPrice(productUnit.price)}</span><span class="pc-price-unit">บาท/${unitName}</span></div>
+        if (results.length === 0) {
+            // SHOW IDLE SCREEN
+            resultsContainer.innerHTML = `
+                <div class="kiosk-idle-screen">
+                    <div class="scanner-icon-anim">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 7V4h3"></path><path d="M4 17v3h3"></path>
+                            <path d="M20 7V4h-3"></path><path d="M20 17v3h-3"></path>
+                            <line x1="10" y1="8" x2="10" y2="16" stroke="rgba(255,255,255,0.4)"></line>
+                            <line x1="14" y1="8" x2="14" y2="16" stroke="rgba(255,255,255,0.4)"></line>
+                            <line x1="4" y1="12" x2="20" y2="12" class="scan-laser-line" stroke="#32c864" stroke-width="2"></line>
+                        </svg>
+                    </div>
+                    <h2 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.5px;">พร้อมใช้งาน!</h2>
+                    <p style="color: var(--text-secondary); font-size: 1.1rem;">แสกนบาร์โค้ด หรือพิมพ์ชื่อสินค้า...<br>เพื่อตรวจสอบราคาได้เลยครับ</p>
                 </div>
             `;
-
-            let tiersHtml = '';
-            // Wholesale tiers removed per user request
-
-            itemDiv.innerHTML = `
-                <div class="pc-header">
-                    <div class="pc-title">${productName}</div>
-                    ${barcodeText}
-                </div>
-                ${mainPriceHtml}
-                ${tiersHtml}
-                <div class="pc-tap-hint">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                    แตะที่หน้าจอ หรือแสกนชิ้นต่อไปได้เลย
-                </div>
-            `;
-            
-            // Allow tap anywhere on the card to clear the search for the next scan
-            itemDiv.onclick = () => {
-                document.getElementById('barcode-input').value = '';
-                this.state.currentSearchResults = [];
-                this.state.selectedSearchIndex = -1;
-                this.displaySearchResults([], '');
-                this.focusSearchIfReady();
-            };
-            resultsContainer.appendChild(itemDiv);
-        });
-
-        // Automatically clear search input after successful instant scan (after 5 seconds or immediately)
-        if (this.state.isScanning && results.length > 0) {
-            document.getElementById('barcode-input').select();
+            return;
         }
+        
+        // SINGLE WORLD CLASS RESULT (Take only the top match)
+        const productUnit = results[0];
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'price-checker-card kiosk-active-card'; // Added kiosk animation class
+        
+        // Show success flash animation on body
+        document.body.classList.add('flash-success');
+        setTimeout(() => document.body.classList.remove('flash-success'), 400);
+
+        const productName = this.escapeHtml(productUnit.productName);
+        const unitName = this.escapeHtml(productUnit.pricingUnit.unitName || '');
+        let barcodeText = productUnit.barcode ? `<div class="pc-barcode">บาร์โค้ด: ${this.escapeHtml(productUnit.barcode)}</div>` : '';
+        
+        let mainPriceHtml = `
+            <div class="pc-main-price-box">
+                <div class="pc-label">ราคาขายปลีก</div>
+                <div><span class="pc-price-huge" style="font-size: 5.5rem;">${this.formatPrice(productUnit.price)}</span><span class="pc-price-unit" style="font-size: 2rem;">บาท/${unitName}</span></div>
+            </div>
+        `;
+
+        itemDiv.innerHTML = `
+            <div class="pc-header">
+                <div class="pc-title" style="font-size: 2.8rem; line-height: 1.15; margin-bottom: 1rem;">${productName}</div>
+                ${barcodeText}
+            </div>
+            ${mainPriceHtml}
+            <div class="pc-tap-hint">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                แตะที่หน้าจอ เพื่อล้างค่า
+            </div>
+        `;
+        
+        // Allow tap anywhere on the card to clear the search
+        itemDiv.onclick = () => {
+            document.getElementById('barcode-input').value = '';
+            this.state.currentSearchResults = [];
+            this.state.selectedSearchIndex = -1;
+            this.displaySearchResults([], '');
+            this.focusSearchIfReady();
+        };
+        resultsContainer.appendChild(itemDiv);
+
+        // Auto-select text so typing immediately overwrites for manual search mode
+        document.getElementById('barcode-input').select();
     },
     escapeRegex(string) { return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'); },
     escapeHtml(string) { const p = document.createElement("p");
