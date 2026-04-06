@@ -224,60 +224,112 @@
         font-size: 0.88em; 
     }
     
-    /* --- Price Checker iOS Cards --- */
+    /* --- Price Checker iOS Cards UX Improvement --- */
     .price-checker-card {
         background: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        margin-bottom: 1rem;
-        padding: 1.5rem;
+        border-radius: 24px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08); 
+        margin-bottom: 1.5rem;
+        padding: 2.5rem 1.5rem; 
         display: flex;
         flex-direction: column;
-        border: 1px solid rgba(0,0,0,0.04);
+        border: 1px solid rgba(0,0,0,0.05);
         cursor: pointer;
-        transition: transform 0.2s;
+        transition: transform 0.2s, box-shadow 0.2s;
     }
     .price-checker-card:active {
-        transform: scale(0.98);
+        transform: scale(0.97);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
     .price-checker-card .pc-header {
-        margin-bottom: 1rem;
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 0.8rem;
+        text-align: center;
+        margin-bottom: 2rem;
     }
     .price-checker-card .pc-title {
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: var(--primary-color);
-        line-height: 1.3;
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: var(--dark-text);
+        line-height: 1.25;
+        margin-bottom: 0.6rem;
     }
     .price-checker-card .pc-barcode {
-        font-size: 0.95rem;
+        font-size: 1.1rem;
         color: var(--secondary-color);
-        margin-top: 0.4rem;
+        background: var(--light-bg);
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 99px;
+    }
+    .pc-main-price-box {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        background: linear-gradient(145deg, #f0fdf4, #e6f9ed);
+        border: 2px solid #c6f6d5;
+        border-radius: 20px;
+        margin-bottom: 1.5rem;
+    }
+    .pc-main-price-box .pc-label {
+        font-size: 1.3rem;
+        color: #2f855a;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+    .pc-main-price-box .pc-price-huge {
+        font-size: 4.5rem;
+        font-weight: 900;
+        color: #22543d;
+        line-height: 1;
+        letter-spacing: -1px;
+    }
+    .pc-main-price-box .pc-price-unit {
+        font-size: 1.6rem;
+        color: #2f855a;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+    .pc-wholesale-section {
+        border-top: 2px dashed #e2e8f0;
+        padding-top: 1.5rem;
+    }
+    .pc-wholesale-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #4a5568;
+        margin-bottom: 1rem;
     }
     .pc-tiers-list {
         display: flex;
         flex-direction: column;
-        gap: 0.8rem;
+        gap: 0.6rem;
     }
     .pc-tier-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: var(--light-bg);
-        padding: 1rem 1.2rem;
+        background: #f8f9fa;
+        padding: 1rem 1.4rem;
         border-radius: 12px;
+        border-left: 4px solid var(--warning-color);
     }
     .pc-tier-row .pc-qty {
-        font-size: 1.1rem;
-        color: var(--dark-text);
-        font-weight: 500;
+        font-size: 1.2rem;
+        color: #495057;
+        font-weight: 600;
     }
     .pc-tier-row .pc-price {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
         font-weight: 800;
-        color: var(--success-color);
+        color: var(--dark-text);
+    }
+    .pc-tap-hint {
+        text-align: center;
+        color: #adb5bd;
+        font-size: 1.1rem;
+        margin-top: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
     }
     /* -------------------------------- */
 
@@ -2933,21 +2985,23 @@ results.sort((a, b) => {
             const unitName = this.escapeHtml(productUnit.pricingUnit.unitName || '');
             let barcodeText = productUnit.barcode ? `<div class="pc-barcode">บาร์โค้ด: ${this.escapeHtml(productUnit.barcode)}</div>` : '';
             
+            let mainPriceHtml = `
+                <div class="pc-main-price-box">
+                    <div class="pc-label">ราคาขายปลีก</div>
+                    <div><span class="pc-price-huge">${this.formatPrice(productUnit.price)}</span><span class="pc-price-unit">บาท/${unitName}</span></div>
+                </div>
+            `;
+
             let tiersHtml = '';
             if (productUnit.pricingUnit.priceTiers && productUnit.pricingUnit.priceTiers.length > 0) {
-                tiersHtml = '<div class="pc-tiers-list">';
+                tiersHtml = '<div class="pc-wholesale-section"><div class="pc-wholesale-title">🔥 เรทราคาส่ง:</div><div class="pc-tiers-list">';
                 productUnit.pricingUnit.priceTiers.forEach(tier => {
                     tiersHtml += `<div class="pc-tier-row">
-                        <span class="pc-qty">ซื้อ ${tier.quantity} ${unitName}ขึ้นไป</span>
-                        <span class="pc-price">${this.formatPrice(tier.price)} บาท/${unitName}</span>
+                        <span class="pc-qty">ซื้อ ${tier.quantity} ${unitName} ขึ้นไป</span>
+                        <span class="pc-price">${this.formatPrice(tier.price)} บาท / ${unitName}</span>
                     </div>`;
                 });
-                tiersHtml += '</div>';
-            } else {
-                 tiersHtml = `<div class="pc-tiers-list"><div class="pc-tier-row">
-                        <span class="pc-qty">ราคา 1 ${unitName}</span>
-                        <span class="pc-price">${this.formatPrice(productUnit.price)} บาท</span>
-                    </div></div>`;
+                tiersHtml += '</div></div>';
             }
 
             itemDiv.innerHTML = `
@@ -2955,7 +3009,12 @@ results.sort((a, b) => {
                     <div class="pc-title">${productName}</div>
                     ${barcodeText}
                 </div>
+                ${mainPriceHtml}
                 ${tiersHtml}
+                <div class="pc-tap-hint">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    แตะที่หน้าจอ หรือแสกนชิ้นต่อไปได้เลย
+                </div>
             `;
             
             // Allow tap anywhere on the card to clear the search for the next scan
