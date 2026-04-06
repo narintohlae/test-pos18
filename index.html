@@ -331,6 +331,60 @@
         justify-content: center;
         gap: 0.5rem;
     }
+    /* --- Mobile Responsive Overrides for Price Checker Card --- */
+    @media (max-width: 480px) {
+        .price-checker-card {
+            padding: 1.5rem 1rem;
+            border-radius: 20px;
+        }
+        .price-checker-card .pc-header {
+            margin-bottom: 1.2rem;
+        }
+        .price-checker-card .pc-title {
+            font-size: 1.8rem;
+            margin-bottom: 0.4rem;
+        }
+        .price-checker-card .pc-barcode {
+            font-size: 0.9rem;
+            padding: 4px 12px;
+        }
+        .pc-main-price-box {
+            padding: 1.5rem 0.5rem;
+            margin-bottom: 1.2rem;
+            border-radius: 16px;
+        }
+        .pc-main-price-box .pc-label {
+            font-size: 1.1rem;
+        }
+        .pc-main-price-box .pc-price-huge {
+            font-size: 3.2rem;
+        }
+        .pc-main-price-box .pc-price-unit {
+            font-size: 1.2rem;
+        }
+        .pc-wholesale-section {
+            padding-top: 1.2rem;
+        }
+        .pc-wholesale-title {
+            font-size: 1.05rem;
+            margin-bottom: 0.8rem;
+        }
+        .pc-tier-row {
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            border-left-width: 3px;
+        }
+        .pc-tier-row .pc-qty {
+            font-size: 1.05rem;
+        }
+        .pc-tier-row .pc-price {
+            font-size: 1.25rem;
+        }
+        .pc-tap-hint {
+            font-size: 0.95rem;
+            margin-top: 1.5rem;
+        }
+    }
     /* -------------------------------- */
 
     .search-item:last-child { border-bottom: none; }
