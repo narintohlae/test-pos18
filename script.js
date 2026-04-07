@@ -12,6 +12,10 @@ const statusMessage = document.getElementById('statusMessage');
 const scannerDrawer = document.getElementById('scannerDrawer');
 const drawerOverlay = document.getElementById('drawerOverlay');
 const closeScanner = document.getElementById('closeScanner');
+const searchSuggestions = document.getElementById('searchSuggestions');
+
+let searchDebounceTimer;
+
 
 // Initialize: Fetch Data
 async function init() {
@@ -91,11 +95,77 @@ function performSearch() {
     if (results.length > 0) {
         statusMessage.textContent = `พบสินค้า ${results.length} รายการ ที่ตรงกับ "${query}"`;
         results.forEach(res => renderProduct(res.product, res.matchedUnitIndex));
-        window.scrollTo({ top: resultsContainer.offsetTop - 20, behavior: 'smooth' });
+        if (results.length === 1) {
+            window.scrollTo({ top: resultsContainer.offsetTop - 20, behavior: 'smooth' });
+        }
     } else {
         statusMessage.textContent = 'ไม่พบสินค้าที่ตรงกับ "' + query + '"';
     }
 }
+
+// Suggestions Logic
+function updateSuggestions() {
+    const query = searchInput.value.trim().toLowerCase();
+    
+    if (query.length < 2) {
+        searchSuggestions.classList.remove('active');
+        return;
+    }
+
+    const matches = [];
+    const MAX_SUGGESTIONS = 8;
+
+    for (const p of productsData) {
+        if (matches.length >= MAX_SUGGESTIONS) break;
+
+        const name = (p['ชื่อการค้า'] || '').toString().toLowerCase();
+        const id = (p['รหัสสินค้า'] || '').toString().toLowerCase();
+        const b1 = (p['บาร์โค้ดในหน่วยนับ 1'] || '').toString();
+
+        if (name.includes(query) || id === query || b1 === query) {
+            matches.push(p);
+        }
+    }
+
+    if (matches.length > 0) {
+        searchSuggestions.innerHTML = matches.map(p => {
+            const tiers = getPricingTiers(p);
+            const price = tiers.length > 0 ? `฿${tiers[0].price.toLocaleString()}` : '';
+            return `
+                <div class="suggestion-item" data-id="${p['รหัสสินค้า']}">
+                    <div class="suggestion-info">
+                        <span class="suggestion-name">${p['ชื่อการค้า']}</span>
+                        <span class="suggestion-barcode">${p['บาร์โค้ดในหน่วยนับ 1'] || ''}</span>
+                    </div>
+                    <div class="suggestion-price">${price}</div>
+                </div>
+            `;
+        }).join('');
+        searchSuggestions.classList.add('active');
+    } else {
+        searchSuggestions.classList.remove('active');
+    }
+}
+
+function handleSuggestionClick(e) {
+    const item = e.target.closest('.suggestion-item');
+    if (!item) return;
+
+    const productId = item.dataset.id;
+    const product = productsData.find(p => p['รหัสสินค้า'].toString() === productId);
+    
+    if (product) {
+        searchInput.value = product['ชื่อการค้า'];
+        searchSuggestions.classList.remove('active');
+        
+        // Trigger specific search for this product
+        resultsContainer.innerHTML = '';
+        renderProduct(product, -1);
+        statusMessage.textContent = '';
+        window.scrollTo({ top: resultsContainer.offsetTop - 20, behavior: 'smooth' });
+    }
+}
+
 
 // Pricing Logic
 function getPricingTiers(product) {
@@ -194,12 +264,31 @@ function closeScannerDrawer() {
 }
 
 // Events
-searchBtn.addEventListener('click', performSearch);
-searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
+searchBtn.addEventListener('click', () => {
+    searchSuggestions.classList.remove('active');
+    performSearch();
+});
+searchInput.addEventListener('keypress', (e) => { 
+    if (e.key === 'Enter') {
+        searchSuggestions.classList.remove('active');
+        performSearch(); 
+    }
+});
+searchInput.addEventListener('input', () => {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(updateSuggestions, 300);
+});
+searchSuggestions.addEventListener('click', handleSuggestionClick);
 scanBtn.addEventListener('click', openScanner);
 closeScanner.addEventListener('click', closeScannerDrawer);
 drawerOverlay.addEventListener('click', closeScannerDrawer);
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.input-wrapper')) {
+        searchSuggestions.classList.remove('active');
+    }
+});
 document.addEventListener("visibilitychange", () => { if (document.hidden) closeScannerDrawer(); });
+
 
 window.addEventListener('load', () => {
     searchInput.focus();
