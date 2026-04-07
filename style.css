@@ -393,6 +393,13 @@ button#searchBtn svg {
     overflow: hidden;
 }
 
+.scanner-view video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
 .scanner-laser {
     position: absolute;
     top: 20%;

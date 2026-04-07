@@ -1,7 +1,7 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbyPMzdWVeyKJZhr_rtSOfnSlbwlN1MZ9UhaQlykyCxpcpmAUM7w9-S3b-EFC_JdXkG5Yg/exec';
 
 let productsData = [];
-let html5QrCode;
+let codeReader;
 
 // DOM Elements
 const searchInput = document.getElementById('searchInput');
@@ -27,7 +27,7 @@ async function init() {
         productsData = json.data;
         
         statusMessage.textContent = 'พร้อมตรวจสอบราคา (สินค้า ' + productsData.length + ' รายการ)';
-        html5QrCode = new Html5Qrcode("reader", { experimentalFeatures: { useBarCodeDetectorIfSupported: true } });
+        codeReader = new ZXing.BrowserMultiFormatReader();
     } catch (error) {
         console.error('Error:', error);
         statusMessage.innerHTML = '<span style="color: #ef4444;">เกิดข้อผิดพลาดในการโหลดข้อมูล</span>';
@@ -244,24 +244,46 @@ function renderProduct(product, matchedUnitIndex) {
 async function openScanner() {
     scannerDrawer.classList.add('active');
     drawerOverlay.classList.add('active');
-    const config = { fps: 20, qrbox: (w, h) => ({ width: Math.min(w, h) * 0.75, height: Math.min(w, h) * 0.75 }), aspectRatio: 1.0 };
+    
     try {
-        await html5QrCode.start({ facingMode: "environment" }, config, (text) => {
-                searchInput.value = text;
+        const videoInputDevices = await codeReader.listVideoInputDevices();
+        
+        // Try to find back camera
+        let selectedDeviceId = videoInputDevices[0].deviceId;
+        for (const device of videoInputDevices) {
+            const label = device.label.toLowerCase();
+            if (label.includes('back') || label.includes('rear') || label.includes('environment')) {
+                selectedDeviceId = device.deviceId;
+                break;
+            }
+        }
+
+        await codeReader.decodeFromVideoDevice(selectedDeviceId, 'video', (result, err) => {
+            if (result) {
+                searchInput.value = result.text;
                 closeScannerDrawer();
                 performSearch();
-            }, (err) => {});
+            }
+            if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error(err);
+            }
+        });
     } catch (err) {
+        console.error(err);
         statusMessage.textContent = "ไม่สามารถเปิดกล้องได้";
         closeScannerDrawer();
     }
 }
 
+
 function closeScannerDrawer() {
     scannerDrawer.classList.remove('active');
     drawerOverlay.classList.remove('active');
-    if (html5QrCode && html5QrCode.isScanning) html5QrCode.stop().catch(e => {});
+    if (codeReader) {
+        codeReader.reset();
+    }
 }
+
 
 // Events
 searchBtn.addEventListener('click', () => {
