@@ -257,7 +257,7 @@ async function openScanner() {
                 },
             },
             locator: {
-                patchSize: "small", // "small" captures small/far barcodes better
+                patchSize: "medium", // Reverted to medium for more robust (stable) results
                 halfSample: true
             },
             numOfWorkers: navigator.hardwareConcurrency || 2,
@@ -288,26 +288,41 @@ async function openScanner() {
     }
 }
 
-let lastDetectedCode = null;
-let lastDetectedTime = 0;
+let detections = [];
+let lastProcessedCode = null;
+let lastProcessedTime = 0;
 
 function handleDetection(result) {
     const code = result.codeResult.code;
     const now = Date.now();
     
-    // Simple debounce to prevent double trigger
-    if (code === lastDetectedCode && (now - lastDetectedTime < 2000)) {
+    // Check if we just processed this code to avoid repeating
+    if (code === lastProcessedCode && (now - lastProcessedTime < 3000)) {
         return;
     }
 
-    lastDetectedCode = code;
-    lastDetectedTime = now;
+    // Accuracy Check: We need the same code to appear multiple times
+    detections.push(code);
+    if (detections.length > 5) detections.shift(); // Keep latest 5 results
 
-    console.log("Detected:", code);
-    searchInput.value = code;
-    closeScannerDrawer();
-    performSearch();
+    // If the latest 5 results have the same code at least 3 times, we trust it
+    const matchCount = detections.filter(d => d === code).length;
+    if (matchCount >= 3) {
+        console.log("Confirmed Detection (Majority Vote):", code);
+        
+        lastProcessedCode = code;
+        lastProcessedTime = now;
+        detections = []; // Clear for next scan
+        
+        // Haptic Feedback for Mobile
+        if (navigator.vibrate) navigator.vibrate(100);
+
+        searchInput.value = code;
+        closeScannerDrawer();
+        performSearch();
+    }
 }
+
 
 function closeScannerDrawer() {
     scannerDrawer.classList.remove('active');
