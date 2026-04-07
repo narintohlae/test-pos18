@@ -1,7 +1,7 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbyPMzdWVeyKJZhr_rtSOfnSlbwlN1MZ9UhaQlykyCxpcpmAUM7w9-S3b-EFC_JdXkG5Yg/exec';
 
 let productsData = [];
-let codeReader;
+let isScannerRunning = false;
 
 // DOM Elements
 const searchInput = document.getElementById('searchInput');
@@ -27,7 +27,6 @@ async function init() {
         productsData = json.data;
         
         statusMessage.textContent = 'พร้อมตรวจสอบราคา (สินค้า ' + productsData.length + ' รายการ)';
-        codeReader = new ZXing.BrowserMultiFormatReader();
     } catch (error) {
         console.error('Error:', error);
         statusMessage.innerHTML = '<span style="color: #ef4444;">เกิดข้อผิดพลาดในการโหลดข้อมูล</span>';
@@ -246,64 +245,76 @@ async function openScanner() {
     drawerOverlay.classList.add('active');
     
     try {
-        // Use constraints to force environment (back) camera
-        // This is more reliable than deviceId on Safari/iOS
-        const constraints = {
-            video: {
-                facingMode: { ideal: "environment" }
-            }
-        };
-
-        await codeReader.decodeFromConstraints(constraints, 'video', (result, err) => {
-            if (result) {
-                searchInput.value = result.text;
-                closeScannerDrawer();
-                performSearch();
-            }
-            if (err && !(err instanceof ZXing.NotFoundException)) {
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#scannerView'),
+                constraints: {
+                    facingMode: "environment",
+                    aspectRatio: { min: 1, max: 2 }
+                },
+            },
+            locator: {
+                patchSize: "medium",
+                halfSample: true
+            },
+            numOfWorkers: 2,
+            decoder: {
+                readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"]
+            },
+            locate: true
+        }, function(err) {
+            if (err) {
                 console.error(err);
+                statusMessage.textContent = "ไม่สามารถเปิดกล้องได้";
+                closeScannerDrawer();
+                return;
             }
+            Quagga.start();
+            isScannerRunning = true;
         });
+
+        // Set up detection listener
+        Quagga.onDetected(handleDetection);
+
     } catch (err) {
-        console.error("Constraints failed, trying fallback:", err);
-        // Fallback to basic device enumeration if constraints fail
-        try {
-            const videoInputDevices = await codeReader.listVideoInputDevices();
-            if (videoInputDevices.length > 0) {
-                let selectedId = videoInputDevices[0].deviceId;
-                for (const device of videoInputDevices) {
-                    const label = device.label.toLowerCase();
-                    if (label.includes('back') || label.includes('rear')) {
-                        selectedId = device.deviceId;
-                        break;
-                    }
-                }
-                await codeReader.decodeFromVideoDevice(selectedId, 'video', (result, err) => {
-                    if (result) {
-                        searchInput.value = result.text;
-                        closeScannerDrawer();
-                        performSearch();
-                    }
-                });
-            }
-        } catch (fallbackErr) {
-            console.error(fallbackErr);
-            statusMessage.textContent = "ไม่สามารถเปิดกล้องได้";
-            closeScannerDrawer();
-        }
+        console.error(err);
+        statusMessage.textContent = "เกิดข้อผิดพลาดในการเริ่มสแกน";
+        closeScannerDrawer();
     }
 }
 
+let lastDetectedCode = null;
+let lastDetectedTime = 0;
 
+function handleDetection(result) {
+    const code = result.codeResult.code;
+    const now = Date.now();
+    
+    // Simple debounce to prevent double trigger
+    if (code === lastDetectedCode && (now - lastDetectedTime < 2000)) {
+        return;
+    }
 
+    lastDetectedCode = code;
+    lastDetectedTime = now;
+
+    console.log("Detected:", code);
+    searchInput.value = code;
+    closeScannerDrawer();
+    performSearch();
+}
 
 function closeScannerDrawer() {
     scannerDrawer.classList.remove('active');
     drawerOverlay.classList.remove('active');
-    if (codeReader) {
-        codeReader.reset();
+    if (isScannerRunning) {
+        Quagga.stop();
+        isScannerRunning = false;
     }
 }
+
 
 
 // Events

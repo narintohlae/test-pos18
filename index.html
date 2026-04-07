@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- ZXing-js Library for barcode/QR scanning -->
-    <script src="https://unpkg.com/@zxing/library@latest" type="text/javascript"></script>
+    <!-- Quagga2 Library for 1D barcode scanning -->
+    <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -57,10 +57,11 @@
                     <h3>สแกนบาร์โค้ด</h3>
                     <button id="closeScanner" class="close-btn">&times;</button>
                 </div>
-                <div id="scannerView" class="scanner-view">
-                    <video id="video" autoplay muted playsinline></video>
+                <div id="scannerView" class="scanner-view viewport">
+                    <!-- Quagga2 will inject video here -->
                     <div class="scanner-laser"></div>
                 </div>
+
                 <p class="scanner-tip">วางบาร์โค้ดให้อยู่ในกรอบเพื่อสแกน</p>
             </div>
             <div id="drawerOverlay" class="drawer-overlay"></div>
