@@ -2,199 +2,260 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>สมุดจดรายจ่าย AI (Firebase)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>สมุดจดรายจ่าย (iOS Style)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #fdd835;
-            --bg-color: #f4f4f9;
-            --paper-color: #fff;
-            --text-color: #333;
-            --line-color: #e0e0e0;
+            --ios-bg: #F2F2F7;
+            --ios-card: #FFFFFF;
+            --ios-text: #000000;
+            --ios-text-secondary: #8E8E93;
+            --ios-blue: #007AFF;
+            --ios-red: #FF3B30;
+            --ios-separator: rgba(60, 60, 67, 0.15);
+            --safe-area-top: 20px;
         }
 
         * {
             box-sizing: border-box;
-            font-family: 'Sarabun', sans-serif;
+            /* ใช้ฟอนต์ระบบของ Apple ก่อน ถ้าไม่มีให้ใช้ Sarabun */
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Sarabun", sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 15px;
+            background-color: var(--ios-bg);
+            color: var(--ios-text);
             display: flex;
             justify-content: center;
-            align-items: flex-start;
             min-height: 100vh;
         }
 
-        .notepad {
+        .ios-app {
             width: 100%;
-            max-width: 420px;
-            background: var(--paper-color);
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            overflow: hidden;
-            margin-top: 10px;
+            max-width: 430px; /* ขนาดประมาณหน้าจอ iPhone Max */
+            background: var(--ios-bg);
+            position: relative;
+            padding-bottom: 40px;
         }
 
+        /* ------------------ Header & Balance ------------------ */
         .header {
-            background: var(--primary-color);
-            padding: 15px 20px;
-            font-weight: 600;
-            font-size: 1.2rem;
-            color: #424242;
+            padding: var(--safe-area-top) 20px 10px;
             display: flex;
             justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .header h1 {
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .status {
+            font-size: 13px;
+            color: var(--ios-text-secondary);
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .balance-card {
+            background: #1C1C1E; /* บัตรสีดำสไตล์พรีเมียม */
+            color: white;
+            border-radius: 20px;
+            margin: 10px 20px 24px;
+            padding: 24px 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .balance-label {
+            font-size: 15px;
+            color: #EBEBF5;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        /* ------------------ Input Section ------------------ */
+        .input-container {
+            margin: 0 20px 24px;
+        }
+
+        .input-wrapper {
+            background-color: #E3E3E8;
+            border-radius: 12px;
+            padding: 2px;
+            display: flex;
             align-items: center;
         }
 
-        .input-section {
-            padding: 15px 20px;
-            background: #fffdf2;
-            border-bottom: 2px dashed #ccc;
-        }
-
-        .input-section input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 16px;
+        .input-wrapper input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 14px;
+            font-size: 17px;
             outline: none;
-            transition: border 0.3s;
+            color: var(--ios-text);
         }
 
-        .input-section input:focus {
-            border-color: #fbc02d;
+        .input-wrapper input::placeholder {
+            color: var(--ios-text-secondary);
         }
 
         .hint {
             display: block;
-            font-size: 0.8rem;
-            color: #888;
+            font-size: 13px;
+            color: var(--ios-text-secondary);
             margin-top: 8px;
+            margin-left: 4px;
         }
 
-        .expense-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 50vh;
-            overflow-y: auto;
-            background: var(--paper-color);
+        /* ------------------ Lists ------------------ */
+        .expense-container {
+            padding: 0 20px;
         }
 
-        /* ส่วนหัวของแต่ละวัน */
-        .date-header {
-            background: #f0f0f0;
-            padding: 8px 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #555;
+        .ios-section {
+            margin-bottom: 24px;
+        }
+
+        .ios-section-header {
+            font-size: 13px;
+            text-transform: uppercase;
+            color: var(--ios-text-secondary);
+            margin-bottom: 8px;
+            margin-left: 12px;
             display: flex;
             justify-content: space-between;
-            border-bottom: 1px solid #ddd;
-            border-top: 1px solid #ddd;
+            padding-right: 12px;
         }
 
-        .expense-item {
+        .ios-list {
+            list-style: none;
+            background: var(--ios-card);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .ios-list-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
-            border-bottom: 1px dashed var(--line-color);
+            padding: 12px 16px;
+            background: var(--ios-card);
+            position: relative;
         }
 
-        .item-text {
-            flex-grow: 1;
-            font-size: 16px;
-            color: var(--text-color);
+        /* เส้นกั้นระหว่างรายการ (ไม่ให้มีเส้นที่อันสุดท้าย) */
+        .ios-list-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 16px;
+            right: 0;
+            height: 1px;
+            background-color: var(--ios-separator);
+        }
+
+        .item-info {
             display: flex;
             flex-direction: column;
         }
-        
+
+        .item-name {
+            font-size: 17px;
+            font-weight: 500;
+        }
+
         .item-time {
-            font-size: 0.75rem;
-            color: #999;
+            font-size: 13px;
+            color: var(--ios-text-secondary);
             margin-top: 2px;
         }
 
+        .item-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .item-price {
+            font-size: 17px;
             font-weight: 600;
-            color: #d32f2f;
-            margin: 0 15px;
         }
 
         .delete-btn {
-            background: none;
+            background: transparent;
             border: none;
-            color: #ff5252;
-            font-size: 18px;
+            color: var(--ios-separator);
             cursor: pointer;
-            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .delete-btn:active {
+            color: var(--ios-red);
+        }
+
+        .delete-btn svg {
+            width: 20px;
+            height: 20px;
+            pointer-events: none; /* เพื่อให้กดโดนตัวปุ่มเต็มๆ */
         }
 
         .empty-state {
             text-align: center;
-            padding: 30px 20px;
-            color: #aaa;
-            font-size: 0.9rem;
-        }
-
-        .summary {
-            background: #333;
-            color: #fff;
-            padding: 15px 20px;
-            text-align: right;
-            font-size: 1.2rem;
-        }
-
-        .summary span {
-            font-weight: 600;
-            color: var(--primary-color);
+            color: var(--ios-text-secondary);
+            font-size: 15px;
+            margin-top: 40px;
         }
     </style>
 </head>
 <body>
 
-    <div class="notepad">
+    <div class="ios-app">
         <div class="header">
-            <span>📝 สมุดจดรายจ่าย</span>
-            <span id="loadingStatus" style="font-size: 0.8rem; font-weight: normal; color: #666;">กำลังโหลด...</span>
+            <h1>รายจ่าย</h1>
+            <span class="status" id="loadingStatus">กำลังโหลด...</span>
+        </div>
+
+        <div class="balance-card">
+            <div class="balance-label">ยอดรวมทั้งหมด</div>
+            <div class="balance-amount">฿<span id="totalAmount">0</span></div>
         </div>
         
-        <div class="input-section">
-            <input type="text" id="expenseInput" placeholder="เช่น ชาเย็น 20 หรือ ค่ารถ 50" autocomplete="off" disabled>
-            <span class="hint">💡 พิมพ์รายการเว้นวรรคด้วยราคา แล้วกด Enter</span>
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input type="text" id="expenseInput" placeholder="พิมพ์รายการและราคา..." autocomplete="off" disabled>
+            </div>
+            <span class="hint">เว้นวรรคด้วยราคา เช่น ชาเย็น 45</span>
         </div>
 
-        <ul class="expense-list" id="expenseList">
-            <!-- รายการจะถูกเพิ่มที่นี่ -->
-        </ul>
-
-        <div class="summary">
-            รวมทั้งหมด: <span id="totalAmount">0</span> บาท
+        <div class="expense-container" id="expenseList">
+            <!-- รายการจะถูกเพิ่มที่นี่ผ่าน JS -->
         </div>
     </div>
 
-    <!-- ใช้ Firebase JS SDK รูปแบบ Module -->
+    <!-- Firebase JS SDK รูปแบบ Module -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
         import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            onSnapshot, 
-            deleteDoc, 
-            doc, 
-            query, 
-            orderBy, 
-            serverTimestamp 
+            getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, serverTimestamp 
         } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-        // 1. ตั้งค่า Firebase Configuration ของคุณ
         const firebaseConfig = {
             apiKey: "AIzaSyAgTWrI1G1t3GYVz4-SPM7btrsixSe0el8",
             authDomain: "time-tracker-46283.firebaseapp.com",
@@ -205,21 +266,18 @@
             measurementId: "G-5DPBNCSWFW"
         };
 
-        // 2. Initialize Firebase และ Firestore
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const expensesCol = collection(db, "expenses");
 
-        // ตัวแปรเก็บข้อมูล
         let expenses = [];
         
-        // Element ต่างๆ
         const inputEl = document.getElementById('expenseInput');
         const listEl = document.getElementById('expenseList');
         const totalEl = document.getElementById('totalAmount');
         const loadingEl = document.getElementById('loadingStatus');
 
-        // 3. ดึงข้อมูลแบบ Real-time (เรียงตามเวลาที่สร้างล่าสุดขึ้นก่อน)
+        // ดึงข้อมูล Real-time
         const q = query(expensesCol, orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             expenses = [];
@@ -228,16 +286,16 @@
             });
             renderExpenses();
             
-            // ปลดล็อคช่องพิมพ์เมื่อโหลดเสร็จ
             inputEl.disabled = false;
-            loadingEl.innerText = 'ออนไลน์ 🟢';
+            loadingEl.innerText = 'เชื่อมต่อแล้ว';
+            loadingEl.style.color = '#007AFF'; // iOS Blue
         }, (error) => {
             console.error("Error fetching data:", error);
-            loadingEl.innerText = 'ออฟไลน์ 🔴';
-            loadingEl.style.color = 'red';
+            loadingEl.innerText = 'ออฟไลน์';
+            loadingEl.style.color = '#FF3B30'; // iOS Red
         });
 
-        // 4. ฟังก์ชันจำลอง AI แยกชื่อรายการและราคา
+        // AI แยกชื่อรายการและราคา
         function aiParseExpense(text) {
             text = text.trim();
             const regex = /^(.*?)\s*(\d+(?:\.\d+)?)\s*(?:บาท|b|baht|฿)?$/i;
@@ -252,7 +310,7 @@
             return null;
         }
 
-        // 5. ฟังก์ชันเพิ่มรายการขึ้น Firestore
+        // เพิ่มรายการขึ้น Firestore
         async function addExpense() {
             const rawText = inputEl.value;
             if (!rawText) return;
@@ -261,12 +319,11 @@
 
             if (parsedData) {
                 try {
-                    // กำลังบันทึก ปิดช่องพิมพ์ชั่วคราว
                     inputEl.disabled = true;
                     await addDoc(expensesCol, {
                         name: parsedData.name,
                         price: parsedData.price,
-                        createdAt: serverTimestamp() // ให้ Server ของ Firebase บันทึกเวลาอัตโนมัติ
+                        createdAt: serverTimestamp()
                     });
                     inputEl.value = '';
                 } catch (e) {
@@ -277,56 +334,48 @@
                     inputEl.focus();
                 }
             } else {
-                alert("AI ไม่เข้าใจรูปแบบครับ ลองพิมพ์แบบนี้ดูนะ: 'ชาเย็น 20'");
+                alert("รูปแบบไม่ถูกต้อง ลองพิมพ์: 'ชาเย็น 45'");
             }
         }
 
-        // 6. ฟังก์ชันลบรายการจาก Firestore
-        async function deleteExpense(id) {
-            if(confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
-                try {
-                    await deleteDoc(doc(db, "expenses", id));
-                } catch (e) {
-                    console.error("Error deleting document: ", e);
+        // ลบรายการ (ใช้ closest() เพื่อให้รองรับการกดโดนไอคอน SVG)
+        listEl.addEventListener('click', async (e) => {
+            const deleteBtn = e.target.closest('.delete-btn');
+            if(deleteBtn) {
+                if(confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
+                    const id = deleteBtn.getAttribute('data-id');
+                    try {
+                        await deleteDoc(doc(db, "expenses", id));
+                    } catch (err) {
+                        console.error("Error deleting document: ", err);
+                    }
                 }
-            }
-        }
-
-        // ฟังชันก์ลบที่ผูกกับ Event Delegation (เพราะเราเขียนแบบ Module ทำให้ html เรียก onclick ตรงๆ ไม่ได้)
-        listEl.addEventListener('click', (e) => {
-            if(e.target.classList.contains('delete-btn')) {
-                const id = e.target.getAttribute('data-id');
-                deleteExpense(id);
             }
         });
 
-        // 7. จัดกลุ่มข้อมูลตามวันที่และแสดงผล (สรุปรายจ่าย)
+        // จัดรูปแบบและแสดงผลสไตล์ iOS Grouped List
         function renderExpenses() {
             listEl.innerHTML = '';
             let totalAmountAll = 0;
 
             if (expenses.length === 0) {
-                listEl.innerHTML = '<div class="empty-state">ยังไม่มีรายการจดบันทึก ลองพิมพ์ด้านบนเลย!</div>';
+                listEl.innerHTML = '<div class="empty-state">ยังไม่มีรายการจดบันทึก</div>';
                 totalEl.innerText = "0";
                 return;
             }
 
-            // จัดกลุ่มข้อมูลตามวันที่
             const groupedData = {};
             
             expenses.forEach((exp) => {
                 totalAmountAll += exp.price;
                 
-                // แปลง Timestamp ของ Firebase เป็นวันที่ของไทย
                 let dateKey = "รอการอัปเดต..."; 
                 let timeStr = "";
                 
                 if (exp.createdAt) {
                     const dateObj = exp.createdAt.toDate ? exp.createdAt.toDate() : new Date(exp.createdAt);
-                    // รูปแบบ: 15 พ.ค. 2567
                     dateKey = dateObj.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
-                    // รูปแบบ: 14:30 น.
-                    timeStr = dateObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+                    timeStr = dateObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
                 }
 
                 if (!groupedData[dateKey]) {
@@ -337,38 +386,51 @@
                 groupedData[dateKey].totalDay += exp.price;
             });
 
-            // วนลูปสร้าง HTML จากข้อมูลที่จัดกลุ่มแล้ว
             for (const [date, data] of Object.entries(groupedData)) {
-                // สร้างส่วนหัวของวันที่และสรุปรายวัน
-                const headerLi = document.createElement('li');
-                headerLi.className = 'date-header';
-                headerLi.innerHTML = `
-                    <span>📅 ${date}</span>
-                    <span>รวม: ${data.totalDay.toLocaleString()} ฿</span>
-                `;
-                listEl.appendChild(headerLi);
+                // สร้าง Section ของแต่ละวัน
+                const section = document.createElement('div');
+                section.className = 'ios-section';
 
-                // สร้างรายการย่อยในแต่ละวัน
+                // หัวข้อของวันนั้นๆ
+                const header = document.createElement('div');
+                header.className = 'ios-section-header';
+                header.innerHTML = `
+                    <span>${date}</span>
+                    <span>รวม ${data.totalDay.toLocaleString()} ฿</span>
+                `;
+                section.appendChild(header);
+
+                // กล่องรายการ (List)
+                const ul = document.createElement('ul');
+                ul.className = 'ios-list';
+
                 data.items.forEach(exp => {
                     const li = document.createElement('li');
-                    li.className = 'expense-item';
+                    li.className = 'ios-list-item';
+                    
+                    // ไอคอนกากบาท (SVG แบบมินิมอล)
+                    const svgIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+
                     li.innerHTML = `
-                        <div class="item-text">
-                            ${exp.name}
+                        <div class="item-info">
+                            <span class="item-name">${exp.name}</span>
                             <span class="item-time">${exp.timeStr || '...'}</span>
                         </div>
-                        <div class="item-price">${exp.price.toLocaleString()} ฿</div>
-                        <button class="delete-btn" data-id="${exp.id}">×</button>
+                        <div class="item-right">
+                            <span class="item-price">${exp.price.toLocaleString()} ฿</span>
+                            <button class="delete-btn" data-id="${exp.id}">${svgIcon}</button>
+                        </div>
                     `;
-                    listEl.appendChild(li);
+                    ul.appendChild(li);
                 });
+
+                section.appendChild(ul);
+                listEl.appendChild(section);
             }
 
-            // อัปเดตยอดรวมทั้งหมด
             totalEl.innerText = totalAmountAll.toLocaleString();
         }
 
-        // ดักจับการกดปุ่ม Enter
         inputEl.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
