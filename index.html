@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>สมุดจดรายจ่าย (iOS Style)</title>
+    <title>สมุดจดรายจ่าย (iOS & iPadOS Style)</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -35,13 +35,20 @@
 
         .ios-app {
             width: 100%;
-            max-width: 430px;
+            max-width: 430px; /* ขนาดมือถือ */
             background: var(--ios-bg);
             position: relative;
             padding-bottom: 40px;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* ------------------ Header & Balance ------------------ */
+        /* ------------------ Left Panel (Header, Balance, Input) ------------------ */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
         .header {
             padding: var(--safe-area-top) 20px 10px;
             display: flex;
@@ -67,7 +74,7 @@
             color: white;
             border-radius: 20px;
             margin: 10px 20px 24px;
-            padding: 24px 20px 20px; /* ลด padding ล่างลงนิดหน่อยให้พอดีกับปุ่ม */
+            padding: 24px 20px 20px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
@@ -86,7 +93,6 @@
             margin-bottom: 20px;
         }
 
-        /* ------------------ Filter Tabs (Segmented Control) ------------------ */
         .filter-tabs {
             display: flex;
             background: rgba(255, 255, 255, 0.15);
@@ -114,7 +120,6 @@
             box-shadow: 0 3px 8px rgba(0,0,0,0.12);
         }
 
-        /* ------------------ Input Section ------------------ */
         .input-container {
             margin: 0 20px 24px;
         }
@@ -149,7 +154,11 @@
             margin-left: 4px;
         }
 
-        /* ------------------ Lists ------------------ */
+        /* ------------------ Right Panel (Lists) ------------------ */
+        .right-panel {
+            flex: 1;
+        }
+
         .expense-container {
             padding: 0 20px;
         }
@@ -250,41 +259,75 @@
             font-size: 15px;
             margin-top: 40px;
         }
+
+        /* ------------------ iPad & Desktop Layout (Split View) ------------------ */
+        @media (min-width: 768px) {
+            .ios-app {
+                max-width: 900px; /* ขยายขนาดรองรับ iPad */
+                flex-direction: row; /* เปลี่ยนการเรียงเป็นแนวนอนซ้าย-ขวา */
+                align-items: flex-start;
+                padding-top: 40px;
+                gap: 20px;
+            }
+
+            .left-panel {
+                width: 380px;
+                flex-shrink: 0;
+                position: sticky; /* ยึดแผงซ้ายให้อยู่กับที่เวลาเลื่อนจอลง */
+                top: 40px;
+            }
+
+            .header {
+                padding-top: 0;
+            }
+
+            .right-panel {
+                flex-grow: 1;
+                /* ปรับหน้าตาให้ฝั่งขวาดูเป็นกรอบสวยงามขึ้นเมื่ออยู่บนจอใหญ่ */
+                padding-top: 5px; 
+            }
+        }
     </style>
 </head>
 <body>
 
     <div class="ios-app">
-        <div class="header">
-            <h1>รายจ่าย</h1>
-            <span class="status" id="loadingStatus">กำลังโหลด...</span>
-        </div>
+        <!-- ฝั่งซ้าย: แผงควบคุม (Header, การ์ด, ช่องกรอกข้อมูล) -->
+        <div class="left-panel">
+            <div class="header">
+                <h1>รายจ่าย</h1>
+                <span class="status" id="loadingStatus">กำลังโหลด...</span>
+            </div>
 
-        <div class="balance-card">
-            <div class="balance-label" id="balanceLabel">ยอดรวมทั้งหมด</div>
-            <div class="balance-amount">฿<span id="totalAmount">0</span></div>
+            <div class="balance-card">
+                <div class="balance-label" id="balanceLabel">ยอดรวมทั้งหมด</div>
+                <div class="balance-amount">฿<span id="totalAmount">0</span></div>
+                
+                <div class="filter-tabs">
+                    <button class="filter-btn" data-filter="day">วันนี้</button>
+                    <button class="filter-btn" data-filter="week">สัปดาห์นี้</button>
+                    <button class="filter-btn" data-filter="month">เดือนนี้</button>
+                    <button class="filter-btn active" data-filter="all">ทั้งหมด</button>
+                </div>
+            </div>
             
-            <!-- เพิ่มปุ่มกรองเวลา (Segmented Control) -->
-            <div class="filter-tabs">
-                <button class="filter-btn" data-filter="day">วันนี้</button>
-                <button class="filter-btn" data-filter="week">สัปดาห์นี้</button>
-                <button class="filter-btn" data-filter="month">เดือนนี้</button>
-                <button class="filter-btn active" data-filter="all">ทั้งหมด</button>
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <input type="text" id="expenseInput" placeholder="พิมพ์รายการและราคา..." autocomplete="off" disabled>
+                </div>
+                <span class="hint">เว้นวรรคด้วยราคา เช่น ชาเย็น 45</span>
             </div>
-        </div>
-        
-        <div class="input-container">
-            <div class="input-wrapper">
-                <input type="text" id="expenseInput" placeholder="พิมพ์รายการและราคา..." autocomplete="off" disabled>
-            </div>
-            <span class="hint">เว้นวรรคด้วยราคา เช่น ชาเย็น 45</span>
         </div>
 
-        <div class="expense-container" id="expenseList">
-            <!-- รายการจะถูกเพิ่มที่นี่ผ่าน JS -->
+        <!-- ฝั่งขวา: รายการประวัติรายจ่าย -->
+        <div class="right-panel">
+            <div class="expense-container" id="expenseList">
+                <!-- รายการจะถูกเพิ่มที่นี่ผ่าน JS -->
+            </div>
         </div>
     </div>
 
+    <!-- Script ชุดเดิมของ Firebase ใช้งานได้เหมือนเดิม -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
         import { 
@@ -306,7 +349,7 @@
         const expensesCol = collection(db, "expenses");
 
         let expenses = [];
-        let currentFilter = 'all'; // เก็บค่าสถานะปัจจุบัน (all, day, week, month)
+        let currentFilter = 'all';
         
         const inputEl = document.getElementById('expenseInput');
         const listEl = document.getElementById('expenseList');
@@ -315,17 +358,13 @@
         const balanceLabel = document.getElementById('balanceLabel');
         const filterBtns = document.querySelectorAll('.filter-btn');
 
-        // จัดการเหตุการณ์เมื่อกดปุ่มตัวกรองเวลา
         filterBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                // เปลี่ยนสีปุ่มที่กดให้เป็น Active
                 filterBtns.forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 
-                // อัปเดตตัวแปร Filter
                 currentFilter = e.target.getAttribute('data-filter');
                 
-                // เปลี่ยนข้อความบนการ์ด
                 const labelMap = {
                     'day': 'ยอดรวมวันนี้',
                     'week': 'ยอดรวมสัปดาห์นี้',
@@ -333,13 +372,10 @@
                     'all': 'ยอดรวมทั้งหมด'
                 };
                 balanceLabel.innerText = labelMap[currentFilter];
-                
-                // สั่งประมวลผลการแสดงผลใหม่
                 renderExpenses();
             });
         });
 
-        // ดึงข้อมูล Real-time
         const q = query(expensesCol, orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             expenses = [];
@@ -357,7 +393,6 @@
             loadingEl.style.color = '#FF3B30';
         });
 
-        // AI แยกชื่อรายการและราคา
         function aiParseExpense(text) {
             text = text.trim();
             const regex = /^(.*?)\s*(\d+(?:\.\d+)?)\s*(?:บาท|b|baht|฿)?$/i;
@@ -372,7 +407,6 @@
             return null;
         }
 
-        // เพิ่มรายการขึ้น Firestore
         async function addExpense() {
             const rawText = inputEl.value;
             if (!rawText) return;
@@ -400,7 +434,6 @@
             }
         }
 
-        // ลบรายการ
         listEl.addEventListener('click', async (e) => {
             const deleteBtn = e.target.closest('.delete-btn');
             if(deleteBtn) {
@@ -415,7 +448,6 @@
             }
         });
 
-        // ฟังก์ชันช่วยเช็คว่าเป็นสัปดาห์นี้หรือไม่ (เริ่มนับวันอาทิตย์)
         function isSameWeek(dateStr1, dateStr2) {
             const d1 = new Date(dateStr1);
             const d2 = new Date(dateStr2);
@@ -431,15 +463,12 @@
             return startOfWeek1.getTime() === startOfWeek2.getTime();
         }
 
-        // จัดรูปแบบ กรองข้อมูล และแสดงผล
         function renderExpenses() {
             listEl.innerHTML = '';
             let totalAmountAll = 0;
             const now = new Date();
 
-            // กรองข้อมูลตาม Filter ที่เลือกก่อนนำไปจัดกลุ่ม
             const filteredExpenses = expenses.filter(exp => {
-                // หากกำลังพึ่งบันทึกและยังไม่ได้ Timestamp จาก Server ให้อนุมานว่าเป็นเวลาปัจจุบัน
                 const expDate = exp.createdAt ? (exp.createdAt.toDate ? exp.createdAt.toDate() : new Date(exp.createdAt)) : new Date();
 
                 if (currentFilter === 'day') {
@@ -449,7 +478,7 @@
                 } else if (currentFilter === 'month') {
                     return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear();
                 }
-                return true; // กรณี 'all'
+                return true; 
             });
 
             if (filteredExpenses.length === 0) {
@@ -513,7 +542,6 @@
                 listEl.appendChild(section);
             }
 
-            // อัปเดตตัวเลขยอดรวมที่การ์ดสีดำ
             totalEl.innerText = totalAmountAll.toLocaleString();
         }
 
