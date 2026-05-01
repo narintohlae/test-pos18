@@ -241,6 +241,18 @@
                   class="w-full border border-gray-200 rounded-xl p-3.5 md:p-4 focus:ring-2 focus:ring-pink-500 outline-none text-gray-800 bg-gray-50 focus:bg-white transition" placeholder="เช่น แม่, ภรรยา, Jane">
               </div>
 
+              <hr class="border-gray-100 my-6">
+
+              <div class="flex items-center gap-3 mb-2">
+                 <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600"><i data-lucide="smartphone" class="w-5 h-5"></i></div>
+                 <h3 class="font-bold text-gray-800">รหัสเชื่อมต่ออุปกรณ์ (Sync Code)</h3>
+              </div>
+              <p class="text-sm text-gray-500 mb-4 pl-13 leading-relaxed">หากต้องการให้ข้อมูลบนมือถือและคอมพิวเตอร์ตรงกัน ให้ตั้งรหัสอะไรก็ได้ที่นี่ <b>ให้เหมือนกันทั้ง 2 เครื่อง</b></p>
+              <div class="pl-13 flex flex-col md:flex-row gap-3">
+                <input type="text" id="setting-sync-code" class="flex-1 border border-gray-200 rounded-xl p-3.5 md:p-4 focus:ring-2 focus:ring-purple-500 outline-none text-gray-800 bg-gray-50 focus:bg-white transition" placeholder="เช่น myhome2026">
+                <button onclick="app.saveSyncCode()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3.5 md:py-4 rounded-xl font-bold transition shadow-lg shadow-purple-600/30 whitespace-nowrap">บันทึกรหัส Sync</button>
+              </div>
+
               <div class="mt-8 bg-emerald-50 rounded-xl p-4 flex gap-3 items-center border border-emerald-100">
                 <i data-lucide="cloud-check" class="w-6 h-6 text-emerald-500 shrink-0"></i>
                 <div class="text-sm text-emerald-700 leading-tight" id="settings-status">
@@ -321,6 +333,35 @@
     document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
 
     window.app = {
+      // Helper function สำหรับสร้าง Path ของ Firestore
+      getDbPaths: (uid) => {
+        const syncCode = localStorage.getItem('finance_sync_code');
+        if (syncCode && syncCode.trim() !== '') {
+          // หากมี Sync Code ให้ใช้พื้นที่ Public ข้อมูลที่ผูกกับรหัสนี้
+          return {
+            txCol: collection(db, 'artifacts', appId, 'public', 'data', `tx_${syncCode}`),
+            settingsDoc: doc(db, 'artifacts', appId, 'public', 'data', `settings_${syncCode}`, 'profiles')
+          };
+        }
+        // หากไม่มีรหัส ให้ใช้พื้นที่ส่วนตัวของ Anonymous ID เครื่องนั้นๆ
+        return {
+          txCol: collection(db, 'artifacts', appId, 'users', uid, 'transactions'),
+          settingsDoc: doc(db, 'artifacts', appId, 'users', uid, 'settings', 'userProfiles')
+        };
+      },
+
+      saveSyncCode: () => {
+        const code = document.getElementById('setting-sync-code').value.trim();
+        if(code) {
+           localStorage.setItem('finance_sync_code', code);
+        } else {
+           localStorage.removeItem('finance_sync_code');
+        }
+        const statusEl = document.getElementById('settings-status');
+        statusEl.innerHTML = "<span class='text-purple-600 font-bold'>อัปเดตรหัสเชื่อมต่อแล้ว กำลังรีโหลด...</span>";
+        setTimeout(() => window.location.reload(), 800);
+      },
+
       init: async () => {
         lucide.createIcons();
         try {
@@ -346,8 +387,12 @@
       setupListeners: () => {
         if (!state.user) return;
         const uid = state.user.uid;
+        const paths = app.getDbPaths(uid);
 
-        onSnapshot(collection(db, 'artifacts', appId, 'users', uid, 'transactions'), (snapshot) => {
+        if (window.unsubTx) window.unsubTx();
+        if (window.unsubSettings) window.unsubSettings();
+
+        window.unsubTx = onSnapshot(paths.txCol, (snapshot) => {
           const txs = [];
           snapshot.forEach((doc) => txs.push(doc.data()));
           txs.sort((a, b) => b.timestamp - a.timestamp);
@@ -355,7 +400,7 @@
           app.render();
         }, (err) => console.error(err));
 
-        onSnapshot(doc(db, 'artifacts', appId, 'users', uid, 'settings', 'userProfiles'), (docSnap) => {
+        window.unsubSettings = onSnapshot(paths.settingsDoc, (docSnap) => {
           if (docSnap.exists()) {
             state.users = docSnap.data();
             document.getElementById('setting-user1-name').value = state.users.user1.name;
@@ -396,6 +441,10 @@
         });
 
         if (view === 'add') app.renderAddForm();
+        if (view === 'settings') {
+          const sc = localStorage.getItem('finance_sync_code');
+          if(sc) document.getElementById('setting-sync-code').value = sc;
+        }
         app.render();
       },
 
@@ -420,7 +469,8 @@
         
         window.updateTimer = setTimeout(async () => {
           try {
-            await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'settings', 'userProfiles'), state.users);
+            const paths = app.getDbPaths(state.user.uid);
+            await setDoc(paths.settingsDoc, state.users);
             statusEl.innerHTML = "บันทึกเรียบร้อย <i data-lucide='check-circle-2' class='w-4 h-4 inline'></i>";
             lucide.createIcons();
             setTimeout(() => statusEl.innerHTML = "ข้อมูลจะถูกบันทึกอัตโนมัติลงในระบบคลาวด์<br><span class='opacity-75 text-xs'>คุณสามารถใช้เว็บแอปนี้พร้อมกันได้หลายอุปกรณ์</span>", 3000);
@@ -432,11 +482,19 @@
 
       saveTransaction: async (e) => {
         e.preventDefault();
-        if (!state.user) return alert('รอการเชื่อมต่อฐานข้อมูล');
+        const btn = document.getElementById('btn-submit-tx');
+        if (!state.user) {
+          btn.innerText = 'รอเชื่อมต่อฐานข้อมูล...';
+          return;
+        }
         
         const amountEl = document.getElementById('form-amount');
         const amount = Number(amountEl.value);
-        if (!amount || isNaN(amount) || amount <= 0) return alert('กรุณากรอกจำนวนเงินให้ถูกต้อง');
+        if (!amount || isNaN(amount) || amount <= 0) {
+          amountEl.classList.add('border-rose-500', 'bg-rose-50');
+          setTimeout(() => amountEl.classList.remove('border-rose-500', 'bg-rose-50'), 1500);
+          return;
+        }
 
         const txId = Date.now().toString();
         const newTx = {
@@ -445,27 +503,30 @@
           date: document.getElementById('form-date').value, timestamp: Date.now()
         };
 
-        const btn = document.getElementById('btn-submit-tx');
         btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-2" class="w-6 h-6 md:w-7 md:h-7 animate-spin mx-auto"></i>';
         lucide.createIcons();
 
         try {
-          await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'transactions', txId), newTx);
+          const paths = app.getDbPaths(state.user.uid);
+          await setDoc(doc(paths.txCol, txId), newTx);
           amountEl.value = ''; document.getElementById('form-note').value = '';
           app.switchView('home');
         } catch (error) {
-          alert('ไม่สามารถบันทึกข้อมูลได้');
+          console.error('ไม่สามารถบันทึกข้อมูลได้', error);
+          btn.innerText = 'บันทึกไม่สำเร็จ ลองใหม่';
         } finally {
-          btn.disabled = false; btn.innerText = 'บันทึกรายการ';
+          btn.disabled = false;
+          if (btn.innerText !== 'บันทึกไม่สำเร็จ ลองใหม่') btn.innerText = 'บันทึกรายการ';
         }
       },
 
       deleteTransaction: async (id) => {
         if (!state.user) return;
-        if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
-          try { await deleteDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'transactions', id)); } 
-          catch (error) { console.error(error); }
-        }
+        try { 
+          const paths = app.getDbPaths(state.user.uid);
+          await deleteDoc(doc(paths.txCol, id)); 
+        } 
+        catch (error) { console.error(error); }
       },
 
       getFilteredTransactions: () => {
