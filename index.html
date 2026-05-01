@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>สมุดจดรายจ่าย (iOS & iPadOS Style)</title>
+    <title>สมุดจดรายรับ-รายจ่าย (iOS Style)</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -13,6 +13,7 @@
             --ios-text-secondary: #8E8E93;
             --ios-blue: #007AFF;
             --ios-red: #FF3B30;
+            --ios-green: #34C759;
             --ios-separator: rgba(60, 60, 67, 0.15);
             --safe-area-top: 20px;
         }
@@ -56,9 +57,29 @@
             align-items: flex-end;
         }
 
-        .header h1 {
+        /* แท็บสลับ รายจ่าย - รายรับ */
+        .header-titles {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+        }
+
+        .title-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ios-text-secondary);
+            cursor: pointer;
+            padding: 0;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .title-btn.active {
             font-size: 34px;
             font-weight: 700;
+            color: var(--ios-text);
             letter-spacing: -0.5px;
         }
 
@@ -226,9 +247,16 @@
             gap: 12px;
         }
 
+        /* สีสำหรับแยกรายรับ-รายจ่าย */
         .item-price {
             font-size: 17px;
             font-weight: 600;
+        }
+        .item-price.expense {
+            color: var(--ios-text);
+        }
+        .item-price.income {
+            color: var(--ios-green);
         }
 
         .delete-btn {
@@ -294,17 +322,20 @@
         <!-- ฝั่งซ้าย -->
         <div class="left-panel">
             <div class="header">
-                <h1>รายจ่าย</h1>
+                <!-- ส่วนเลือกโหมด รายจ่าย/รายรับ -->
+                <div class="header-titles">
+                    <button class="title-btn active" id="modeExpense">รายจ่าย</button>
+                    <button class="title-btn" id="modeIncome">รายรับ</button>
+                </div>
                 <span class="status" id="loadingStatus">กำลังโหลด...</span>
             </div>
 
             <div class="balance-card">
-                <!-- เปลี่ยนข้อความเริ่มต้นเป็น ยอดรวมวันนี้ -->
-                <div class="balance-label" id="balanceLabel">ยอดรวมวันนี้</div>
-                <div class="balance-amount">฿<span id="totalAmount">0</span></div>
+                <div class="balance-label" id="balanceLabel">ยอดคงเหลือวันนี้</div>
+                <!-- รวบเหลือ ID เดียวเพื่อจัดการเครื่องหมาย บวก/ลบ -->
+                <div class="balance-amount" id="totalAmount">฿0</div>
                 
                 <div class="filter-tabs">
-                    <!-- ย้าย class="active" มาที่ วันนี้ -->
                     <button class="filter-btn active" data-filter="day">วันนี้</button>
                     <button class="filter-btn" data-filter="week">สัปดาห์นี้</button>
                     <button class="filter-btn" data-filter="month">เดือนนี้</button>
@@ -314,10 +345,9 @@
             
             <div class="input-container">
                 <div class="input-wrapper">
-                    <!-- มี autofocus สำหรับคอมพิวเตอร์ -->
                     <input type="text" id="expenseInput" placeholder="พิมพ์รายการและราคา..." autocomplete="off" autofocus>
                 </div>
-                <span class="hint">เว้นวรรคด้วยราคา เช่น ชาเย็น 45</span>
+                <span class="hint" id="inputHint">เว้นวรรคด้วยราคา เช่น ชาเย็น 45</span>
             </div>
         </div>
 
@@ -329,7 +359,6 @@
         </div>
     </div>
 
-    <!-- Firebase JS SDK รูปแบบ Module -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
         import { 
@@ -351,17 +380,41 @@
         const expensesCol = collection(db, "expenses");
 
         let expenses = [];
-        // เปลี่ยนค่าเริ่มต้นให้เป็น 'day'
         let currentFilter = 'day';
+        let currentMode = 'expense'; // ค่าเริ่มต้นคือรายจ่าย
         let initialLoad = true;
         
         const inputEl = document.getElementById('expenseInput');
+        const hintEl = document.getElementById('inputHint');
         const listEl = document.getElementById('expenseList');
         const totalEl = document.getElementById('totalAmount');
         const loadingEl = document.getElementById('loadingStatus');
         const balanceLabel = document.getElementById('balanceLabel');
         const filterBtns = document.querySelectorAll('.filter-btn');
 
+        const modeExpenseBtn = document.getElementById('modeExpense');
+        const modeIncomeBtn = document.getElementById('modeIncome');
+
+        // จัดการคลิกเปลี่ยนโหมด รายรับ-รายจ่าย
+        modeExpenseBtn.addEventListener('click', () => {
+            currentMode = 'expense';
+            modeExpenseBtn.classList.add('active');
+            modeIncomeBtn.classList.remove('active');
+            inputEl.placeholder = 'พิมพ์รายการและราคา...';
+            hintEl.innerText = 'เว้นวรรคด้วยราคา เช่น ชาเย็น 45';
+            inputEl.focus();
+        });
+
+        modeIncomeBtn.addEventListener('click', () => {
+            currentMode = 'income';
+            modeIncomeBtn.classList.add('active');
+            modeExpenseBtn.classList.remove('active');
+            inputEl.placeholder = 'พิมพ์รายรับและจำนวนเงิน...';
+            hintEl.innerText = 'เช่น เงินเดือน 15000 หรือ ขายของ 500';
+            inputEl.focus();
+        });
+
+        // จัดการคลิกแท็บตัวกรองเวลา
         filterBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 filterBtns.forEach(b => b.classList.remove('active'));
@@ -370,10 +423,10 @@
                 currentFilter = e.target.getAttribute('data-filter');
                 
                 const labelMap = {
-                    'day': 'ยอดรวมวันนี้',
-                    'week': 'ยอดรวมสัปดาห์นี้',
-                    'month': 'ยอดรวมเดือนนี้',
-                    'all': 'ยอดรวมทั้งหมด'
+                    'day': 'ยอดคงเหลือวันนี้',
+                    'week': 'ยอดคงเหลือสัปดาห์นี้',
+                    'month': 'ยอดคงเหลือเดือนนี้',
+                    'all': 'ยอดคงเหลือทั้งหมด'
                 };
                 balanceLabel.innerText = labelMap[currentFilter];
                 renderExpenses();
@@ -429,6 +482,7 @@
                     await addDoc(expensesCol, {
                         name: parsedData.name,
                         price: parsedData.price,
+                        type: currentMode, // บันทึกประเภทไปด้วย (expense หรือ income)
                         createdAt: serverTimestamp()
                     });
                 } catch (e) {
@@ -474,7 +528,7 @@
 
         function renderExpenses() {
             listEl.innerHTML = '';
-            let totalAmountAll = 0;
+            let totalAmountAll = 0; // เก็บยอดสุทธิ (รายรับลบรายจ่าย)
             const now = new Date();
 
             const filteredExpenses = expenses.filter(exp => {
@@ -492,14 +546,21 @@
 
             if (filteredExpenses.length === 0) {
                 listEl.innerHTML = '<div class="empty-state">ไม่มีรายการในช่วงเวลานี้</div>';
-                totalEl.innerText = "0";
+                totalEl.innerText = "฿0";
                 return;
             }
 
             const groupedData = {};
             
             filteredExpenses.forEach((exp) => {
-                totalAmountAll += exp.price;
+                // ข้อมูลเก่าที่ไม่มี type จะถูกมองเป็น expense อัตโนมัติ
+                const itemType = exp.type || 'expense'; 
+                
+                if (itemType === 'income') {
+                    totalAmountAll += exp.price;
+                } else {
+                    totalAmountAll -= exp.price;
+                }
                 
                 const expDate = exp.createdAt ? (exp.createdAt.toDate ? exp.createdAt.toDate() : new Date(exp.createdAt)) : new Date();
                 const dateKey = expDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -509,8 +570,14 @@
                     groupedData[dateKey] = { items: [], totalDay: 0 };
                 }
                 
-                groupedData[dateKey].items.push({...exp, timeStr});
-                groupedData[dateKey].totalDay += exp.price;
+                groupedData[dateKey].items.push({...exp, timeStr, itemType});
+                
+                // คำนวณยอดรวมรายวัน (สุทธิ)
+                if (itemType === 'income') {
+                    groupedData[dateKey].totalDay += exp.price;
+                } else {
+                    groupedData[dateKey].totalDay -= exp.price;
+                }
             });
 
             for (const [date, data] of Object.entries(groupedData)) {
@@ -519,9 +586,14 @@
 
                 const header = document.createElement('div');
                 header.className = 'ios-section-header';
+                
+                // สร้างข้อความยอดรวมรายวันแบบมีเครื่องหมาย
+                let dayTotalText = data.totalDay > 0 ? `+฿${data.totalDay.toLocaleString()}` : 
+                                  (data.totalDay < 0 ? `-฿${Math.abs(data.totalDay).toLocaleString()}` : `฿0`);
+
                 header.innerHTML = `
                     <span>${date}</span>
-                    <span>รวม ${data.totalDay.toLocaleString()} ฿</span>
+                    <span>คงเหลือ ${dayTotalText}</span>
                 `;
                 section.appendChild(header);
 
@@ -534,13 +606,17 @@
                     
                     const svgIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
 
+                    // แยกสไตล์รายรับ/รายจ่าย
+                    const priceDisplay = exp.itemType === 'income' ? `+${exp.price.toLocaleString()}` : `-${exp.price.toLocaleString()}`;
+                    const priceClass = exp.itemType === 'income' ? 'income' : 'expense';
+
                     li.innerHTML = `
                         <div class="item-info">
                             <span class="item-name">${exp.name}</span>
                             <span class="item-time">${exp.timeStr || '...'}</span>
                         </div>
                         <div class="item-right">
-                            <span class="item-price">${exp.price.toLocaleString()} ฿</span>
+                            <span class="item-price ${priceClass}">${priceDisplay} ฿</span>
                             <button class="delete-btn" data-id="${exp.id}">${svgIcon}</button>
                         </div>
                     `;
@@ -551,7 +627,14 @@
                 listEl.appendChild(section);
             }
 
-            totalEl.innerText = totalAmountAll.toLocaleString();
+            // อัปเดตยอดคงเหลือสุทธิของการ์ดหลัก
+            if (totalAmountAll > 0) {
+                totalEl.innerText = `+฿${totalAmountAll.toLocaleString()}`;
+            } else if (totalAmountAll < 0) {
+                totalEl.innerText = `-฿${Math.abs(totalAmountAll).toLocaleString()}`;
+            } else {
+                totalEl.innerText = `฿0`;
+            }
         }
 
         inputEl.addEventListener('keypress', function (e) {
