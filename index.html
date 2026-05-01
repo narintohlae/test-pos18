@@ -313,7 +313,8 @@
             
             <div class="input-container">
                 <div class="input-wrapper">
-                    <input type="text" id="expenseInput" placeholder="พิมพ์รายการและราคา..." autocomplete="off" disabled>
+                    <!-- เพิ่ม autofocus เข้าไป -->
+                    <input type="text" id="expenseInput" placeholder="พิมพ์รายการและราคา..." autocomplete="off" disabled autofocus>
                 </div>
                 <span class="hint">เว้นวรรคด้วยราคา เช่น ชาเย็น 45</span>
             </div>
@@ -376,6 +377,9 @@
             });
         });
 
+        // เช็คว่านี่คือการโหลดครั้งแรกหรือไม่
+        let initialLoad = true;
+
         const q = query(expensesCol, orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             expenses = [];
@@ -387,6 +391,13 @@
             inputEl.disabled = false;
             loadingEl.innerText = 'เชื่อมต่อแล้ว';
             loadingEl.style.color = '#007AFF';
+
+            // โฟกัสไปที่ช่อง input เมื่อโหลดข้อมูลเสร็จ (ทำงานเฉพาะครั้งแรก)
+            if (initialLoad) {
+                inputEl.focus();
+                initialLoad = false;
+            }
+
         }, (error) => {
             console.error("Error fetching data:", error);
             loadingEl.innerText = 'ออฟไลน์';
@@ -427,7 +438,7 @@
                     alert("ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่");
                 } finally {
                     inputEl.disabled = false;
-                    inputEl.focus();
+                    inputEl.focus(); // โฟกัสกลับมาที่ช่อง input หลังจากบันทึกเสร็จ
                 }
             } else {
                 alert("รูปแบบไม่ถูกต้อง ลองพิมพ์: 'ชาเย็น 45'");
