@@ -30,6 +30,9 @@
     .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
     /* Smoother transitions */
     .transition-spring { transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1), opacity 0.3s ease; }
+    
+    /* ป้องกัน UI กระตุกเวลา Keyboard เด้งบน Android */
+    input:focus { outline: none; }
   </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-0 md:p-6 text-gray-800">
@@ -178,7 +181,6 @@
           <div class="max-w-xl mx-auto w-full">
             <div class="bg-white p-6 md:p-8 rounded-[24px] shadow-sm border border-gray-100 space-y-6">
               <!-- User Settings -->
-              <!-- (Skipped repeating full HTML here for brevity, keeping standard inputs) -->
               <div class="flex items-center gap-3 mb-2">
                  <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><i data-lucide="user" class="w-5 h-5"></i></div>
                  <h3 class="font-bold text-gray-800">ผู้ใช้งานคนที่ 1 (สีฟ้า)</h3>
@@ -254,9 +256,10 @@
             <form onsubmit="app.saveTransaction(event)" class="space-y-6">
               
               <!-- Giant Amount Input -->
+              <!-- inputmode="decimal" ensures numeric keyboard with dot -->
               <div class="text-center relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-3xl font-bold text-gray-300">฿</span>
-                <input type="number" id="form-amount" inputmode="decimal" placeholder="0.00" step="0.01" required
+                <input type="number" id="form-amount" inputmode="decimal" placeholder="0" step="0.01" required
                   class="text-5xl md:text-6xl font-extrabold text-center w-full bg-transparent py-4 focus:outline-none transition-colors text-rose-600 border-b-2 border-gray-100 focus:border-rose-400 placeholder-gray-200" />
               </div>
 
@@ -352,7 +355,7 @@
       user: null, transactions: [], users: INITIAL_USERS,
       currentView: 'home', activeProfile: 'all',
       formType: 'expense', 
-      formUser: localStorage.getItem('finance_last_user') || 'user1', // Remember last user
+      formUser: localStorage.getItem('finance_last_user') || 'user1',
       formCategory: 'food'
     };
 
@@ -465,25 +468,25 @@
         app.render();
       },
 
-      // --- New Modal Overlay Logic ---
+      // --- New Modal Overlay Logic with Auto-Focus ---
       openAdd: () => {
         const overlay = document.getElementById('view-add-overlay');
         const backdrop = document.getElementById('add-backdrop');
         const sheet = document.getElementById('add-sheet');
+        const amountInput = document.getElementById('form-amount');
         
         overlay.classList.remove('hidden');
         overlay.classList.add('flex');
         
-        app.renderAddForm(); // Render UI first
+        app.renderAddForm(); 
 
-        // Small delay to allow display:flex to apply before animating
+        // CRITICAL FOR IOS: Focus must happen synchronously in the click handler stack
+        amountInput.focus();
+
         requestAnimationFrame(() => {
           backdrop.classList.remove('opacity-0');
           sheet.classList.remove('translate-y-full');
         });
-
-        // Auto-focus amount input (slight delay for slide animation)
-        setTimeout(() => document.getElementById('form-amount').focus(), 300);
       },
 
       closeAdd: () => {
@@ -491,10 +494,12 @@
         const backdrop = document.getElementById('add-backdrop');
         const sheet = document.getElementById('add-sheet');
         
+        // Remove focus to dismiss keyboard
+        document.getElementById('form-amount').blur();
+        
         backdrop.classList.add('opacity-0');
         sheet.classList.add('translate-y-full');
         
-        // Wait for animation to finish before hiding
         setTimeout(() => {
           overlay.classList.add('hidden');
           overlay.classList.remove('flex');
@@ -565,10 +570,8 @@
           const paths = app.getDbPaths(state.user.uid);
           await setDoc(doc(paths.txCol, txId), newTx);
           
-          // Reset form basics, but keep Type and User for fast subsequent entries
           amountEl.value = ''; document.getElementById('form-note').value = '';
-          
-          app.closeAdd(); // Slide down sheet automatically
+          app.closeAdd(); 
         } catch (error) {
           btn.innerHTML = 'บันทึกไม่สำเร็จ ลองใหม่';
         } finally {
@@ -690,12 +693,11 @@
       },
 
       renderAddForm: () => {
-        // Quick user switcher chips
         document.getElementById('add-user-switcher').innerHTML = `
-          <button onclick="app.setFormUser('user1')" class="px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1 ${state.formUser === 'user1' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:bg-gray-200'}">
+          <button type="button" onclick="app.setFormUser('user1')" class="px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1 ${state.formUser === 'user1' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:bg-gray-200'}">
             <i data-lucide="user" class="w-3 h-3"></i> ${state.users['user1'].name}
           </button>
-          <button onclick="app.setFormUser('user2')" class="px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1 ${state.formUser === 'user2' ? 'bg-pink-100 text-pink-700' : 'text-gray-400 hover:bg-gray-200'}">
+          <button type="button" onclick="app.setFormUser('user2')" class="px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1 ${state.formUser === 'user2' ? 'bg-pink-100 text-pink-700' : 'text-gray-400 hover:bg-gray-200'}">
             <i data-lucide="user" class="w-3 h-3"></i> ${state.users['user2'].name}
           </button>
         `;
