@@ -1,739 +1,381 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Wallet 2026</title>
-  
-  <!-- Web App Manifest & iOS PWA Meta Tags -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Wallet 2026">
-  <meta name="theme-color" content="#064e3b">
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สมุดจดรายจ่าย AI (Firebase)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #fdd835;
+            --bg-color: #f4f4f9;
+            --paper-color: #fff;
+            --text-color: #333;
+            --line-color: #e0e0e0;
+        }
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        * {
+            box-sizing: border-box;
+            font-family: 'Sarabun', sans-serif;
+        }
 
-  <style>
-    body { font-family: 'Prompt', sans-serif; background-color: #f0fdf4; -webkit-tap-highlight-color: transparent; }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 24px); }
-    .pt-safe { padding-top: env(safe-area-inset-top, 12px); }
-    
-    /* Smooth iOS-like Springs */
-    .transition-spring { transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1), opacity 0.3s ease; }
-    
-    /* Input Tweaks */
-    input:focus { outline: none; }
-    input[type="number"]::-webkit-inner-spin-button, 
-    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-    
-    /* Glassmorphism utility */
-    .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-    .glass-dark { background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-  </style>
+        body {
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .notepad {
+            width: 100%;
+            max-width: 420px;
+            background: var(--paper-color);
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .header {
+            background: var(--primary-color);
+            padding: 15px 20px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #424242;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-section {
+            padding: 15px 20px;
+            background: #fffdf2;
+            border-bottom: 2px dashed #ccc;
+        }
+
+        .input-section input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        .input-section input:focus {
+            border-color: #fbc02d;
+        }
+
+        .hint {
+            display: block;
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .expense-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 50vh;
+            overflow-y: auto;
+            background: var(--paper-color);
+        }
+
+        /* ส่วนหัวของแต่ละวัน */
+        .date-header {
+            background: #f0f0f0;
+            padding: 8px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #ddd;
+            border-top: 1px solid #ddd;
+        }
+
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            border-bottom: 1px dashed var(--line-color);
+        }
+
+        .item-text {
+            flex-grow: 1;
+            font-size: 16px;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .item-time {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .item-price {
+            font-weight: 600;
+            color: #d32f2f;
+            margin: 0 15px;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #ff5252;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px 20px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .summary {
+            background: #333;
+            color: #fff;
+            padding: 15px 20px;
+            text-align: right;
+            font-size: 1.2rem;
+        }
+
+        .summary span {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+    </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-0 md:p-6 text-gray-800 selection:bg-emerald-200">
+<body>
 
-  <!-- ================= MAIN APP CONTAINER ================= -->
-  <div class="w-full md:max-w-5xl lg:max-w-6xl bg-white h-[100dvh] md:h-[90vh] md:min-h-[700px] relative overflow-hidden flex flex-col md:flex-row shadow-2xl md:rounded-[40px] md:border border-emerald-100">
-    
-    <!-- ================= NAVIGATION (Sidebar / Bottom Nav) ================= -->
-    <div id="side-nav" class="glass border-t md:border-t-0 md:border-r border-gray-200/60 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)] md:shadow-none px-6 py-4 md:p-8 flex md:flex-col justify-between md:justify-start items-center md:items-stretch z-30 pb-safe md:w-72 shrink-0 absolute md:relative bottom-0 left-0 right-0 transition-transform duration-300">
-      
-      <!-- Desktop Logo -->
-      <div class="hidden md:flex items-center gap-4 mb-10 px-2">
-        <div class="bg-gradient-to-tr from-emerald-600 to-teal-400 p-3 rounded-[18px] shadow-lg shadow-emerald-500/30">
-          <i data-lucide="wallet" class="w-7 h-7 text-white"></i>
+    <div class="notepad">
+        <div class="header">
+            <span>📝 สมุดจดรายจ่าย</span>
+            <span id="loadingStatus" style="font-size: 0.8rem; font-weight: normal; color: #666;">กำลังโหลด...</span>
         </div>
-        <div>
-          <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight leading-none">Wallet</h1>
-          <p class="text-emerald-600 font-semibold text-sm">2026 Edition</p>
+        
+        <div class="input-section">
+            <input type="text" id="expenseInput" placeholder="เช่น ชาเย็น 20 หรือ ค่ารถ 50" autocomplete="off" disabled>
+            <span class="hint">💡 พิมพ์รายการเว้นวรรคด้วยราคา แล้วกด Enter</span>
         </div>
-      </div>
 
-      <!-- Nav Items -->
-      <div class="flex md:flex-col justify-between w-full md:gap-3 relative">
-         <button onclick="app.switchView('home')" id="nav-home" class="flex flex-col md:flex-row items-center md:justify-start gap-1 md:gap-4 p-2 md:p-4 md:rounded-2xl transition-all w-full text-emerald-600 md:bg-emerald-50/80">
-            <i data-lucide="layout-dashboard" id="nav-icon-home" class="w-6 h-6 md:w-6 md:h-6 fill-current opacity-20 md:opacity-100 md:fill-none"></i>
-            <span class="text-[10px] md:text-base font-bold">แดชบอร์ด</span>
-         </button>
+        <ul class="expense-list" id="expenseList">
+            <!-- รายการจะถูกเพิ่มที่นี่ -->
+        </ul>
 
-         <!-- Desktop Add Button -->
-         <button onclick="app.openAdd()" class="hidden md:flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white rounded-2xl py-4 px-4 font-bold transition-all shadow-xl shadow-gray-900/20 my-4 transform hover:-translate-y-1 active:scale-95">
-            <i data-lucide="plus" class="w-6 h-6"></i> บันทึกรายการ
-         </button>
-
-         <!-- Mobile Add Button (FAB) -->
-         <button onclick="app.openAdd()" class="md:hidden absolute left-1/2 -top-12 -translate-x-1/2 bg-gray-900 text-white w-[72px] h-[72px] rounded-[28px] flex items-center justify-center shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] border-[6px] border-white transition-transform hover:scale-105 active:scale-95 z-50">
-            <i data-lucide="plus" class="w-8 h-8"></i>
-         </button>
-
-         <button onclick="app.switchView('history')" id="nav-history" class="flex flex-col md:flex-row items-center md:justify-start gap-1 md:gap-4 p-2 md:p-4 md:rounded-2xl transition-all w-full text-gray-400 md:text-gray-500 hover:text-emerald-600 md:hover:bg-gray-50">
-            <i data-lucide="list-text" id="nav-icon-history" class="w-6 h-6 md:w-6 md:h-6 md:opacity-70"></i>
-            <span class="text-[10px] md:text-base font-bold">ประวัติ</span>
-         </button>
-
-         <!-- Settings (Desktop) -->
-         <button onclick="app.switchView('settings')" id="nav-settings" class="hidden md:flex flex-row items-center md:justify-start gap-4 p-4 rounded-2xl transition-all w-full text-gray-500 hover:text-emerald-600 hover:bg-gray-50">
-            <i data-lucide="settings" id="nav-icon-settings" class="w-6 h-6 opacity-70"></i>
-            <span class="text-base font-bold">ตั้งค่า</span>
-         </button>
-      </div>
+        <div class="summary">
+            รวมทั้งหมด: <span id="totalAmount">0</span> บาท
+        </div>
     </div>
 
-    <!-- ================= MAIN CONTENT AREA ================= -->
-    <div class="flex-1 relative flex flex-col overflow-hidden bg-gray-50/50 md:bg-white md:rounded-l-[40px] md:shadow-[-20px_0_40px_-15px_rgba(0,0,0,0.03)] border-l border-gray-100">
-      
-      <!-- ================= VIEW: HOME ================= -->
-      <div id="view-home" class="flex flex-col md:flex-row h-full overflow-y-auto md:overflow-hidden pb-24 md:pb-0 relative">
-        
-        <!-- Top Mobile Header (Profiles) -->
-        <div class="md:hidden pt-safe px-6 pt-4 pb-2 flex justify-between items-center sticky top-0 z-20 glass">
-          <div class="flex bg-gray-200/70 p-1 rounded-full" id="mobile-profile-switcher">
-            <!-- Rendered via JS -->
-          </div>
-          <button onclick="app.switchView('settings')" class="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm border border-gray-100 text-gray-600 active:scale-95 transition-transform">
-            <i data-lucide="settings" class="w-5 h-5"></i>
-          </button>
-        </div>
+    <!-- ใช้ Firebase JS SDK รูปแบบ Module -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            onSnapshot, 
+            deleteDoc, 
+            doc, 
+            query, 
+            orderBy, 
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-        <!-- Left: Summary Column -->
-        <div class="md:w-5/12 lg:w-[45%] flex flex-col h-auto md:h-full md:border-r border-gray-100 px-6 py-2 md:p-8">
-           <!-- Desktop Profile Switcher -->
-           <div class="hidden md:flex bg-gray-100 p-1.5 rounded-full mb-8 w-fit" id="desktop-profile-switcher"></div>
-
-           <!-- Premium Balance Card -->
-           <div class="bg-gradient-to-br from-emerald-800 via-emerald-600 to-teal-500 md:rounded-[32px] rounded-[28px] text-white p-7 md:p-8 shadow-xl shadow-emerald-600/20 relative overflow-hidden">
-             <div class="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
-             <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
-             
-             <div class="relative z-10">
-               <div class="flex items-center gap-2 mb-2 opacity-90">
-                 <i data-lucide="wallet" class="w-4 h-4 text-emerald-200"></i>
-                 <span class="text-emerald-100 text-sm font-semibold" id="home-balance-label">ยอดคงเหลือรวม</span>
-               </div>
-               <div class="text-4xl md:text-5xl font-extrabold mb-8 tracking-tighter drop-shadow-md" id="home-total-balance">฿0</div>
-               
-               <div class="flex glass-dark rounded-2xl p-4 md:p-5 gap-4 border border-white/10">
-                 <div class="flex-1">
-                   <div class="flex items-center gap-1.5 text-emerald-200 text-xs md:text-sm font-semibold mb-1 opacity-90">
-                     <i data-lucide="arrow-down-left" class="w-4 h-4 text-emerald-300"></i> รายรับ
-                   </div>
-                   <div class="font-bold text-lg md:text-xl tracking-tight" id="home-total-income">฿0</div>
-                 </div>
-                 <div class="w-px bg-white/10"></div>
-                 <div class="flex-1">
-                   <div class="flex items-center gap-1.5 text-rose-200 text-xs md:text-sm font-semibold mb-1 opacity-90">
-                     <i data-lucide="arrow-up-right" class="w-4 h-4 text-rose-300"></i> รายจ่าย
-                   </div>
-                   <div class="font-bold text-lg md:text-xl tracking-tight" id="home-total-expense">฿0</div>
-                 </div>
-               </div>
-             </div>
-           </div>
-        </div>
-        
-        <!-- Right: Recent Transactions Column -->
-        <div class="md:w-7/12 lg:w-[55%] flex flex-col h-auto md:h-full md:overflow-y-auto px-6 py-6 md:p-8">
-           <div class="flex justify-between items-end mb-6">
-             <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">รายการล่าสุด</h2>
-             <button onclick="app.switchView('history')" class="text-sm text-emerald-600 font-bold hover:bg-emerald-50 px-4 py-2 rounded-xl transition-colors active:scale-95">ดูทั้งหมด</button>
-           </div>
-           <div id="home-transactions-list" class="space-y-3">
-             <!-- Rendered via JS -->
-           </div>
-        </div>
-      </div>
-
-      <!-- ================= VIEW: HISTORY ================= -->
-      <div id="view-history" class="hidden flex-col h-full bg-gray-50/50 relative z-10">
-        <div class="pt-safe px-6 pt-4 pb-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-20">
-          <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">ประวัติการเงิน</h1>
-          <div class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100" id="history-total-count">0 รายการ</div>
-        </div>
-
-        <div class="bg-white px-6 py-3 border-b border-gray-100 flex gap-2 overflow-x-auto hide-scrollbar z-10" id="history-profile-switcher">
-          <!-- Rendered via JS -->
-        </div>
-
-        <div class="flex-1 overflow-y-auto p-6 md:p-8 pb-24 md:pb-8">
-          <div class="max-w-3xl mx-auto w-full" id="history-transactions-list">
-            <!-- Rendered via JS -->
-          </div>
-        </div>
-      </div>
-
-      <!-- ================= VIEW: SETTINGS ================= -->
-      <div id="view-settings" class="hidden flex-col h-full bg-gray-50/50 relative z-20">
-        <div class="pt-safe flex items-center px-4 py-4 md:p-8 border-b border-gray-100 bg-white shadow-sm z-20 sticky top-0">
-          <button onclick="app.switchView('home')" class="md:hidden w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-full transition mr-2 active:scale-95">
-            <i data-lucide="chevron-left" class="w-6 h-6 text-gray-600"></i>
-          </button>
-          <h1 class="text-2xl font-extrabold flex-1 text-gray-900 tracking-tight">ตั้งค่าระบบ</h1>
-        </div>
-        
-        <div class="flex-1 p-6 md:p-8 overflow-y-auto">
-          <div class="max-w-xl mx-auto w-full space-y-6">
-            
-            <div class="bg-white p-6 md:p-8 rounded-[28px] shadow-sm border border-gray-100 space-y-6">
-              <div class="flex items-center gap-4">
-                 <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100"><i data-lucide="user" class="w-6 h-6"></i></div>
-                 <div class="flex-1">
-                   <h3 class="font-bold text-gray-800 text-sm mb-1">ผู้ใช้สีฟ้า</h3>
-                   <input type="text" id="setting-user1-name" oninput="app.updateUserName('user1', this.value)" class="w-full bg-transparent font-bold text-lg focus:outline-none text-blue-700 placeholder-gray-300 border-b-2 border-transparent focus:border-blue-200 transition-colors" placeholder="ชื่อผู้ใช้ 1">
-                 </div>
-              </div>
-              
-              <div class="w-full h-px bg-gray-100"></div>
-
-              <div class="flex items-center gap-4">
-                 <div class="w-12 h-12 rounded-2xl bg-pink-50 flex items-center justify-center text-pink-600 border border-pink-100"><i data-lucide="user" class="w-6 h-6"></i></div>
-                 <div class="flex-1">
-                   <h3 class="font-bold text-gray-800 text-sm mb-1">ผู้ใช้สีชมพู</h3>
-                   <input type="text" id="setting-user2-name" oninput="app.updateUserName('user2', this.value)" class="w-full bg-transparent font-bold text-lg focus:outline-none text-pink-700 placeholder-gray-300 border-b-2 border-transparent focus:border-pink-200 transition-colors" placeholder="ชื่อผู้ใช้ 2">
-                 </div>
-              </div>
-            </div>
-
-            <div class="bg-white p-6 md:p-8 rounded-[28px] shadow-sm border border-gray-100">
-              <div class="flex items-center gap-3 mb-4">
-                 <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600"><i data-lucide="smartphone" class="w-5 h-5"></i></div>
-                 <h3 class="font-bold text-gray-900 text-lg">รหัสซิงค์ข้อมูล</h3>
-              </div>
-              <p class="text-sm text-gray-500 mb-5 font-medium leading-relaxed">กรอกรหัสอะไรก็ได้ <b>ให้ตรงกันทุกเครื่อง</b> เพื่อเชื่อมต่อข้อมูลกระเป๋าเดียวกันแบบ Real-time</p>
-              <div class="flex flex-col md:flex-row gap-3">
-                <input type="text" id="setting-sync-code" class="flex-1 border-2 border-gray-100 rounded-2xl p-4 focus:ring-4 focus:ring-purple-50 focus:border-purple-400 outline-none text-gray-900 font-bold transition-all text-lg tracking-wider" placeholder="เช่น myhouse26">
-                <button onclick="app.saveSyncCode()" class="bg-purple-600 hover:bg-purple-700 active:scale-95 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-purple-600/20 whitespace-nowrap">บันทึกรหัส</button>
-              </div>
-            </div>
-            
-            <div class="bg-emerald-50 rounded-[24px] p-5 flex gap-4 items-center border border-emerald-100">
-              <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm"><i data-lucide="cloud-check" class="w-5 h-5 text-emerald-500"></i></div>
-              <div class="text-sm text-emerald-800 font-medium" id="settings-status">
-                ข้อมูลบันทึกบน Cloud อัตโนมัติ<br><span class="opacity-60 text-xs">ปลอดภัยและเปิดดูได้จากทุกที่</span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      <!-- ================= OVERLAY: ADD TRANSACTION (BOTTOM SHEET) ================= -->
-      <div id="view-add-overlay" class="fixed inset-0 z-50 hidden flex-col justify-end pointer-events-none">
-        <div id="add-backdrop" class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm opacity-0 transition-opacity duration-300 pointer-events-auto" onclick="app.closeAdd()"></div>
-        
-        <div id="add-sheet" class="relative bg-white rounded-t-[32px] md:rounded-[40px] shadow-2xl w-full max-w-lg mx-auto flex flex-col max-h-[90vh] transform translate-y-full transition-spring pointer-events-auto pb-safe md:mb-6 border border-gray-100">
-          
-          <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-4 mb-2"></div>
-          
-          <div class="px-6 pt-2 pb-2 flex justify-between items-center">
-            <div class="flex gap-1.5 bg-gray-100/80 p-1.5 rounded-full" id="add-user-switcher"></div>
-            <button onclick="app.closeAdd()" class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 active:scale-90 transition-transform"><i data-lucide="x" class="w-4 h-4"></i></button>
-          </div>
-
-          <div class="flex-1 overflow-y-auto px-6 pb-6 hide-scrollbar flex flex-col">
-            
-            <!-- Amount Input (Super Giant) -->
-            <form onsubmit="app.saveTransaction(event)" class="flex flex-col h-full">
-              <div class="text-center relative my-4">
-                <input type="number" id="form-amount" inputmode="decimal" placeholder="0" step="0.01" required
-                  class="text-6xl font-extrabold text-center w-full bg-transparent py-2 focus:outline-none transition-colors text-rose-600 placeholder-gray-200 tracking-tighter" />
-              </div>
-
-              <!-- Type Switcher -->
-              <div class="flex bg-gray-100/80 p-1.5 rounded-2xl mb-6 mx-auto w-full max-w-xs relative">
-                <div id="type-indicator" class="absolute top-1.5 bottom-1.5 left-1.5 w-[calc(50%-6px)] bg-white rounded-xl shadow-sm transition-transform duration-300"></div>
-                <button type="button" onclick="app.setFormType('expense')" class="flex-1 py-2.5 rounded-xl font-bold text-sm transition-colors relative z-10 text-rose-600">รายจ่าย</button>
-                <button type="button" onclick="app.setFormType('income')" class="flex-1 py-2.5 rounded-xl font-bold text-sm transition-colors relative z-10 text-gray-500">รายรับ</button>
-              </div>
-
-              <!-- Categories -->
-              <div class="mb-4 flex-1">
-                <div id="add-category-grid" class="grid grid-cols-4 gap-x-3 gap-y-4">
-                  <!-- Rendered via JS -->
-                </div>
-              </div>
-
-              <!-- Save Button -->
-              <div class="mt-auto pt-2">
-                <button type="submit" id="btn-submit-tx"
-                  class="w-full py-4 rounded-[20px] font-extrabold text-white text-lg shadow-xl shadow-gray-900/20 active:scale-95 transform transition-all bg-gray-900 flex items-center justify-center gap-2">
-                  บันทึก <i data-lucide="arrow-right" class="w-5 h-5"></i>
-                </button>
-              </div>
-              
-              <!-- Hidden inputs for quick flow -->
-              <input type="hidden" id="form-date" />
-              <input type="hidden" id="form-note" />
-            </form>
-          </div>
-        </div>
-      </div>
-
-    </div> <!-- End Main Content Area -->
-  </div>
-
-  <div id="global-loader" class="fixed inset-0 glass z-50 flex flex-col items-center justify-center transition-opacity">
-    <div class="w-16 h-16 border-4 border-emerald-100 border-t-emerald-500 rounded-full animate-spin mb-6"></div>
-  </div>
-
-  <!-- ================= FIREBASE & APP LOGIC ================= -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    const EXPENSE_CATEGORIES = [
-      { id: 'food', name: 'อาหาร', icon: 'coffee', color: 'bg-rose-100 text-rose-600' },
-      { id: 'transport', name: 'เดินทาง', icon: 'bus', color: 'bg-blue-100 text-blue-600' },
-      { id: 'shopping', name: 'ช้อปปิ้ง', icon: 'shopping-bag', color: 'bg-purple-100 text-purple-600' },
-      { id: 'bills', name: 'บิล', icon: 'file-text', color: 'bg-orange-100 text-orange-600' },
-      { id: 'entertainment', name: 'บันเทิง', icon: 'film', color: 'bg-pink-100 text-pink-600' },
-      { id: 'transfer', name: 'โอนเงิน', icon: 'send', color: 'bg-cyan-100 text-cyan-600' },
-      { id: 'health', name: 'สุขภาพ', icon: 'heart', color: 'bg-red-100 text-red-600' },
-      { id: 'other_exp', name: 'อื่นๆ', icon: 'more-horizontal', color: 'bg-gray-200 text-gray-600' },
-    ];
-
-    const INCOME_CATEGORIES = [
-      { id: 'salary', name: 'เงินเดือน', icon: 'briefcase', color: 'bg-emerald-100 text-emerald-600' },
-      { id: 'business', name: 'ธุรกิจ', icon: 'store', color: 'bg-teal-100 text-teal-600' },
-      { id: 'transfer_in', name: 'รับโอน', icon: 'download', color: 'bg-blue-100 text-blue-600' },
-      { id: 'other_inc', name: 'อื่นๆ', icon: 'more-horizontal', color: 'bg-gray-200 text-gray-600' },
-    ];
-
-    const CATEGORY_MAP = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES].reduce((acc, cat) => {
-      acc[cat.id] = cat; return acc;
-    }, {});
-
-    const INITIAL_USERS = {
-      'user1': { id: 'user1', name: 'ผู้ใช้ที่ 1', color: 'bg-blue-500', bg: 'bg-blue-100', text: 'text-blue-700' },
-      'user2': { id: 'user2', name: 'ผู้ใช้ที่ 2', color: 'bg-pink-500', bg: 'bg-pink-100', text: 'text-pink-700' }
-    };
-
-    let firebaseConfig = {
-      apiKey: "AIzaSyAgTWrI1G1t3GYVz4-SPM7btrsixSe0el8",
-      authDomain: "time-tracker-46283.firebaseapp.com",
-      projectId: "time-tracker-46283",
-      storageBucket: "time-tracker-46283.firebasestorage.app",
-      messagingSenderId: "882533547295",
-      appId: "1:882533547295:web:4b78bfc84322c58a50042a"
-    };
-
-    if (typeof __firebase_config !== 'undefined') {
-      try { firebaseConfig = JSON.parse(__firebase_config); } catch (e) {}
-    }
-
-    const firebaseApp = initializeApp(firebaseConfig);
-    const auth = getAuth(firebaseApp);
-    const db = getFirestore(firebaseApp);
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'finance-app-2026';
-
-    window.state = {
-      user: null, transactions: [], users: INITIAL_USERS,
-      currentView: 'home', activeProfile: 'all',
-      formType: 'expense', 
-      formUser: localStorage.getItem('finance_last_user') || 'user1',
-      formCategory: 'food'
-    };
-
-    document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
-
-    window.app = {
-      haptic: () => { if(navigator.vibrate) navigator.vibrate(40); },
-      
-      getDbPaths: (uid) => {
-        const syncCode = localStorage.getItem('finance_sync_code');
-        if (syncCode && syncCode.trim() !== '') {
-          return {
-            txCol: collection(db, 'artifacts', appId, 'public', 'data', `tx_${syncCode}`),
-            settingsDoc: doc(db, 'artifacts', appId, 'public', 'data', `settings_${syncCode}`, 'profiles')
-          };
-        }
-        return {
-          txCol: collection(db, 'artifacts', appId, 'users', uid, 'transactions'),
-          settingsDoc: doc(db, 'artifacts', appId, 'users', uid, 'settings', 'userProfiles')
-        };
-      },
-
-      saveSyncCode: () => {
-        app.haptic();
-        const code = document.getElementById('setting-sync-code').value.trim();
-        if(code) localStorage.setItem('finance_sync_code', code);
-        else localStorage.removeItem('finance_sync_code');
-        window.location.reload();
-      },
-
-      init: async () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const autoSyncCode = urlParams.get('sync');
-        if (autoSyncCode) {
-          localStorage.setItem('finance_sync_code', autoSyncCode);
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-
-        lucide.createIcons();
-        try {
-          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
-          } else {
-            await signInAnonymously(auth);
-          }
-        } catch (error) {
-          document.getElementById('global-loader').innerHTML = "<div class='text-rose-500 font-bold'>เกิดข้อผิดพลาด</div>";
-        }
-
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            state.user = user;
-            app.setupListeners();
-            document.getElementById('global-loader').style.opacity = '0';
-            setTimeout(() => document.getElementById('global-loader').style.display = 'none', 300);
-          }
-        });
-      },
-
-      setupListeners: () => {
-        if (!state.user) return;
-        const paths = app.getDbPaths(state.user.uid);
-        if (window.unsubTx) window.unsubTx();
-        if (window.unsubSettings) window.unsubSettings();
-
-        window.unsubTx = onSnapshot(paths.txCol, (snapshot) => {
-          const txs = [];
-          snapshot.forEach((doc) => txs.push(doc.data()));
-          txs.sort((a, b) => b.timestamp - a.timestamp);
-          state.transactions = txs;
-          app.render();
-        }, (err) => console.error(err));
-
-        window.unsubSettings = onSnapshot(paths.settingsDoc, (docSnap) => {
-          if (docSnap.exists()) {
-            state.users = docSnap.data();
-            document.getElementById('setting-user1-name').value = state.users.user1.name;
-            document.getElementById('setting-user2-name').value = state.users.user2.name;
-            app.render();
-          }
-        }, (err) => console.error(err));
-      },
-
-      switchView: (view) => {
-        app.haptic();
-        app.closeAdd();
-        state.currentView = view;
-        
-        ['home', 'history', 'settings'].forEach(v => {
-          const el = document.getElementById(`view-${v}`);
-          if (el) {
-             if(v === view) { el.classList.remove('hidden'); el.classList.add('flex'); } 
-             else { el.classList.add('hidden'); el.classList.remove('flex'); }
-          }
-        });
-
-        ['home', 'history', 'settings'].forEach(t => {
-          const btn = document.getElementById(`nav-${t}`);
-          const icon = document.getElementById(`nav-icon-${t}`);
-          if(!btn || !icon) return;
-          const isActive = view === t;
-          btn.className = `flex flex-col md:flex-row items-center md:justify-start gap-1 md:gap-4 p-2 md:p-4 md:rounded-2xl transition-all w-full ${isActive ? 'text-emerald-600 md:bg-emerald-50/80' : 'text-gray-400 md:text-gray-500 hover:text-emerald-600 md:hover:bg-gray-50'}`;
-          icon.setAttribute('class', `w-6 h-6 md:w-6 md:h-6 ${isActive ? 'fill-current opacity-20 md:opacity-100 md:fill-none' : 'md:opacity-70'}`);
-        });
-
-        if (view === 'settings') {
-          const sc = localStorage.getItem('finance_sync_code');
-          if(sc) document.getElementById('setting-sync-code').value = sc;
-        }
-        app.render();
-      },
-
-      openAdd: () => {
-        app.haptic();
-        const overlay = document.getElementById('view-add-overlay');
-        const backdrop = document.getElementById('add-backdrop');
-        const sheet = document.getElementById('add-sheet');
-        const amountInput = document.getElementById('form-amount');
-        
-        overlay.classList.remove('hidden');
-        overlay.classList.add('flex');
-        
-        // Reset defaults for fast entry
-        amountInput.value = '';
-        state.formType = 'expense';
-        state.formCategory = 'food';
-        document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
-        
-        app.renderAddForm(); 
-        amountInput.focus(); // Instant numpad
-
-        requestAnimationFrame(() => {
-          backdrop.classList.remove('opacity-0');
-          sheet.classList.remove('translate-y-full');
-        });
-      },
-
-      closeAdd: () => {
-        const overlay = document.getElementById('view-add-overlay');
-        const backdrop = document.getElementById('add-backdrop');
-        const sheet = document.getElementById('add-sheet');
-        
-        document.getElementById('form-amount').blur();
-        backdrop.classList.add('opacity-0');
-        sheet.classList.add('translate-y-full');
-        
-        setTimeout(() => {
-          overlay.classList.add('hidden');
-          overlay.classList.remove('flex');
-        }, 400);
-      },
-
-      setActiveProfile: (profile) => { app.haptic(); state.activeProfile = profile; app.render(); },
-      
-      setFormType: (type) => {
-        app.haptic();
-        state.formType = type;
-        if (type === 'expense') state.formCategory = 'food';
-        if (type === 'income') state.formCategory = 'salary';
-        app.renderAddForm();
-      },
-      
-      setFormUser: (userId) => { 
-        app.haptic();
-        state.formUser = userId; 
-        localStorage.setItem('finance_last_user', userId);
-        app.renderAddForm(); 
-      },
-      
-      setFormCategory: (catId) => { 
-        app.haptic();
-        state.formCategory = catId; 
-        app.renderAddForm(); 
-      },
-
-      updateUserName: async (userId, newName) => {
-        if (!state.user) return;
-        state.users[userId].name = newName;
-        app.render(); 
-        
-        clearTimeout(window.updateTimer);
-        window.updateTimer = setTimeout(async () => {
-          try {
-            const paths = app.getDbPaths(state.user.uid);
-            await setDoc(paths.settingsDoc, state.users);
-          } catch (error) {}
-        }, 800);
-      },
-
-      saveTransaction: async (e) => {
-        e.preventDefault();
-        app.haptic();
-        const btn = document.getElementById('btn-submit-tx');
-        if (!state.user) return;
-        
-        const amountEl = document.getElementById('form-amount');
-        const amount = Number(amountEl.value);
-        if (!amount || isNaN(amount) || amount <= 0) {
-          amountEl.classList.add('scale-105', 'text-red-500');
-          setTimeout(() => amountEl.classList.remove('scale-105', 'text-red-500'), 300);
-          return;
-        }
-
-        const txId = Date.now().toString();
-        const newTx = {
-          id: txId, userId: state.formUser, type: state.formType, amount: amount,
-          category: state.formCategory, note: document.getElementById('form-note').value,
-          date: document.getElementById('form-date').value, timestamp: Date.now()
+        // 1. ตั้งค่า Firebase Configuration ของคุณ
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgTWrI1G1t3GYVz4-SPM7btrsixSe0el8",
+            authDomain: "time-tracker-46283.firebaseapp.com",
+            projectId: "time-tracker-46283",
+            storageBucket: "time-tracker-46283.firebasestorage.app",
+            messagingSenderId: "882533547295",
+            appId: "1:882533547295:web:4b78bfc84322c58a50042a",
+            measurementId: "G-5DPBNCSWFW"
         };
 
-        btn.disabled = true; 
-        btn.innerHTML = '<i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>';
-        lucide.createIcons();
+        // 2. Initialize Firebase และ Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const expensesCol = collection(db, "expenses");
 
-        try {
-          const paths = app.getDbPaths(state.user.uid);
-          await setDoc(doc(paths.txCol, txId), newTx);
-          app.closeAdd(); 
-        } catch (error) {
-          btn.innerHTML = 'ลองใหม่';
-        } finally {
-          setTimeout(() => {
-            btn.disabled = false;
-            btn.innerHTML = 'บันทึก <i data-lucide="arrow-right" class="w-5 h-5"></i>';
-            lucide.createIcons();
-          }, 500);
-        }
-      },
+        // ตัวแปรเก็บข้อมูล
+        let expenses = [];
+        
+        // Element ต่างๆ
+        const inputEl = document.getElementById('expenseInput');
+        const listEl = document.getElementById('expenseList');
+        const totalEl = document.getElementById('totalAmount');
+        const loadingEl = document.getElementById('loadingStatus');
 
-      deleteTransaction: async (id) => {
-        app.haptic();
-        if (!state.user) return;
-        if(confirm('ลบรายการนี้ใช่ไหม?')) {
-          try { 
-            const paths = app.getDbPaths(state.user.uid);
-            await deleteDoc(doc(paths.txCol, id)); 
-          } catch (error) {}
-        }
-      },
+        // 3. ดึงข้อมูลแบบ Real-time (เรียงตามเวลาที่สร้างล่าสุดขึ้นก่อน)
+        const q = query(expensesCol, orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+            expenses = [];
+            snapshot.forEach((doc) => {
+                expenses.push({ id: doc.id, ...doc.data() });
+            });
+            renderExpenses();
+            
+            // ปลดล็อคช่องพิมพ์เมื่อโหลดเสร็จ
+            inputEl.disabled = false;
+            loadingEl.innerText = 'ออนไลน์ 🟢';
+        }, (error) => {
+            console.error("Error fetching data:", error);
+            loadingEl.innerText = 'ออฟไลน์ 🔴';
+            loadingEl.style.color = 'red';
+        });
 
-      getFilteredTransactions: () => {
-        if (state.activeProfile === 'all') return state.transactions;
-        return state.transactions.filter(t => t.userId === state.activeProfile || !t.userId);
-      },
+        // 4. ฟังก์ชันจำลอง AI แยกชื่อรายการและราคา
+        function aiParseExpense(text) {
+            text = text.trim();
+            const regex = /^(.*?)\s*(\d+(?:\.\d+)?)\s*(?:บาท|b|baht|฿)?$/i;
+            const match = text.match(regex);
 
-      formatCurrency: (amount) => {
-        // Smart formatting: Remove .00 if whole number
-        const formatted = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(amount);
-        return formatted.replace('.00', '');
-      },
-      
-      formatSmartDate: (dateString) => {
-        const today = new Date().toISOString().split('T')[0];
-        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-        if (dateString === today) return "วันนี้";
-        if (dateString === yesterday) return "เมื่อวาน";
-        return new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short' }).format(new Date(dateString));
-      },
-
-      render: () => {
-        const filteredTxs = app.getFilteredTransactions();
-        const totals = filteredTxs.reduce((acc, curr) => {
-          curr.type === 'income' ? acc.income += curr.amount : acc.expense += curr.amount;
-          acc.balance = acc.income - acc.expense;
-          return acc;
-        }, { income: 0, expense: 0, balance: 0 });
-
-        const getSwitcherHtml = (isMobile) => `
-          <button onclick="app.setActiveProfile('all')" class="flex-1 px-3 py-1.5 md:py-2 md:px-5 rounded-full text-xs md:text-sm font-bold transition-all ${state.activeProfile === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:bg-white/50'}">
-            รวม
-          </button>
-          <button onclick="app.setActiveProfile('user1')" class="flex-1 px-3 py-1.5 md:py-2 md:px-5 rounded-full text-xs md:text-sm font-bold transition-all ${state.activeProfile === 'user1' ? 'bg-blue-500 text-white shadow-md shadow-blue-500/20' : 'text-gray-500 hover:bg-white/50'}">
-            <span class="truncate max-w-[70px] block">${state.users['user1'].name}</span>
-          </button>
-          <button onclick="app.setActiveProfile('user2')" class="flex-1 px-3 py-1.5 md:py-2 md:px-5 rounded-full text-xs md:text-sm font-bold transition-all ${state.activeProfile === 'user2' ? 'bg-pink-500 text-white shadow-md shadow-pink-500/20' : 'text-gray-500 hover:bg-white/50'}">
-            <span class="truncate max-w-[70px] block">${state.users['user2'].name}</span>
-          </button>
-        `;
-
-        document.getElementById('mobile-profile-switcher').innerHTML = getSwitcherHtml(true);
-        document.getElementById('desktop-profile-switcher').innerHTML = getSwitcherHtml(false);
-        document.getElementById('history-profile-switcher').innerHTML = getSwitcherHtml(false);
-
-        const activeName = state.activeProfile === 'all' ? 'รวมทั้งหมด' : state.users[state.activeProfile].name;
-        document.getElementById('home-balance-label').innerText = `ยอดคงเหลือ (${activeName})`;
-        document.getElementById('home-total-balance').innerText = app.formatCurrency(totals.balance);
-        document.getElementById('home-total-income').innerText = app.formatCurrency(totals.income);
-        document.getElementById('home-total-expense').innerText = app.formatCurrency(totals.expense);
-
-        const buildTxHtml = (txs, isHome = false) => {
-          if (txs.length === 0 && isHome) return `
-            <div class="text-center py-14 bg-white md:bg-gray-50 md:border-dashed rounded-[28px] border border-gray-100 shadow-sm">
-              <div class="bg-gray-50 md:bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i data-lucide="receipt" class="w-8 h-8 text-gray-300"></i>
-              </div>
-              <p class="text-gray-600 font-bold text-lg">ยังไม่มีรายการ</p>
-              <p class="text-gray-400 text-sm mt-1">กดเครื่องหมาย + เพื่อเริ่มต้นบันทึก</p>
-            </div>`;
-          
-          return txs.map(tx => {
-            const cat = CATEGORY_MAP[tx.category] || CATEGORY_MAP['other_exp'];
-            const userRec = state.users[tx.userId || 'user1'];
-            const isInc = tx.type === 'income';
-            return `
-              <div class="bg-white p-4 rounded-[24px] shadow-sm hover:shadow-md transition-shadow border border-gray-50 flex items-center gap-4 relative overflow-hidden group">
-                <div class="absolute left-0 top-0 bottom-0 w-1.5 ${userRec.color} opacity-80"></div>
-                <div class="w-12 h-12 rounded-2xl flex items-center justify-center ${cat.color} ml-1 shrink-0">
-                  <i data-lucide="${cat.icon}" class="w-6 h-6"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-0.5">
-                    <h3 class="font-extrabold text-gray-900 text-base truncate">${cat.name}</h3>
-                    ${state.activeProfile === 'all' ? `<span class="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${userRec.bg} ${userRec.text}">${userRec.name}</span>` : ''}
-                  </div>
-                  <div class="text-[13px] text-gray-500 font-medium flex gap-2">
-                    <span class="shrink-0">${app.formatSmartDate(tx.date)}</span>
-                  </div>
-                </div>
-                <div class="font-extrabold text-right shrink-0 ${isInc ? 'text-emerald-600' : 'text-gray-900'} text-lg">
-                  ${isInc ? '+' : '-'}${app.formatCurrency(tx.amount)}
-                </div>
-                ${!isHome ? `<button onclick="app.deleteTransaction('${tx.id}')" class="ml-1 p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition md:opacity-0 group-hover:opacity-100 active:scale-90"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : ''}
-              </div>
-            `;
-          }).join('');
-        };
-
-        document.getElementById('home-transactions-list').innerHTML = buildTxHtml(filteredTxs.slice(0, 5), true);
-        document.getElementById('history-total-count').innerText = `${filteredTxs.length} รายการ`;
-
-        const historyListEl = document.getElementById('history-transactions-list');
-        if (filteredTxs.length === 0) {
-          historyListEl.innerHTML = '<div class="text-center py-24"><p class="text-gray-400 text-lg font-bold">ยังไม่มีประวัติรายการ</p></div>';
-        } else {
-          const grouped = filteredTxs.reduce((acc, tx) => {
-            if (!acc[tx.date]) acc[tx.date] = []; acc[tx.date].push(tx); return acc;
-          }, {});
-          
-          historyListEl.innerHTML = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).map(date => `
-            <div class="mb-8">
-              <h3 class="text-xs font-extrabold text-gray-400 mb-3 px-2 tracking-widest uppercase">${app.formatSmartDate(date)}</h3>
-              <div class="space-y-2">
-                ${buildTxHtml(grouped[date], false)}
-              </div>
-            </div>
-          `).join('');
-        }
-        lucide.createIcons();
-      },
-
-      renderAddForm: () => {
-        // Switcher logic
-        const typeIndicator = document.getElementById('type-indicator');
-        const amountInput = document.getElementById('form-amount');
-        const btnExp = document.getElementById('btn-type-expense');
-        const btnInc = document.getElementById('btn-type-income');
-
-        if (state.formType === 'expense') {
-          if(typeIndicator) typeIndicator.style.transform = 'translateX(0)';
-          amountInput.className = "text-6xl font-extrabold text-center w-full bg-transparent py-2 focus:outline-none transition-colors text-rose-600 placeholder-rose-200 tracking-tighter";
-          if(btnExp && btnInc) { btnExp.classList.add('text-rose-600'); btnInc.classList.remove('text-emerald-600'); }
-        } else {
-          if(typeIndicator) typeIndicator.style.transform = 'translateX(100%)';
-          amountInput.className = "text-6xl font-extrabold text-center w-full bg-transparent py-2 focus:outline-none transition-colors text-emerald-600 placeholder-emerald-200 tracking-tighter";
-          if(btnExp && btnInc) { btnInc.classList.add('text-emerald-600'); btnExp.classList.remove('text-rose-600'); }
+            if (match) {
+                let itemName = match[1].trim();
+                let itemPrice = parseFloat(match[2]);
+                if (!itemName) itemName = "ไม่ระบุรายการ";
+                return { name: itemName, price: itemPrice };
+            }
+            return null;
         }
 
-        // Users mini chips
-        document.getElementById('add-user-switcher').innerHTML = `
-          <button type="button" onclick="app.setFormUser('user1')" class="w-8 h-8 rounded-full flex items-center justify-center transition-all ${state.formUser === 'user1' ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30' : 'bg-transparent text-gray-400'}"><i data-lucide="user" class="w-4 h-4"></i></button>
-          <button type="button" onclick="app.setFormUser('user2')" class="w-8 h-8 rounded-full flex items-center justify-center transition-all ${state.formUser === 'user2' ? 'bg-pink-500 text-white shadow-md shadow-pink-500/30' : 'bg-transparent text-gray-400'}"><i data-lucide="user" class="w-4 h-4"></i></button>
-        `;
+        // 5. ฟังก์ชันเพิ่มรายการขึ้น Firestore
+        async function addExpense() {
+            const rawText = inputEl.value;
+            if (!rawText) return;
 
-        // Compact Categories Grid
-        const cats = state.formType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-        document.getElementById('add-category-grid').innerHTML = cats.map(cat => {
-          const isSel = state.formCategory === cat.id;
-          return `
-            <div class="flex flex-col items-center gap-1.5 cursor-pointer group" onclick="app.setFormCategory('${cat.id}')">
-              <div class="w-[3.5rem] h-[3.5rem] rounded-[18px] flex items-center justify-center transition-all duration-200 ${isSel ? cat.color + ' ring-4 ring-offset-2 ring-current scale-105 shadow-md' : 'bg-gray-50 text-gray-400 active:scale-95'}">
-                <i data-lucide="${cat.icon}" class="w-6 h-6"></i>
-              </div>
-              <span class="text-[11px] font-bold mt-1 transition-colors ${isSel ? 'text-gray-900' : 'text-gray-400'}">${cat.name}</span>
-            </div>
-          `;
-        }).join('');
-        lucide.createIcons();
-      }
-    };
+            const parsedData = aiParseExpense(rawText);
 
-    app.init();
-  </script>
+            if (parsedData) {
+                try {
+                    // กำลังบันทึก ปิดช่องพิมพ์ชั่วคราว
+                    inputEl.disabled = true;
+                    await addDoc(expensesCol, {
+                        name: parsedData.name,
+                        price: parsedData.price,
+                        createdAt: serverTimestamp() // ให้ Server ของ Firebase บันทึกเวลาอัตโนมัติ
+                    });
+                    inputEl.value = '';
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                    alert("ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่");
+                } finally {
+                    inputEl.disabled = false;
+                    inputEl.focus();
+                }
+            } else {
+                alert("AI ไม่เข้าใจรูปแบบครับ ลองพิมพ์แบบนี้ดูนะ: 'ชาเย็น 20'");
+            }
+        }
+
+        // 6. ฟังก์ชันลบรายการจาก Firestore
+        async function deleteExpense(id) {
+            if(confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+                try {
+                    await deleteDoc(doc(db, "expenses", id));
+                } catch (e) {
+                    console.error("Error deleting document: ", e);
+                }
+            }
+        }
+
+        // ฟังชันก์ลบที่ผูกกับ Event Delegation (เพราะเราเขียนแบบ Module ทำให้ html เรียก onclick ตรงๆ ไม่ได้)
+        listEl.addEventListener('click', (e) => {
+            if(e.target.classList.contains('delete-btn')) {
+                const id = e.target.getAttribute('data-id');
+                deleteExpense(id);
+            }
+        });
+
+        // 7. จัดกลุ่มข้อมูลตามวันที่และแสดงผล (สรุปรายจ่าย)
+        function renderExpenses() {
+            listEl.innerHTML = '';
+            let totalAmountAll = 0;
+
+            if (expenses.length === 0) {
+                listEl.innerHTML = '<div class="empty-state">ยังไม่มีรายการจดบันทึก ลองพิมพ์ด้านบนเลย!</div>';
+                totalEl.innerText = "0";
+                return;
+            }
+
+            // จัดกลุ่มข้อมูลตามวันที่
+            const groupedData = {};
+            
+            expenses.forEach((exp) => {
+                totalAmountAll += exp.price;
+                
+                // แปลง Timestamp ของ Firebase เป็นวันที่ของไทย
+                let dateKey = "รอการอัปเดต..."; 
+                let timeStr = "";
+                
+                if (exp.createdAt) {
+                    const dateObj = exp.createdAt.toDate ? exp.createdAt.toDate() : new Date(exp.createdAt);
+                    // รูปแบบ: 15 พ.ค. 2567
+                    dateKey = dateObj.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+                    // รูปแบบ: 14:30 น.
+                    timeStr = dateObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+                }
+
+                if (!groupedData[dateKey]) {
+                    groupedData[dateKey] = { items: [], totalDay: 0 };
+                }
+                
+                groupedData[dateKey].items.push({...exp, timeStr});
+                groupedData[dateKey].totalDay += exp.price;
+            });
+
+            // วนลูปสร้าง HTML จากข้อมูลที่จัดกลุ่มแล้ว
+            for (const [date, data] of Object.entries(groupedData)) {
+                // สร้างส่วนหัวของวันที่และสรุปรายวัน
+                const headerLi = document.createElement('li');
+                headerLi.className = 'date-header';
+                headerLi.innerHTML = `
+                    <span>📅 ${date}</span>
+                    <span>รวม: ${data.totalDay.toLocaleString()} ฿</span>
+                `;
+                listEl.appendChild(headerLi);
+
+                // สร้างรายการย่อยในแต่ละวัน
+                data.items.forEach(exp => {
+                    const li = document.createElement('li');
+                    li.className = 'expense-item';
+                    li.innerHTML = `
+                        <div class="item-text">
+                            ${exp.name}
+                            <span class="item-time">${exp.timeStr || '...'}</span>
+                        </div>
+                        <div class="item-price">${exp.price.toLocaleString()} ฿</div>
+                        <button class="delete-btn" data-id="${exp.id}">×</button>
+                    `;
+                    listEl.appendChild(li);
+                });
+            }
+
+            // อัปเดตยอดรวมทั้งหมด
+            totalEl.innerText = totalAmountAll.toLocaleString();
+        }
+
+        // ดักจับการกดปุ่ม Enter
+        inputEl.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addExpense();
+            }
+        });
+
+    </script>
 </body>
 </html>
