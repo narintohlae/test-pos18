@@ -19,7 +19,6 @@
 
         * {
             box-sizing: border-box;
-            /* ใช้ฟอนต์ระบบของ Apple ก่อน ถ้าไม่มีให้ใช้ Sarabun */
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Sarabun", sans-serif;
             margin: 0;
             padding: 0;
@@ -36,7 +35,7 @@
 
         .ios-app {
             width: 100%;
-            max-width: 430px; /* ขนาดประมาณหน้าจอ iPhone Max */
+            max-width: 430px;
             background: var(--ios-bg);
             position: relative;
             padding-bottom: 40px;
@@ -64,11 +63,11 @@
         }
 
         .balance-card {
-            background: #1C1C1E; /* บัตรสีดำสไตล์พรีเมียม */
+            background: #1C1C1E;
             color: white;
             border-radius: 20px;
             margin: 10px 20px 24px;
-            padding: 24px 20px;
+            padding: 24px 20px 20px; /* ลด padding ล่างลงนิดหน่อยให้พอดีกับปุ่ม */
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
@@ -77,12 +76,42 @@
             color: #EBEBF5;
             opacity: 0.8;
             margin-bottom: 8px;
+            transition: all 0.3s ease;
         }
 
         .balance-amount {
             font-size: 36px;
             font-weight: 700;
             letter-spacing: -1px;
+            margin-bottom: 20px;
+        }
+
+        /* ------------------ Filter Tabs (Segmented Control) ------------------ */
+        .filter-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 9px;
+            padding: 2px;
+        }
+
+        .filter-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #EBEBF5;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 0;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active {
+            background: #FFFFFF;
+            color: #1C1C1E;
+            font-weight: 600;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
         }
 
         /* ------------------ Input Section ------------------ */
@@ -156,7 +185,6 @@
             position: relative;
         }
 
-        /* เส้นกั้นระหว่างรายการ (ไม่ให้มีเส้นที่อันสุดท้าย) */
         .ios-list-item:not(:last-child)::after {
             content: '';
             position: absolute;
@@ -213,7 +241,7 @@
         .delete-btn svg {
             width: 20px;
             height: 20px;
-            pointer-events: none; /* เพื่อให้กดโดนตัวปุ่มเต็มๆ */
+            pointer-events: none;
         }
 
         .empty-state {
@@ -233,8 +261,16 @@
         </div>
 
         <div class="balance-card">
-            <div class="balance-label">ยอดรวมทั้งหมด</div>
+            <div class="balance-label" id="balanceLabel">ยอดรวมทั้งหมด</div>
             <div class="balance-amount">฿<span id="totalAmount">0</span></div>
+            
+            <!-- เพิ่มปุ่มกรองเวลา (Segmented Control) -->
+            <div class="filter-tabs">
+                <button class="filter-btn" data-filter="day">วันนี้</button>
+                <button class="filter-btn" data-filter="week">สัปดาห์นี้</button>
+                <button class="filter-btn" data-filter="month">เดือนนี้</button>
+                <button class="filter-btn active" data-filter="all">ทั้งหมด</button>
+            </div>
         </div>
         
         <div class="input-container">
@@ -249,7 +285,6 @@
         </div>
     </div>
 
-    <!-- Firebase JS SDK รูปแบบ Module -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
         import { 
@@ -271,11 +306,38 @@
         const expensesCol = collection(db, "expenses");
 
         let expenses = [];
+        let currentFilter = 'all'; // เก็บค่าสถานะปัจจุบัน (all, day, week, month)
         
         const inputEl = document.getElementById('expenseInput');
         const listEl = document.getElementById('expenseList');
         const totalEl = document.getElementById('totalAmount');
         const loadingEl = document.getElementById('loadingStatus');
+        const balanceLabel = document.getElementById('balanceLabel');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        // จัดการเหตุการณ์เมื่อกดปุ่มตัวกรองเวลา
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // เปลี่ยนสีปุ่มที่กดให้เป็น Active
+                filterBtns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // อัปเดตตัวแปร Filter
+                currentFilter = e.target.getAttribute('data-filter');
+                
+                // เปลี่ยนข้อความบนการ์ด
+                const labelMap = {
+                    'day': 'ยอดรวมวันนี้',
+                    'week': 'ยอดรวมสัปดาห์นี้',
+                    'month': 'ยอดรวมเดือนนี้',
+                    'all': 'ยอดรวมทั้งหมด'
+                };
+                balanceLabel.innerText = labelMap[currentFilter];
+                
+                // สั่งประมวลผลการแสดงผลใหม่
+                renderExpenses();
+            });
+        });
 
         // ดึงข้อมูล Real-time
         const q = query(expensesCol, orderBy("createdAt", "desc"));
@@ -288,11 +350,11 @@
             
             inputEl.disabled = false;
             loadingEl.innerText = 'เชื่อมต่อแล้ว';
-            loadingEl.style.color = '#007AFF'; // iOS Blue
+            loadingEl.style.color = '#007AFF';
         }, (error) => {
             console.error("Error fetching data:", error);
             loadingEl.innerText = 'ออฟไลน์';
-            loadingEl.style.color = '#FF3B30'; // iOS Red
+            loadingEl.style.color = '#FF3B30';
         });
 
         // AI แยกชื่อรายการและราคา
@@ -338,7 +400,7 @@
             }
         }
 
-        // ลบรายการ (ใช้ closest() เพื่อให้รองรับการกดโดนไอคอน SVG)
+        // ลบรายการ
         listEl.addEventListener('click', async (e) => {
             const deleteBtn = e.target.closest('.delete-btn');
             if(deleteBtn) {
@@ -353,30 +415,57 @@
             }
         });
 
-        // จัดรูปแบบและแสดงผลสไตล์ iOS Grouped List
+        // ฟังก์ชันช่วยเช็คว่าเป็นสัปดาห์นี้หรือไม่ (เริ่มนับวันอาทิตย์)
+        function isSameWeek(dateStr1, dateStr2) {
+            const d1 = new Date(dateStr1);
+            const d2 = new Date(dateStr2);
+            d1.setHours(0,0,0,0);
+            d2.setHours(0,0,0,0);
+            
+            const diff = d1.getDate() - d1.getDay(); 
+            const startOfWeek1 = new Date(d1.setDate(diff));
+            
+            const diff2 = d2.getDate() - d2.getDay();
+            const startOfWeek2 = new Date(d2.setDate(diff2));
+            
+            return startOfWeek1.getTime() === startOfWeek2.getTime();
+        }
+
+        // จัดรูปแบบ กรองข้อมูล และแสดงผล
         function renderExpenses() {
             listEl.innerHTML = '';
             let totalAmountAll = 0;
+            const now = new Date();
 
-            if (expenses.length === 0) {
-                listEl.innerHTML = '<div class="empty-state">ยังไม่มีรายการจดบันทึก</div>';
+            // กรองข้อมูลตาม Filter ที่เลือกก่อนนำไปจัดกลุ่ม
+            const filteredExpenses = expenses.filter(exp => {
+                // หากกำลังพึ่งบันทึกและยังไม่ได้ Timestamp จาก Server ให้อนุมานว่าเป็นเวลาปัจจุบัน
+                const expDate = exp.createdAt ? (exp.createdAt.toDate ? exp.createdAt.toDate() : new Date(exp.createdAt)) : new Date();
+
+                if (currentFilter === 'day') {
+                    return expDate.toDateString() === now.toDateString();
+                } else if (currentFilter === 'week') {
+                    return isSameWeek(expDate, now);
+                } else if (currentFilter === 'month') {
+                    return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear();
+                }
+                return true; // กรณี 'all'
+            });
+
+            if (filteredExpenses.length === 0) {
+                listEl.innerHTML = '<div class="empty-state">ไม่มีรายการในช่วงเวลานี้</div>';
                 totalEl.innerText = "0";
                 return;
             }
 
             const groupedData = {};
             
-            expenses.forEach((exp) => {
+            filteredExpenses.forEach((exp) => {
                 totalAmountAll += exp.price;
                 
-                let dateKey = "รอการอัปเดต..."; 
-                let timeStr = "";
-                
-                if (exp.createdAt) {
-                    const dateObj = exp.createdAt.toDate ? exp.createdAt.toDate() : new Date(exp.createdAt);
-                    dateKey = dateObj.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
-                    timeStr = dateObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-                }
+                const expDate = exp.createdAt ? (exp.createdAt.toDate ? exp.createdAt.toDate() : new Date(exp.createdAt)) : new Date();
+                const dateKey = expDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+                const timeStr = expDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
                 if (!groupedData[dateKey]) {
                     groupedData[dateKey] = { items: [], totalDay: 0 };
@@ -387,11 +476,9 @@
             });
 
             for (const [date, data] of Object.entries(groupedData)) {
-                // สร้าง Section ของแต่ละวัน
                 const section = document.createElement('div');
                 section.className = 'ios-section';
 
-                // หัวข้อของวันนั้นๆ
                 const header = document.createElement('div');
                 header.className = 'ios-section-header';
                 header.innerHTML = `
@@ -400,7 +487,6 @@
                 `;
                 section.appendChild(header);
 
-                // กล่องรายการ (List)
                 const ul = document.createElement('ul');
                 ul.className = 'ios-list';
 
@@ -408,7 +494,6 @@
                     const li = document.createElement('li');
                     li.className = 'ios-list-item';
                     
-                    // ไอคอนกากบาท (SVG แบบมินิมอล)
                     const svgIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
 
                     li.innerHTML = `
@@ -428,6 +513,7 @@
                 listEl.appendChild(section);
             }
 
+            // อัปเดตตัวเลขยอดรวมที่การ์ดสีดำ
             totalEl.innerText = totalAmountAll.toLocaleString();
         }
 
