@@ -1,80 +1,645 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Price Checker - เช็คราคาสินค้า</title>
-    <meta name="description" content="เช็คราคาสินค้าได้รวดเร็ว ทันใจ ผ่านระบบออนไลน์">
-    <!-- Google Fonts: Outfit & Prompt for Thai -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <!-- Quagga2 Library for 1D barcode scanning -->
-    <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
-</head>
-<body>
-    <div class="app-container">
-        <header>
-            <div class="logo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 0 0 7H6"></path>
-                </svg>
-                <span>Price Checker</span>
-            </div>
-        </header>
+import React, { useState, useEffect } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { 
+  Wallet, 
+  ArrowDownCircle, 
+  ArrowUpCircle, 
+  Plus, 
+  Home, 
+  List as ListIcon, 
+  Coffee, 
+  Bus, 
+  ShoppingBag, 
+  FileText, 
+  Film, 
+  MoreHorizontal, 
+  Briefcase, 
+  DollarSign, 
+  Gift, 
+  ChevronLeft,
+  Trash2,
+  User,
+  Users,
+  Settings
+} from 'lucide-react';
 
-        <main>
-            <div class="search-box glass">
-                <h1>เช็คราคาสินค้า</h1>
-                <p>พิมพ์ชื่อสินค้าหรือสแกนบาร์โค้ดเพื่อเริ่มตรวจสอบ</p>
-                <div class="input-wrapper">
-                    <input type="text" id="searchInput" placeholder="รหัสสินค้า / ชื่อสินค้า / บาร์โค้ด..." autocomplete="off">
-                    <button id="scanBtn" class="secondary-btn" title="สแกนบาร์โค้ด">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                            <circle cx="12" cy="13" r="4"></circle>
-                        </svg>
-                    </button>
-                    <button id="searchBtn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                    </button>
-                    <div id="searchSuggestions" class="suggestions-dropdown"></div>
+// --- ข้อมูลตั้งต้นและหมวดหมู่ ---
+const EXPENSE_CATEGORIES = [
+  { id: 'food', name: 'อาหาร', icon: Coffee, color: 'bg-orange-100 text-orange-600' },
+  { id: 'transport', name: 'เดินทาง', icon: Bus, color: 'bg-blue-100 text-blue-600' },
+  { id: 'shopping', name: 'ช้อปปิ้ง', icon: ShoppingBag, color: 'bg-pink-100 text-pink-600' },
+  { id: 'bills', name: 'บิลต่างๆ', icon: FileText, color: 'bg-purple-100 text-purple-600' },
+  { id: 'entertainment', name: 'บันเทิง', icon: Film, color: 'bg-yellow-100 text-yellow-600' },
+  { id: 'other_exp', name: 'อื่นๆ', icon: MoreHorizontal, color: 'bg-gray-200 text-gray-600' },
+];
+
+const INCOME_CATEGORIES = [
+  { id: 'salary', name: 'เงินเดือน', icon: Briefcase, color: 'bg-emerald-100 text-emerald-600' },
+  { id: 'business', name: 'ธุรกิจ', icon: DollarSign, color: 'bg-teal-100 text-teal-600' },
+  { id: 'gift', name: 'โบนัส/ของขวัญ', icon: Gift, color: 'bg-indigo-100 text-indigo-600' },
+  { id: 'other_inc', name: 'อื่นๆ', icon: MoreHorizontal, color: 'bg-gray-200 text-gray-600' },
+];
+
+const CATEGORY_MAP = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES].reduce((acc, cat) => {
+  acc[cat.id] = cat;
+  return acc;
+}, {});
+
+const INITIAL_USERS = {
+  'user1': { id: 'user1', name: 'ผู้ใช้ 1', color: 'bg-blue-500', bg: 'bg-blue-100', text: 'text-blue-700' },
+  'user2': { id: 'user2', name: 'ผู้ใช้ 2', color: 'bg-pink-500', bg: 'bg-pink-100', text: 'text-pink-700' }
+};
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAgTWrI1G1t3GYVz4-SPM7btrsixSe0el8",
+  authDomain: "time-tracker-46283.firebaseapp.com",
+  projectId: "time-tracker-46283",
+  storageBucket: "time-tracker-46283.firebasestorage.app",
+  messagingSenderId: "882533547295",
+  appId: "1:882533547295:web:4b78bfc84322c58a50042a",
+  measurementId: "G-5DPBNCSWFW"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'finance-app-2026';
+
+export default function App() {
+  // --- States ---
+  const [user, setUser] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [users, setUsers] = useState(INITIAL_USERS);
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'add', 'history', 'settings'
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [activeProfile, setActiveProfile] = useState('all'); // 'all', 'user1', 'user2'
+
+  // States สำหรับฟอร์มเพิ่มรายการ
+  const [formType, setFormType] = useState('expense'); // 'expense' หรือ 'income'
+  const [formUser, setFormUser] = useState('user1'); // 'user1' หรือ 'user2'
+  const [formAmount, setFormAmount] = useState('');
+  const [formCategory, setFormCategory] = useState('food');
+  const [formNote, setFormNote] = useState('');
+  const [formDate, setFormDate] = useState(new Date().toISOString().split('T')[0]);
+
+  // --- Effects ---
+  // จัดการการเข้าสู่ระบบแบบ Anonymous
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        await signInAnonymously(auth);
+      } catch (error) {
+        console.error("Auth Error:", error);
+      }
+    };
+    initAuth();
+    
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
+  }, []);
+
+  // โหลดและซิงค์ข้อมูลจาก Firestore
+  useEffect(() => {
+    if (!user) return;
+
+    // ติดตามการเปลี่ยนแปลงของรายการ (Transactions)
+    const txPath = collection(db, 'artifacts', appId, 'users', user.uid, 'transactions');
+    const unsubTx = onSnapshot(txPath, (snapshot) => {
+      const txs = [];
+      snapshot.forEach((doc) => txs.push(doc.data()));
+      // เรียงจากใหม่ไปเก่า
+      txs.sort((a, b) => b.timestamp - a.timestamp);
+      setTransactions(txs);
+      setIsLoaded(true);
+    }, (error) => console.error("Error fetching transactions:", error));
+
+    // ติดตามการเปลี่ยนแปลงของการตั้งค่า (Users Settings)
+    const settingsPath = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'userProfiles');
+    const unsubSettings = onSnapshot(settingsPath, (docSnap) => {
+      if (docSnap.exists()) {
+        setUsers(docSnap.data());
+      }
+    }, (error) => console.error("Error fetching settings:", error));
+
+    return () => {
+      unsubTx();
+      unsubSettings();
+    };
+  }, [user]);
+
+  // ฟังก์ชันอัปเดตข้อมูลผู้ใช้งานไปยัง Firestore
+  const updateUserSettings = async (newUsers) => {
+    setUsers(newUsers); // อัปเดต UI ทันที
+    if (!user) return;
+    try {
+      await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'userProfiles'), newUsers);
+    } catch (error) {
+      console.error("Error updating users:", error);
+    }
+  };
+
+  // --- Functions ---
+  const getFilteredTransactions = () => {
+    if (activeProfile === 'all') return transactions;
+    return transactions.filter(t => t.userId === activeProfile || !t.userId);
+  };
+
+  const calculateTotals = () => {
+    const filtered = getFilteredTransactions();
+    return filtered.reduce(
+      (acc, curr) => {
+        if (curr.type === 'income') acc.income += curr.amount;
+        if (curr.type === 'expense') acc.expense += curr.amount;
+        acc.balance = acc.income - acc.expense;
+        return acc;
+      },
+      { income: 0, expense: 0, balance: 0 }
+    );
+  };
+
+  const handleSaveTransaction = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      alert('กำลังเชื่อมต่อฐานข้อมูล โปรดรอสักครู่...');
+      return;
+    }
+    if (!formAmount || isNaN(formAmount) || Number(formAmount) <= 0) {
+      alert('กรุณากรอกจำนวนเงินให้ถูกต้อง');
+      return;
+    }
+
+    const txId = Date.now().toString();
+    const newTransaction = {
+      id: txId,
+      userId: formUser,
+      type: formType,
+      amount: Number(formAmount),
+      category: formCategory,
+      note: formNote,
+      date: formDate,
+      timestamp: Date.now()
+    };
+
+    try {
+      // บันทึกลง Firestore
+      await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'transactions', txId), newTransaction);
+      
+      // รีเซ็ตฟอร์ม
+      setFormAmount('');
+      setFormNote('');
+      setCurrentView('home');
+    } catch (error) {
+      console.error("Error saving transaction:", error);
+      alert('ไม่สามารถบันทึกข้อมูลได้');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!user) return;
+    if (window.confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+      try {
+        await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'transactions', id));
+      } catch (error) {
+        console.error("Error deleting transaction:", error);
+      }
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(amount);
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('th-TH', { 
+      year: 'numeric', month: 'short', day: 'numeric' 
+    }).format(date);
+  };
+
+  const totals = calculateTotals();
+
+  // --- Components ---
+
+  const formatCategories = formType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+
+  // ป้องกันไม่ให้หมวดหมู่ค้างตอนเปลี่ยนประเภท
+  useEffect(() => {
+    if (formType === 'expense' && !EXPENSE_CATEGORIES.find(c => c.id === formCategory)) {
+      setFormCategory('food');
+    } else if (formType === 'income' && !INCOME_CATEGORIES.find(c => c.id === formCategory)) {
+      setFormCategory('salary');
+    }
+  }, [formType]);
+
+
+  return (
+    <div className="bg-gray-100 min-h-screen flex items-center justify-center p-0 sm:p-4 font-sans">
+      {/* Mobile Container (จำลองหน้าจอมือถือเมื่อดูบนเดสก์ท็อป) */}
+      <div className="w-full max-w-md bg-gray-50 h-[100dvh] sm:h-[850px] relative overflow-hidden flex flex-col shadow-2xl sm:rounded-[40px] sm:border-[8px] border-gray-800">
+        
+        {/* --- View: HOME (ภาพรวม) --- */}
+        {currentView === 'home' && (
+          <div className="flex-1 flex flex-col overflow-y-auto pb-24">
+            {/* Header / Summary Card */}
+            <div className="bg-emerald-600 text-white p-6 pb-8 rounded-b-[32px] shadow-md">
+              <div className="flex justify-between items-center mb-4">
+                <h1 className="text-xl font-bold tracking-wide">Wallet 2026</h1>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setCurrentView('settings')}
+                    className="bg-emerald-500/50 p-2 rounded-full hover:bg-emerald-400 transition"
+                  >
+                    <Settings size={24} />
+                  </button>
+                  <div className="bg-emerald-500/50 p-2 rounded-full">
+                    <Wallet size={24} />
+                  </div>
                 </div>
-            </div>
+              </div>
 
-            <div id="resultsContainer" class="results-container">
-                <!-- Data will be injected here -->
-                <div id="statusMessage" class="status-message">กำลังโหลดข้อมูล...</div>
-            </div>
-
-            <!-- Barcode Scanner Drawer -->
-            <div id="scannerDrawer" class="scanner-drawer">
-                <div class="drawer-header">
-                    <h3>สแกนบาร์โค้ด</h3>
-                    <button id="closeScanner" class="close-btn">&times;</button>
+              {/* Profile Switcher */}
+              <div className="flex bg-emerald-700/50 rounded-xl p-1 mb-6">
+                <button
+                  onClick={() => setActiveProfile('all')}
+                  className={`flex-1 py-1.5 text-sm rounded-lg font-medium transition-all ${activeProfile === 'all' ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-100 hover:text-white'}`}
+                >
+                  <div className="flex items-center justify-center gap-1"><Users size={16}/> รวม</div>
+                </button>
+                <button
+                  onClick={() => setActiveProfile('user1')}
+                  className={`flex-1 py-1.5 text-sm rounded-lg font-medium transition-all ${activeProfile === 'user1' ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-100 hover:text-white'}`}
+                >
+                  <div className="flex items-center justify-center gap-1"><User size={16}/> {users['user1'].name}</div>
+                </button>
+                <button
+                  onClick={() => setActiveProfile('user2')}
+                  className={`flex-1 py-1.5 text-sm rounded-lg font-medium transition-all ${activeProfile === 'user2' ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-100 hover:text-white'}`}
+                >
+                  <div className="flex items-center justify-center gap-1"><User size={16}/> {users['user2'].name}</div>
+                </button>
+              </div>
+              
+              <div className="mb-2 text-emerald-100 text-sm">ยอดคงเหลือ{activeProfile !== 'all' ? ` (${users[activeProfile].name})` : 'รวม'}</div>
+              <div className="text-4xl font-bold mb-6 tracking-tight">
+                {formatCurrency(totals.balance)}
+              </div>
+              
+              <div className="flex bg-emerald-700/50 rounded-2xl p-4 gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-1 text-emerald-200 text-xs mb-1">
+                    <ArrowDownCircle size={14} /> รายรับ
+                  </div>
+                  <div className="font-semibold text-lg">{formatCurrency(totals.income)}</div>
                 </div>
-                <div id="scannerView" class="scanner-view viewport">
-                    <!-- Quagga2 will inject video here -->
-                    <div class="scanner-overlay">
-                        <div class="scanner-box"></div>
-                        <div class="scanner-line"></div>
+                <div className="w-px bg-emerald-500/50"></div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1 text-red-200 text-xs mb-1">
+                    <ArrowUpCircle size={14} /> รายจ่าย
+                  </div>
+                  <div className="font-semibold text-lg">{formatCurrency(totals.expense)}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Transactions */}
+            <div className="p-6">
+              <div className="flex justify-between items-end mb-4">
+                <h2 className="text-lg font-bold text-gray-800">รายการล่าสุด</h2>
+                <button 
+                  onClick={() => setCurrentView('history')}
+                  className="text-sm text-emerald-600 font-medium hover:underline"
+                >
+                  ดูทั้งหมด
+                </button>
+              </div>
+
+              {transactions.length === 0 ? (
+                <div className="text-center py-10 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                  <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Wallet size={24} className="text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 font-medium">ยังไม่มีรายการ</p>
+                  <p className="text-gray-400 text-sm mt-1">กดปุ่ม + ด้านล่างเพื่อเพิ่มรายการ</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {getFilteredTransactions().slice(0, 5).map(transaction => {
+                    const cat = CATEGORY_MAP[transaction.category] || CATEGORY_MAP['other_exp'];
+                    const Icon = cat.icon;
+                    const userRecord = users[transaction.userId || 'user1'];
+                    return (
+                      <div key={transaction.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 relative overflow-hidden">
+                        {/* User Indicator */}
+                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${userRecord.color}`}></div>
+
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${cat.color} ml-1`}>
+                          <Icon size={24} />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-800">{cat.name}</h3>
+                            {activeProfile === 'all' && (
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full ${userRecord.bg} ${userRecord.text}`}>
+                                {userRecord.name}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500 flex gap-2">
+                            <span>{formatDate(transaction.date)}</span>
+                            {transaction.note && <span className="truncate max-w-[100px] block">- {transaction.note}</span>}
+                          </div>
+                        </div>
+                        <div className={`font-bold ${transaction.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* --- View: ADD TRANSACTION (เพิ่มรายการ) --- */}
+        {currentView === 'add' && (
+          <div className="flex-1 flex flex-col bg-white h-full relative z-10">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+              <button 
+                onClick={() => setCurrentView('home')}
+                className="p-2 hover:bg-gray-100 rounded-full transition"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <h1 className="text-lg font-bold">เพิ่มรายการใหม่</h1>
+              <div className="w-10"></div> {/* Spacer */}
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 pb-24">
+              {/* User Switcher for New Transaction */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => setFormUser('user1')}
+                  className={`flex-1 py-2 px-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${formUser === 'user1' ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm' : 'border-gray-200 text-gray-500'}`}
+                >
+                  <User size={18} /> {users['user1'].name}
+                </button>
+                <button
+                  onClick={() => setFormUser('user2')}
+                  className={`flex-1 py-2 px-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${formUser === 'user2' ? 'border-pink-500 bg-pink-50 text-pink-700 shadow-sm' : 'border-gray-200 text-gray-500'}`}
+                >
+                  <User size={18} /> {users['user2'].name}
+                </button>
+              </div>
+
+              {/* Type Switcher */}
+              <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
+                <button
+                  className={`flex-1 py-2 rounded-lg font-medium transition-all ${formType === 'expense' ? 'bg-white shadow-sm text-rose-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  onClick={() => setFormType('expense')}
+                >
+                  รายจ่าย
+                </button>
+                <button
+                  className={`flex-1 py-2 rounded-lg font-medium transition-all ${formType === 'income' ? 'bg-white shadow-sm text-emerald-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  onClick={() => setFormType('income')}
+                >
+                  รายรับ
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveTransaction} className="space-y-6">
+                {/* Amount Input */}
+                <div className="text-center">
+                  <label className="block text-sm font-medium text-gray-500 mb-2">จำนวนเงิน (บาท)</label>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    value={formAmount}
+                    onChange={(e) => setFormAmount(e.target.value)}
+                    placeholder="0.00"
+                    className={`text-5xl font-bold text-center w-full bg-transparent border-b-2 focus:outline-none focus:border-gray-800 pb-2 transition-colors ${formType === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}
+                    autoFocus
+                  />
+                </div>
+
+                {/* Category Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-3">หมวดหมู่</label>
+                  <div className="grid grid-cols-4 gap-4">
+                    {formatCategories.map((cat) => {
+                      const Icon = cat.icon;
+                      const isSelected = formCategory === cat.id;
+                      return (
+                        <div 
+                          key={cat.id} 
+                          className="flex flex-col items-center gap-1 cursor-pointer"
+                          onClick={() => setFormCategory(cat.id)}
+                        >
+                          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${isSelected ? cat.color + ' ring-2 ring-offset-2 ring-current scale-110 shadow-md' : 'bg-gray-100 text-gray-400'}`}>
+                            <Icon size={24} />
+                          </div>
+                          <span className={`text-xs font-medium mt-1 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`}>{cat.name}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Date Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-2">วันที่</label>
+                  <input
+                    type="date"
+                    value={formDate}
+                    onChange={(e) => setFormDate(e.target.value)}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                {/* Note */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-2">โน้ตเพิ่มเติม (ถ้ามี)</label>
+                  <input
+                    type="text"
+                    value={formNote}
+                    onChange={(e) => setFormNote(e.target.value)}
+                    placeholder="ระบุรายละเอียด..."
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <button 
+                  type="submit"
+                  className={`w-full py-4 rounded-2xl font-bold text-white text-lg shadow-lg hover:opacity-90 transition-opacity ${formType === 'income' ? 'bg-emerald-600 shadow-emerald-600/30' : 'bg-rose-600 shadow-rose-600/30'}`}
+                >
+                  บันทึกรายการ
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* --- View: HISTORY (ประวัติรายการ) --- */}
+        {currentView === 'history' && (
+          <div className="flex-1 flex flex-col bg-gray-50 h-full">
+            <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-100 shadow-sm z-10 relative">
+              <h1 className="text-xl font-bold text-gray-800">ประวัติการเงิน</h1>
+              <div className="text-sm font-medium text-gray-500">ทั้งหมด {getFilteredTransactions().length} รายการ</div>
+            </div>
+
+            {/* Profile Filter in History */}
+            <div className="bg-white px-4 py-3 border-b border-gray-100 flex gap-2 overflow-x-auto hide-scrollbar z-0">
+              <button onClick={() => setActiveProfile('all')} className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all ${activeProfile === 'all' ? 'bg-gray-800 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>รวมทั้งหมด</button>
+              <button onClick={() => setActiveProfile('user1')} className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all ${activeProfile === 'user1' ? 'bg-blue-500 text-white shadow-sm' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}>{users['user1'].name}</button>
+              <button onClick={() => setActiveProfile('user2')} className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all ${activeProfile === 'user2' ? 'bg-pink-500 text-white shadow-sm' : 'bg-pink-50 text-pink-600 hover:bg-pink-100'}`}>{users['user2'].name}</button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 pb-24">
+              {getFilteredTransactions().length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="text-gray-500">ไม่มีประวัติรายการ</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* จัดกลุ่มตามวันที่อย่างง่าย */}
+                  {Object.entries(
+                    getFilteredTransactions().reduce((groups, t) => {
+                      const date = t.date;
+                      if (!groups[date]) groups[date] = [];
+                      groups[date].push(t);
+                      return groups;
+                    }, {})
+                  ).sort(([dateA], [dateB]) => new Date(dateB) - new Date(dateA))
+                  .map(([date, dailyTrans]) => (
+                    <div key={date} className="mb-6">
+                      <h3 className="text-sm font-bold text-gray-500 mb-3 px-2">
+                        {formatDate(date)}
+                      </h3>
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y divide-gray-50 overflow-hidden">
+                        {dailyTrans.map(transaction => {
+                          const cat = CATEGORY_MAP[transaction.category] || CATEGORY_MAP['other_exp'];
+                          const Icon = cat.icon;
+                          const userRecord = users[transaction.userId || 'user1'];
+                          return (
+                            <div key={transaction.id} className="p-4 flex items-center gap-4 relative">
+                              {/* User Indicator */}
+                              <div className={`absolute left-0 top-0 bottom-0 w-1 ${userRecord.color}`}></div>
+
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${cat.color} ml-1`}>
+                                <Icon size={20} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-medium text-gray-900 truncate">{cat.name}</h4>
+                                  {activeProfile === 'all' && (
+                                    <span className={`flex-shrink-0 text-[10px] px-1.5 py-0.5 rounded text-white ${userRecord.color}`}>
+                                      {userRecord.name}
+                                    </span>
+                                  )}
+                                </div>
+                                {transaction.note && <p className="text-xs text-gray-500 truncate">{transaction.note}</p>}
+                              </div>
+                              <div className="text-right">
+                                <div className={`font-semibold ${transaction.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                  {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                                </div>
+                              </div>
+                              <button 
+                                onClick={() => handleDelete(transaction.id)}
+                                className="ml-2 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                                aria-label="ลบรายการ"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
+                  ))}
                 </div>
-
-                <p class="scanner-tip">วางบาร์โค้ดให้อยู่ในกรอบเพื่อสแกน</p>
+              )}
             </div>
-            <div id="drawerOverlay" class="drawer-overlay"></div>
-        </main>
+          </div>
+        )}
 
-        <footer>
-            <p>&copy; 2024 Price Checker System</p>
-        </footer>
+        {/* --- View: SETTINGS (ตั้งค่า) --- */}
+        {currentView === 'settings' && (
+          <div className="flex-1 flex flex-col bg-gray-50 h-full relative z-10">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white shadow-sm z-20">
+              <button 
+                onClick={() => setCurrentView('home')}
+                className="p-2 hover:bg-gray-100 rounded-full transition"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <h1 className="text-lg font-bold">ตั้งค่าผู้ใช้งาน</h1>
+              <div className="w-10"></div> {/* Spacer */}
+            </div>
+            
+            <div className="flex-1 p-6 overflow-y-auto">
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้ใช้ที่ 1 (สีฟ้า)</label>
+                  <input 
+                    type="text" 
+                    value={users.user1.name}
+                    onChange={(e) => updateUserSettings({...users, user1: {...users.user1, name: e.target.value}})}
+                    className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+                    placeholder="เช่น พ่อ, สามี, John"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้ใช้ที่ 2 (สีชมพู)</label>
+                  <input 
+                    type="text" 
+                    value={users.user2.name}
+                    onChange={(e) => updateUserSettings({...users, user2: {...users.user2, name: e.target.value}})}
+                    className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-pink-500 outline-none text-gray-800"
+                    placeholder="เช่น แม่, ภรรยา, Jane"
+                  />
+                </div>
+                <div className="text-xs text-emerald-600 font-medium text-center mt-4">
+                  ข้อมูลจะถูกบันทึกอัตโนมัติลงในระบบคลาวด์ (Firebase)
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- Bottom Navigation --- */}
+        {currentView !== 'add' && currentView !== 'settings' && (
+          <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] px-6 py-4 flex justify-between items-center z-20 pb-safe">
+            <button 
+              onClick={() => setCurrentView('home')}
+              className={`flex flex-col items-center gap-1 transition-colors ${currentView === 'home' ? 'text-emerald-600' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              <Home size={24} className={currentView === 'home' ? 'fill-current opacity-20' : ''} />
+              <span className="text-[10px] font-medium">ภาพรวม</span>
+            </button>
+
+            {/* Floating Action Button (FAB) */}
+            <button 
+              onClick={() => setCurrentView('add')}
+              className="absolute left-1/2 -top-6 -translate-x-1/2 bg-emerald-600 hover:bg-emerald-700 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-[0_8px_20px_-6px_rgba(5,150,105,0.6)] border-4 border-gray-50 transition-transform hover:scale-105"
+            >
+              <Plus size={32} />
+            </button>
+
+            <button 
+              onClick={() => setCurrentView('history')}
+              className={`flex flex-col items-center gap-1 transition-colors ${currentView === 'history' ? 'text-emerald-600' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              <ListIcon size={24} className={currentView === 'history' ? 'fill-current opacity-20' : ''} />
+              <span className="text-[10px] font-medium">ประวัติ</span>
+            </button>
+          </div>
+        )}
+
+      </div>
     </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+  );
+}
