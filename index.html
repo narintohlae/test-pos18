@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Wallet 2026</title>
   
+  <!-- Web App Manifest & iOS PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Wallet 2026">
+  <meta name="theme-color" content="#059669">
+  
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
@@ -253,6 +259,10 @@
                 <button onclick="app.saveSyncCode()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3.5 md:py-4 rounded-xl font-bold transition shadow-lg shadow-purple-600/30 whitespace-nowrap">บันทึกรหัส Sync</button>
               </div>
 
+              <div class="pl-13 mt-3 text-[11px] text-purple-600/70 leading-relaxed">
+                <b>สำหรับ iOS (iPhone/iPad):</b> หากใช้ปุ่ม "เพิ่มไปยังหน้าจอโฮม" ข้อมูลจะถูกแยกส่วนกัน คุณจะต้องเข้ามากรอกรหัส Sync นี้ใหม่อีกครั้งในแอปที่เปิดจากหน้าจอโฮม
+              </div>
+
               <div class="mt-8 bg-emerald-50 rounded-xl p-4 flex gap-3 items-center border border-emerald-100">
                 <i data-lucide="cloud-check" class="w-6 h-6 text-emerald-500 shrink-0"></i>
                 <div class="text-sm text-emerald-700 leading-tight" id="settings-status">
@@ -363,6 +373,14 @@
       },
 
       init: async () => {
+        // เช็คว่ามี Parameter ?sync=... แนวนท้าย URL มาหรือไม่ (เผื่อใช้สำหรับสร้างลิงก์)
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoSyncCode = urlParams.get('sync');
+        if (autoSyncCode) {
+          localStorage.setItem('finance_sync_code', autoSyncCode);
+          window.history.replaceState({}, document.title, window.location.pathname); // เคลียร์ URL ไม่ให้รกรุงรัง
+        }
+
         lucide.createIcons();
         try {
           if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
