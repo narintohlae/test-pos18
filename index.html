@@ -263,8 +263,8 @@
         /* ------------------ iPad & Desktop Layout (Split View) ------------------ */
         @media (min-width: 768px) {
             .ios-app {
-                max-width: 900px; /* ขยายขนาดรองรับ iPad */
-                flex-direction: row; /* เปลี่ยนการเรียงเป็นแนวนอนซ้าย-ขวา */
+                max-width: 900px;
+                flex-direction: row; 
                 align-items: flex-start;
                 padding-top: 40px;
                 gap: 20px;
@@ -273,7 +273,7 @@
             .left-panel {
                 width: 380px;
                 flex-shrink: 0;
-                position: sticky; /* ยึดแผงซ้ายให้อยู่กับที่เวลาเลื่อนจอลง */
+                position: sticky; 
                 top: 40px;
             }
 
@@ -283,7 +283,6 @@
 
             .right-panel {
                 flex-grow: 1;
-                /* ปรับหน้าตาให้ฝั่งขวาดูเป็นกรอบสวยงามขึ้นเมื่ออยู่บนจอใหญ่ */
                 padding-top: 5px; 
             }
         }
@@ -292,7 +291,7 @@
 <body>
 
     <div class="ios-app">
-        <!-- ฝั่งซ้าย: แผงควบคุม (Header, การ์ด, ช่องกรอกข้อมูล) -->
+        <!-- ฝั่งซ้าย -->
         <div class="left-panel">
             <div class="header">
                 <h1>รายจ่าย</h1>
@@ -313,14 +312,14 @@
             
             <div class="input-container">
                 <div class="input-wrapper">
-                    <!-- เพิ่ม autofocus เข้าไป -->
-                    <input type="text" id="expenseInput" placeholder="พิมพ์รายการและราคา..." autocomplete="off" disabled autofocus>
+                    <!-- มี autofocus สำหรับคอมพิวเตอร์ -->
+                    <input type="text" id="expenseInput" placeholder="พิมพ์รายการและราคา..." autocomplete="off" autofocus>
                 </div>
                 <span class="hint">เว้นวรรคด้วยราคา เช่น ชาเย็น 45</span>
             </div>
         </div>
 
-        <!-- ฝั่งขวา: รายการประวัติรายจ่าย -->
+        <!-- ฝั่งขวา -->
         <div class="right-panel">
             <div class="expense-container" id="expenseList">
                 <!-- รายการจะถูกเพิ่มที่นี่ผ่าน JS -->
@@ -328,7 +327,7 @@
         </div>
     </div>
 
-    <!-- Script ชุดเดิมของ Firebase ใช้งานได้เหมือนเดิม -->
+    <!-- Firebase JS SDK รูปแบบ Module -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
         import { 
@@ -351,6 +350,7 @@
 
         let expenses = [];
         let currentFilter = 'all';
+        let initialLoad = true;
         
         const inputEl = document.getElementById('expenseInput');
         const listEl = document.getElementById('expenseList');
@@ -377,9 +377,6 @@
             });
         });
 
-        // เช็คว่านี่คือการโหลดครั้งแรกหรือไม่
-        let initialLoad = true;
-
         const q = query(expensesCol, orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             expenses = [];
@@ -388,12 +385,11 @@
             });
             renderExpenses();
             
-            inputEl.disabled = false;
             loadingEl.innerText = 'เชื่อมต่อแล้ว';
             loadingEl.style.color = '#007AFF';
 
-            // โฟกัสไปที่ช่อง input เมื่อโหลดข้อมูลเสร็จ (ทำงานเฉพาะครั้งแรก)
             if (initialLoad) {
+                // Focus ให้เลยหลังโหลดข้อมูลเสร็จ (ทำงานบนคอมฯ)
                 inputEl.focus();
                 initialLoad = false;
             }
@@ -425,20 +421,22 @@
             const parsedData = aiParseExpense(rawText);
 
             if (parsedData) {
+                // เคลียร์ช่องพิมพ์ทันทีเพื่อให้พิมพ์รายการต่อไปได้เลย (คีย์บอร์ดมือถือไม่หุบ)
+                inputEl.value = '';
+
                 try {
-                    inputEl.disabled = true;
                     await addDoc(expensesCol, {
                         name: parsedData.name,
                         price: parsedData.price,
                         createdAt: serverTimestamp()
                     });
-                    inputEl.value = '';
                 } catch (e) {
                     console.error("Error adding document: ", e);
                     alert("ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่");
+                    // คืนค่าเดิมถ้า error
+                    if(inputEl.value === '') inputEl.value = rawText; 
                 } finally {
-                    inputEl.disabled = false;
-                    inputEl.focus(); // โฟกัสกลับมาที่ช่อง input หลังจากบันทึกเสร็จ
+                    inputEl.focus(); // โฟกัสกลับมาที่เดิม
                 }
             } else {
                 alert("รูปแบบไม่ถูกต้อง ลองพิมพ์: 'ชาเย็น 45'");
