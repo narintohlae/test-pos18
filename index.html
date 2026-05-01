@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>สมุดจดรายรับ-รายจ่าย (iOS Style)</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -15,7 +15,8 @@
             --ios-red: #FF3B30;
             --ios-green: #34C759;
             --ios-separator: rgba(60, 60, 67, 0.15);
-            --safe-area-top: 20px;
+            --safe-area-top: max(20px, env(safe-area-inset-top));
+            --safe-area-bottom: max(20px, env(safe-area-inset-bottom));
         }
 
         * {
@@ -31,55 +32,33 @@
             color: var(--ios-text);
             display: flex;
             justify-content: center;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden; /* ป้องกันการเลื่อนทั้งหน้าจอ */
         }
 
         .ios-app {
             width: 100%;
-            max-width: 430px; 
+            max-width: 500px; /* ขนาดกึ่งกลางระหว่างมือถือกับ iPad */
             background: var(--ios-bg);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
             position: relative;
-            padding-bottom: 40px;
-            display: flex;
-            flex-direction: column;
         }
 
-        /* ------------------ Left Panel (Header, Balance, Input) ------------------ */
-        .left-panel {
-            display: flex;
-            flex-direction: column;
-        }
-
+        /* ------------------ Header ------------------ */
         .header {
             padding: var(--safe-area-top) 20px 10px;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
+            background: var(--ios-bg);
+            z-index: 10;
         }
 
-        /* แท็บสลับ รายจ่าย - รายรับ */
-        .header-titles {
-            display: flex;
-            align-items: baseline;
-            gap: 12px;
-        }
-
-        .title-btn {
-            background: none;
-            border: none;
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--ios-text-secondary);
-            cursor: pointer;
-            padding: 0;
-            transition: all 0.2s ease;
-            font-family: inherit;
-        }
-
-        .title-btn.active {
+        .header h1 {
             font-size: 34px;
             font-weight: 700;
-            color: var(--ios-text);
             letter-spacing: -0.5px;
         }
 
@@ -90,59 +69,30 @@
             margin-bottom: 6px;
         }
 
-        .balance-card {
-            background: #1C1C1E;
-            color: white;
-            border-radius: 16px; 
-            margin: 10px 20px 20px;
-            padding: 16px 20px 16px; 
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-        }
-
-        .balance-label {
-            font-size: 14px; 
-            color: #EBEBF5;
-            opacity: 0.8;
-            margin-bottom: 4px; 
-            transition: all 0.3s ease;
-        }
-
-        .balance-amount {
-            font-size: 30px; 
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin-bottom: 16px; 
-        }
-
-        .filter-tabs {
-            display: flex;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 9px;
-            padding: 2px;
-        }
-
-        .filter-btn {
+        /* ------------------ Page Container ------------------ */
+        .page-container {
             flex: 1;
-            background: transparent;
-            border: none;
-            color: #EBEBF5;
-            font-size: 13px;
-            font-weight: 500;
-            padding: 6px 0;
-            border-radius: 7px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            overflow-y: auto;
+            padding-bottom: 100px; /* เผื่อที่ให้ Tab bar */
         }
 
-        .filter-btn.active {
-            background: #FFFFFF;
-            color: #1C1C1E;
-            font-weight: 600;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        .page {
+            display: none; /* ซ่อนหน้าทั้งหมดเป็นค่าเริ่มต้น */
+            animation: fadeIn 0.3s ease;
         }
 
+        .page.active {
+            display: block; /* แสดงเฉพาะหน้าที่ถูกเลือก */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ------------------ Input Section ------------------ */
         .input-container {
-            margin: 0 20px 24px;
+            margin: 10px 20px 24px;
         }
 
         .input-wrapper {
@@ -175,11 +125,7 @@
             margin-left: 4px;
         }
 
-        /* ------------------ Right Panel (Lists) ------------------ */
-        .right-panel {
-            flex: 1;
-        }
-
+        /* ------------------ Lists ------------------ */
         .expense-container {
             padding: 0 20px;
         }
@@ -247,14 +193,11 @@
             gap: 12px;
         }
 
-        /* สีสำหรับแยกรายรับ-รายจ่าย */
         .item-price {
             font-size: 17px;
             font-weight: 600;
         }
-        .item-price.expense {
-            color: var(--ios-text);
-        }
+
         .item-price.income {
             color: var(--ios-green);
         }
@@ -288,77 +231,207 @@
             margin-top: 40px;
         }
 
-        /* ------------------ iPad & Desktop Layout (Split View) ------------------ */
-        @media (min-width: 768px) {
-            .ios-app {
-                max-width: 900px;
-                flex-direction: row; 
-                align-items: flex-start;
-                padding-top: 40px;
-                gap: 20px;
-            }
-
-            .left-panel {
-                width: 380px;
-                flex-shrink: 0;
-                position: sticky; 
-                top: 40px;
-            }
-
-            .header {
-                padding-top: 0;
-            }
-
-            .right-panel {
-                flex-grow: 1;
-                padding-top: 5px; 
-            }
+        /* ------------------ Summary Page ------------------ */
+        .filter-tabs {
+            display: flex;
+            background: #E3E3E8;
+            border-radius: 9px;
+            padding: 2px;
+            margin: 10px 20px 24px;
         }
+
+        .filter-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--ios-text);
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 0;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active {
+            background: var(--ios-card);
+            color: var(--ios-text);
+            font-weight: 600;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        }
+
+        .summary-cards {
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .summary-box {
+            background: var(--ios-card);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .summary-box.net-box {
+            background: #1C1C1E;
+            color: white;
+        }
+
+        .summary-box.net-box .summary-title {
+            color: #EBEBF5;
+        }
+
+        .summary-title {
+            font-size: 15px;
+            color: var(--ios-text-secondary);
+            font-weight: 500;
+        }
+
+        .summary-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .summary-value.income-val { color: var(--ios-green); }
+
+        /* ------------------ Tab Bar (Bottom Navigation) ------------------ */
+        .tab-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(242, 242, 247, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 0.5px solid var(--ios-separator);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 var(--safe-area-bottom);
+            z-index: 100;
+        }
+
+        .tab-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--ios-text-secondary);
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 80px;
+        }
+
+        .tab-item svg {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2;
+        }
+
+        .tab-item.active {
+            color: var(--ios-blue);
+        }
+
     </style>
 </head>
 <body>
 
     <div class="ios-app">
-        <!-- ฝั่งซ้าย -->
-        <div class="left-panel">
-            <div class="header">
-                <!-- ส่วนเลือกโหมด รายจ่าย/รายรับ -->
-                <div class="header-titles">
-                    <button class="title-btn active" id="modeExpense">รายจ่าย</button>
-                    <button class="title-btn" id="modeIncome">รายรับ</button>
+        <!-- Header กลาง -->
+        <div class="header">
+            <h1 id="mainTitle">รายจ่าย</h1>
+            <span class="status" id="loadingStatus">กำลังโหลด...</span>
+        </div>
+
+        <div class="page-container">
+            
+            <!-- หน้า 1: รายจ่าย -->
+            <div id="page-expense" class="page active">
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <input type="text" id="expenseInput" placeholder="พิมพ์รายการและราคา..." autocomplete="off">
+                    </div>
+                    <span class="hint">เว้นวรรคด้วยราคา เช่น ชาเย็น 45</span>
                 </div>
-                <span class="status" id="loadingStatus">กำลังโหลด...</span>
+                <div class="expense-container" id="expenseList"></div>
             </div>
 
-            <div class="balance-card">
-                <div class="balance-label" id="balanceLabel">ยอดคงเหลือวันนี้</div>
-                <!-- รวบเหลือ ID เดียวเพื่อจัดการเครื่องหมาย บวก/ลบ -->
-                <div class="balance-amount" id="totalAmount">฿0</div>
-                
+            <!-- หน้า 2: รายรับ -->
+            <div id="page-income" class="page">
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <input type="text" id="incomeInput" placeholder="พิมพ์รายรับและจำนวนเงิน..." autocomplete="off">
+                    </div>
+                    <span class="hint">เช่น เงินเดือน 15000 หรือ ขายของ 500</span>
+                </div>
+                <div class="expense-container" id="incomeList"></div>
+            </div>
+
+            <!-- หน้า 3: สรุปยอดรวม -->
+            <div id="page-summary" class="page">
                 <div class="filter-tabs">
                     <button class="filter-btn active" data-filter="day">วันนี้</button>
                     <button class="filter-btn" data-filter="week">สัปดาห์นี้</button>
                     <button class="filter-btn" data-filter="month">เดือนนี้</button>
                     <button class="filter-btn" data-filter="all">ทั้งหมด</button>
                 </div>
-            </div>
-            
-            <div class="input-container">
-                <div class="input-wrapper">
-                    <input type="text" id="expenseInput" placeholder="พิมพ์รายการและราคา..." autocomplete="off" autofocus>
+                
+                <div class="summary-cards">
+                    <!-- การ์ดคงเหลือ (นำมาไว้บนสุดให้เด่น) -->
+                    <div class="summary-box net-box">
+                        <div class="summary-title">คงเหลือสุทธิ</div>
+                        <div class="summary-value" id="sumNet">0 ฿</div>
+                    </div>
+                    
+                    <div class="summary-box">
+                        <div class="summary-title">รวมรายรับ</div>
+                        <div class="summary-value income-val" id="sumIncome">0 ฿</div>
+                    </div>
+
+                    <div class="summary-box">
+                        <div class="summary-title">รวมรายจ่าย</div>
+                        <div class="summary-value" id="sumExpense">0 ฿</div>
+                    </div>
                 </div>
-                <span class="hint" id="inputHint">เว้นวรรคด้วยราคา เช่น ชาเย็น 45</span>
             </div>
+
         </div>
 
-        <!-- ฝั่งขวา -->
-        <div class="right-panel">
-            <div class="expense-container" id="expenseList">
-                <!-- รายการจะถูกเพิ่มที่นี่ผ่าน JS -->
-            </div>
+        <!-- แถบเมนูด้านล่าง (Bottom Tab Bar) -->
+        <div class="tab-bar">
+            <button class="tab-item active" data-target="page-expense">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                รายจ่าย
+            </button>
+            <button class="tab-item" data-target="page-income">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                รายรับ
+            </button>
+            <button class="tab-item" data-target="page-summary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                สรุป
+            </button>
         </div>
     </div>
 
+    <!-- Firebase JS SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
         import { 
@@ -379,73 +452,81 @@
         const db = getFirestore(app);
         const expensesCol = collection(db, "expenses");
 
-        let expenses = [];
-        let currentFilter = 'day';
-        let currentMode = 'expense'; // ค่าเริ่มต้นคือรายจ่าย
+        let expensesData = [];
+        let currentFilter = 'day'; 
+        let activeTab = 'page-expense'; // เริ่มต้นที่หน้ารายจ่าย
         let initialLoad = true;
         
-        const inputEl = document.getElementById('expenseInput');
-        const hintEl = document.getElementById('inputHint');
-        const listEl = document.getElementById('expenseList');
-        const totalEl = document.getElementById('totalAmount');
+        const expenseInputEl = document.getElementById('expenseInput');
+        const incomeInputEl = document.getElementById('incomeInput');
+        
+        const expenseListEl = document.getElementById('expenseList');
+        const incomeListEl = document.getElementById('incomeList');
+        
         const loadingEl = document.getElementById('loadingStatus');
-        const balanceLabel = document.getElementById('balanceLabel');
+        const mainTitleEl = document.getElementById('mainTitle');
+        
+        const sumNetEl = document.getElementById('sumNet');
+        const sumIncomeEl = document.getElementById('sumIncome');
+        const sumExpenseEl = document.getElementById('sumExpense');
+
+        // ระบบเปลี่ยนหน้า (Tab Navigation)
+        const tabBtns = document.querySelectorAll('.tab-item');
+        const pages = document.querySelectorAll('.page');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // ลบ active จากปุ่มทั้งหมด
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // ซ่อนทุกหน้า
+                pages.forEach(p => p.classList.remove('active'));
+                
+                // โชว์หน้าที่เลือก
+                activeTab = btn.getAttribute('data-target');
+                document.getElementById(activeTab).classList.add('active');
+
+                // เปลี่ยนชื่อ Header
+                if (activeTab === 'page-expense') {
+                    mainTitleEl.innerText = 'รายจ่าย';
+                    expenseInputEl.focus();
+                } else if (activeTab === 'page-income') {
+                    mainTitleEl.innerText = 'รายรับ';
+                    incomeInputEl.focus();
+                } else {
+                    mainTitleEl.innerText = 'สรุปยอดรวม';
+                }
+
+                renderUI();
+            });
+        });
+
+        // ระบบตัวกรองเวลา (เฉพาะหน้าสรุป)
         const filterBtns = document.querySelectorAll('.filter-btn');
-
-        const modeExpenseBtn = document.getElementById('modeExpense');
-        const modeIncomeBtn = document.getElementById('modeIncome');
-
-        // จัดการคลิกเปลี่ยนโหมด รายรับ-รายจ่าย
-        modeExpenseBtn.addEventListener('click', () => {
-            currentMode = 'expense';
-            modeExpenseBtn.classList.add('active');
-            modeIncomeBtn.classList.remove('active');
-            inputEl.placeholder = 'พิมพ์รายการและราคา...';
-            hintEl.innerText = 'เว้นวรรคด้วยราคา เช่น ชาเย็น 45';
-            inputEl.focus();
-        });
-
-        modeIncomeBtn.addEventListener('click', () => {
-            currentMode = 'income';
-            modeIncomeBtn.classList.add('active');
-            modeExpenseBtn.classList.remove('active');
-            inputEl.placeholder = 'พิมพ์รายรับและจำนวนเงิน...';
-            hintEl.innerText = 'เช่น เงินเดือน 15000 หรือ ขายของ 500';
-            inputEl.focus();
-        });
-
-        // จัดการคลิกแท็บตัวกรองเวลา
         filterBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 filterBtns.forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
-                
                 currentFilter = e.target.getAttribute('data-filter');
-                
-                const labelMap = {
-                    'day': 'ยอดคงเหลือวันนี้',
-                    'week': 'ยอดคงเหลือสัปดาห์นี้',
-                    'month': 'ยอดคงเหลือเดือนนี้',
-                    'all': 'ยอดคงเหลือทั้งหมด'
-                };
-                balanceLabel.innerText = labelMap[currentFilter];
-                renderExpenses();
+                renderUI();
             });
         });
 
+        // ดึงข้อมูล Firebase
         const q = query(expensesCol, orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
-            expenses = [];
+            expensesData = [];
             snapshot.forEach((doc) => {
-                expenses.push({ id: doc.id, ...doc.data() });
+                expensesData.push({ id: doc.id, ...doc.data() });
             });
-            renderExpenses();
+            renderUI();
             
-            loadingEl.innerText = 'เชื่อมต่อแล้ว';
+            loadingEl.innerText = 'ออนไลน์';
             loadingEl.style.color = '#007AFF';
 
             if (initialLoad) {
-                inputEl.focus();
+                expenseInputEl.focus();
                 initialLoad = false;
             }
 
@@ -455,11 +536,10 @@
             loadingEl.style.color = '#FF3B30';
         });
 
-        function aiParseExpense(text) {
+        function aiParseInput(text) {
             text = text.trim();
             const regex = /^(.*?)\s*(\d+(?:\.\d+)?)\s*(?:บาท|b|baht|฿)?$/i;
             const match = text.match(regex);
-
             if (match) {
                 let itemName = match[1].trim();
                 let itemPrice = parseFloat(match[2]);
@@ -469,99 +549,106 @@
             return null;
         }
 
-        async function addExpense() {
-            const rawText = inputEl.value;
+        // ฟังก์ชันบันทึกข้อมูลแบบแยกประเภท
+        async function saveData(type, inputElement) {
+            const rawText = inputElement.value;
             if (!rawText) return;
 
-            const parsedData = aiParseExpense(rawText);
+            const parsedData = aiParseInput(rawText);
 
             if (parsedData) {
-                inputEl.value = '';
-
+                inputElement.value = '';
                 try {
                     await addDoc(expensesCol, {
                         name: parsedData.name,
                         price: parsedData.price,
-                        type: currentMode, // บันทึกประเภทไปด้วย (expense หรือ income)
+                        type: type, // 'expense' หรือ 'income'
                         createdAt: serverTimestamp()
                     });
                 } catch (e) {
                     console.error("Error adding document: ", e);
                     alert("ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่");
-                    if(inputEl.value === '') inputEl.value = rawText; 
+                    if(inputElement.value === '') inputElement.value = rawText; 
                 } finally {
-                    inputEl.focus(); 
+                    inputElement.focus(); 
                 }
             } else {
                 alert("รูปแบบไม่ถูกต้อง ลองพิมพ์: 'ชาเย็น 45'");
             }
         }
 
-        listEl.addEventListener('click', async (e) => {
-            const deleteBtn = e.target.closest('.delete-btn');
-            if(deleteBtn) {
-                if(confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
-                    const id = deleteBtn.getAttribute('data-id');
-                    try {
-                        await deleteDoc(doc(db, "expenses", id));
-                    } catch (err) {
-                        console.error("Error deleting document: ", err);
-                    }
-                }
+        // กด Enter ช่องรายจ่าย
+        expenseInputEl.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveData('expense', expenseInputEl);
             }
         });
+
+        // กด Enter ช่องรายรับ
+        incomeInputEl.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveData('income', incomeInputEl);
+            }
+        });
+
+        // ลบรายการ
+        function attachDeleteEvents(listElement) {
+            listElement.addEventListener('click', async (e) => {
+                const deleteBtn = e.target.closest('.delete-btn');
+                if(deleteBtn) {
+                    if(confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
+                        const id = deleteBtn.getAttribute('data-id');
+                        try {
+                            await deleteDoc(doc(db, "expenses", id));
+                        } catch (err) {
+                            console.error("Error deleting document: ", err);
+                        }
+                    }
+                }
+            });
+        }
+        attachDeleteEvents(expenseListEl);
+        attachDeleteEvents(incomeListEl);
 
         function isSameWeek(dateStr1, dateStr2) {
             const d1 = new Date(dateStr1);
             const d2 = new Date(dateStr2);
             d1.setHours(0,0,0,0);
             d2.setHours(0,0,0,0);
-            
             const diff = d1.getDate() - d1.getDay(); 
             const startOfWeek1 = new Date(d1.setDate(diff));
-            
             const diff2 = d2.getDate() - d2.getDay();
             const startOfWeek2 = new Date(d2.setDate(diff2));
-            
             return startOfWeek1.getTime() === startOfWeek2.getTime();
         }
 
-        function renderExpenses() {
-            listEl.innerHTML = '';
-            let totalAmountAll = 0; // เก็บยอดสุทธิ (รายรับลบรายจ่าย)
-            const now = new Date();
+        // ฟังก์ชันอัปเดตหน้าจอหลัก (คำนวณและวาด HTML)
+        function renderUI() {
+            if (activeTab === 'page-expense') {
+                renderList(expenseListEl, 'expense');
+            } else if (activeTab === 'page-income') {
+                renderList(incomeListEl, 'income');
+            } else if (activeTab === 'page-summary') {
+                renderSummary();
+            }
+        }
 
-            const filteredExpenses = expenses.filter(exp => {
-                const expDate = exp.createdAt ? (exp.createdAt.toDate ? exp.createdAt.toDate() : new Date(exp.createdAt)) : new Date();
+        // วาดหน้ารายการ (รายรับ หรือ รายจ่าย)
+        function renderList(containerEl, filterType) {
+            containerEl.innerHTML = '';
+            
+            // กรองเอาเฉพาะประเภทที่ต้องการแสดงของหน้านั้น
+            const targetData = expensesData.filter(exp => (exp.type || 'expense') === filterType);
 
-                if (currentFilter === 'day') {
-                    return expDate.toDateString() === now.toDateString();
-                } else if (currentFilter === 'week') {
-                    return isSameWeek(expDate, now);
-                } else if (currentFilter === 'month') {
-                    return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear();
-                }
-                return true; 
-            });
-
-            if (filteredExpenses.length === 0) {
-                listEl.innerHTML = '<div class="empty-state">ไม่มีรายการในช่วงเวลานี้</div>';
-                totalEl.innerText = "฿0";
+            if (targetData.length === 0) {
+                containerEl.innerHTML = '<div class="empty-state">ยังไม่มีรายการบันทึก</div>';
                 return;
             }
 
             const groupedData = {};
-            
-            filteredExpenses.forEach((exp) => {
-                // ข้อมูลเก่าที่ไม่มี type จะถูกมองเป็น expense อัตโนมัติ
-                const itemType = exp.type || 'expense'; 
-                
-                if (itemType === 'income') {
-                    totalAmountAll += exp.price;
-                } else {
-                    totalAmountAll -= exp.price;
-                }
-                
+            targetData.forEach((exp) => {
                 const expDate = exp.createdAt ? (exp.createdAt.toDate ? exp.createdAt.toDate() : new Date(exp.createdAt)) : new Date();
                 const dateKey = expDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
                 const timeStr = expDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
@@ -569,15 +656,8 @@
                 if (!groupedData[dateKey]) {
                     groupedData[dateKey] = { items: [], totalDay: 0 };
                 }
-                
-                groupedData[dateKey].items.push({...exp, timeStr, itemType});
-                
-                // คำนวณยอดรวมรายวัน (สุทธิ)
-                if (itemType === 'income') {
-                    groupedData[dateKey].totalDay += exp.price;
-                } else {
-                    groupedData[dateKey].totalDay -= exp.price;
-                }
+                groupedData[dateKey].items.push({...exp, timeStr});
+                groupedData[dateKey].totalDay += exp.price;
             });
 
             for (const [date, data] of Object.entries(groupedData)) {
@@ -586,14 +666,10 @@
 
                 const header = document.createElement('div');
                 header.className = 'ios-section-header';
-                
-                // สร้างข้อความยอดรวมรายวันแบบมีเครื่องหมาย
-                let dayTotalText = data.totalDay > 0 ? `+฿${data.totalDay.toLocaleString()}` : 
-                                  (data.totalDay < 0 ? `-฿${Math.abs(data.totalDay).toLocaleString()}` : `฿0`);
-
+                // เอาเครื่องหมายออก แสดงแค่ยอดรวมเพียวๆ
                 header.innerHTML = `
                     <span>${date}</span>
-                    <span>คงเหลือ ${dayTotalText}</span>
+                    <span>รวม ${data.totalDay.toLocaleString()} ฿</span>
                 `;
                 section.appendChild(header);
 
@@ -603,12 +679,9 @@
                 data.items.forEach(exp => {
                     const li = document.createElement('li');
                     li.className = 'ios-list-item';
-                    
                     const svgIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
 
-                    // แยกสไตล์รายรับ/รายจ่าย
-                    const priceDisplay = exp.itemType === 'income' ? `+${exp.price.toLocaleString()}` : `-${exp.price.toLocaleString()}`;
-                    const priceClass = exp.itemType === 'income' ? 'income' : 'expense';
+                    const priceClass = filterType === 'income' ? 'income' : 'expense';
 
                     li.innerHTML = `
                         <div class="item-info">
@@ -616,7 +689,7 @@
                             <span class="item-time">${exp.timeStr || '...'}</span>
                         </div>
                         <div class="item-right">
-                            <span class="item-price ${priceClass}">${priceDisplay} ฿</span>
+                            <span class="item-price ${priceClass}">${exp.price.toLocaleString()} ฿</span>
                             <button class="delete-btn" data-id="${exp.id}">${svgIcon}</button>
                         </div>
                     `;
@@ -624,25 +697,40 @@
                 });
 
                 section.appendChild(ul);
-                listEl.appendChild(section);
-            }
-
-            // อัปเดตยอดคงเหลือสุทธิของการ์ดหลัก
-            if (totalAmountAll > 0) {
-                totalEl.innerText = `+฿${totalAmountAll.toLocaleString()}`;
-            } else if (totalAmountAll < 0) {
-                totalEl.innerText = `-฿${Math.abs(totalAmountAll).toLocaleString()}`;
-            } else {
-                totalEl.innerText = `฿0`;
+                containerEl.appendChild(section);
             }
         }
 
-        inputEl.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addExpense();
-            }
-        });
+        // วาดหน้าสรุปยอด (คำนวณตามเวลา)
+        function renderSummary() {
+            const now = new Date();
+            let totalInc = 0;
+            let totalExp = 0;
+
+            expensesData.forEach(exp => {
+                const expDate = exp.createdAt ? (exp.createdAt.toDate ? exp.createdAt.toDate() : new Date(exp.createdAt)) : new Date();
+                
+                // ตรวจสอบเงื่อนไขตัวกรองเวลา
+                let isMatch = false;
+                if (currentFilter === 'day' && expDate.toDateString() === now.toDateString()) isMatch = true;
+                else if (currentFilter === 'week' && isSameWeek(expDate, now)) isMatch = true;
+                else if (currentFilter === 'month' && expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear()) isMatch = true;
+                else if (currentFilter === 'all') isMatch = true;
+
+                if (isMatch) {
+                    const itemType = exp.type || 'expense';
+                    if (itemType === 'income') totalInc += exp.price;
+                    else totalExp += exp.price;
+                }
+            });
+
+            const netAmount = totalInc - totalExp;
+
+            // นำเครื่องหมายออกทั้งหมด ให้แสดงเป็นตัวเลขปกติ
+            sumIncomeEl.innerText = `${totalInc.toLocaleString()} ฿`;
+            sumExpenseEl.innerText = `${totalExp.toLocaleString()} ฿`;
+            sumNetEl.innerText = `${netAmount.toLocaleString()} ฿`;
+        }
 
     </script>
 </body>
