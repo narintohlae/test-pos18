@@ -69,29 +69,28 @@
             margin-bottom: 6px;
         }
 
-        /* ปรับขนาดการ์ดให้เล็กลง */
         .balance-card {
             background: #1C1C1E;
             color: white;
-            border-radius: 16px; /* ลดความโค้ง */
+            border-radius: 16px; 
             margin: 10px 20px 20px;
-            padding: 16px 20px 16px; /* ลดพื้นที่ว่างด้านใน */
+            padding: 16px 20px 16px; 
             box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         }
 
         .balance-label {
-            font-size: 14px; /* ลดขนาดตัวหนังสือ */
+            font-size: 14px; 
             color: #EBEBF5;
             opacity: 0.8;
-            margin-bottom: 4px; /* ขยับให้ชิดขึ้น */
+            margin-bottom: 4px; 
             transition: all 0.3s ease;
         }
 
         .balance-amount {
-            font-size: 30px; /* ลดขนาดตัวเลขยอดเงิน */
+            font-size: 30px; 
             font-weight: 700;
             letter-spacing: -0.5px;
-            margin-bottom: 16px; /* ขยับปุ่มกรองเวลาให้ชิดขึ้น */
+            margin-bottom: 16px; 
         }
 
         .filter-tabs {
@@ -300,14 +299,16 @@
             </div>
 
             <div class="balance-card">
-                <div class="balance-label" id="balanceLabel">ยอดรวมทั้งหมด</div>
+                <!-- เปลี่ยนข้อความเริ่มต้นเป็น ยอดรวมวันนี้ -->
+                <div class="balance-label" id="balanceLabel">ยอดรวมวันนี้</div>
                 <div class="balance-amount">฿<span id="totalAmount">0</span></div>
                 
                 <div class="filter-tabs">
-                    <button class="filter-btn" data-filter="day">วันนี้</button>
+                    <!-- ย้าย class="active" มาที่ วันนี้ -->
+                    <button class="filter-btn active" data-filter="day">วันนี้</button>
                     <button class="filter-btn" data-filter="week">สัปดาห์นี้</button>
                     <button class="filter-btn" data-filter="month">เดือนนี้</button>
-                    <button class="filter-btn active" data-filter="all">ทั้งหมด</button>
+                    <button class="filter-btn" data-filter="all">ทั้งหมด</button>
                 </div>
             </div>
             
@@ -350,7 +351,8 @@
         const expensesCol = collection(db, "expenses");
 
         let expenses = [];
-        let currentFilter = 'all';
+        // เปลี่ยนค่าเริ่มต้นให้เป็น 'day'
+        let currentFilter = 'day';
         let initialLoad = true;
         
         const inputEl = document.getElementById('expenseInput');
