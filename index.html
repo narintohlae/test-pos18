@@ -35,7 +35,7 @@
 
         .ios-app {
             width: 100%;
-            max-width: 430px; /* ขนาดมือถือ */
+            max-width: 430px; 
             background: var(--ios-bg);
             position: relative;
             padding-bottom: 40px;
@@ -69,28 +69,29 @@
             margin-bottom: 6px;
         }
 
+        /* ปรับขนาดการ์ดให้เล็กลง */
         .balance-card {
             background: #1C1C1E;
             color: white;
-            border-radius: 20px;
-            margin: 10px 20px 24px;
-            padding: 24px 20px 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-radius: 16px; /* ลดความโค้ง */
+            margin: 10px 20px 20px;
+            padding: 16px 20px 16px; /* ลดพื้นที่ว่างด้านใน */
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         }
 
         .balance-label {
-            font-size: 15px;
+            font-size: 14px; /* ลดขนาดตัวหนังสือ */
             color: #EBEBF5;
             opacity: 0.8;
-            margin-bottom: 8px;
+            margin-bottom: 4px; /* ขยับให้ชิดขึ้น */
             transition: all 0.3s ease;
         }
 
         .balance-amount {
-            font-size: 36px;
+            font-size: 30px; /* ลดขนาดตัวเลขยอดเงิน */
             font-weight: 700;
-            letter-spacing: -1px;
-            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+            margin-bottom: 16px; /* ขยับปุ่มกรองเวลาให้ชิดขึ้น */
         }
 
         .filter-tabs {
@@ -389,7 +390,6 @@
             loadingEl.style.color = '#007AFF';
 
             if (initialLoad) {
-                // Focus ให้เลยหลังโหลดข้อมูลเสร็จ (ทำงานบนคอมฯ)
                 inputEl.focus();
                 initialLoad = false;
             }
@@ -421,7 +421,6 @@
             const parsedData = aiParseExpense(rawText);
 
             if (parsedData) {
-                // เคลียร์ช่องพิมพ์ทันทีเพื่อให้พิมพ์รายการต่อไปได้เลย (คีย์บอร์ดมือถือไม่หุบ)
                 inputEl.value = '';
 
                 try {
@@ -433,10 +432,9 @@
                 } catch (e) {
                     console.error("Error adding document: ", e);
                     alert("ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่");
-                    // คืนค่าเดิมถ้า error
                     if(inputEl.value === '') inputEl.value = rawText; 
                 } finally {
-                    inputEl.focus(); // โฟกัสกลับมาที่เดิม
+                    inputEl.focus(); 
                 }
             } else {
                 alert("รูปแบบไม่ถูกต้อง ลองพิมพ์: 'ชาเย็น 45'");
