@@ -384,20 +384,21 @@
             <!-- ================= หน้า 1: บันทึก และรายการประวัติ ================= -->
             <div class="page active" id="pageHome">
                 
-                <!-- ส่วนที่เลื่อนได้ (หัว + แท็บ + รายการ) -->
-                <div class="scrollable-area" id="homeScrollArea">
-                    <div class="header">
-                        <h1>บัญชี</h1>
-                        <span class="status" id="loadingStatus">กำลังเชื่อมต่อ...</span>
-                    </div>
-                    
-                    <div class="type-toggle" id="entryTypeToggle">
-                        <button class="type-btn" data-type="income">รับอื่นๆ</button>
-                        <button class="type-btn active" data-type="expense">รายจ่าย</button>
-                        <button class="type-btn" data-type="pos1">POS1</button>
-                        <button class="type-btn" data-type="pos2">POS2</button>
-                    </div>
+                <!-- ส่วนหัวและแท็บตรึงด้านบน -->
+                <div class="header">
+                    <h1>บัญชี</h1>
+                    <span class="status" id="loadingStatus">กำลังเชื่อมต่อ...</span>
+                </div>
+                
+                <div class="type-toggle" id="entryTypeToggle">
+                    <button class="type-btn" data-type="income">รับอื่นๆ</button>
+                    <button class="type-btn active" data-type="expense">รายจ่าย</button>
+                    <button class="type-btn" data-type="pos1">POS1</button>
+                    <button class="type-btn" data-type="pos2">POS2</button>
+                </div>
 
+                <!-- ส่วนที่เลื่อนได้ (เฉพาะรายการ) -->
+                <div class="scrollable-area" id="homeScrollArea">
                     <!-- รายการประวัติที่บันทึก -->
                     <div class="expense-container" id="expenseList">
                         <!-- รายการจะถูกเพิ่มที่นี่ผ่าน JS -->
