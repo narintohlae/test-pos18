@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Note Wallet</title>
-    <!-- โหลด Tailwind CSS แบบอัตโนมัติ (ไม่ต้องติดตั้ง) -->
+    <!-- โหลด Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- โหลดไอคอนจาก Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -26,7 +26,7 @@
         <div id="tag-modal" class="hidden absolute inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-center justify-center p-6">
             <div class="bg-white w-full max-w-xs rounded-3xl shadow-2xl p-6 transition-all transform scale-100">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-semibold text-lg">จัดการแท็ก</h3>
+                    <h3 class="font-semibold text-base sm:text-lg">จัดการแท็ก</h3>
                     <button onclick="closeTagModal()" class="text-gray-400 hover:text-black focus:outline-none">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
@@ -35,12 +35,12 @@
                     id="tag-input"
                     type="text" 
                     placeholder="ชื่อแท็ก..."
-                    class="w-full bg-[#f5f5f7] px-4 py-3 rounded-xl outline-none mb-4 text-[1rem]"
+                    class="w-full bg-[#f5f5f7] px-4 py-2.5 sm:py-3 rounded-xl outline-none mb-4 text-[0.95rem] sm:text-[1rem]"
                     onkeydown="if(event.key === 'Enter') saveTag()"
                 />
                 <button 
                     onclick="saveTag()"
-                    class="w-full bg-black text-white py-3 rounded-xl font-medium active:scale-95 transition-all"
+                    class="w-full bg-black text-white py-2.5 sm:py-3 rounded-xl font-medium active:scale-95 transition-all text-[0.95rem] sm:text-[1rem]"
                 >
                     บันทึกแท็ก
                 </button>
@@ -48,58 +48,61 @@
         </div>
 
         <!-- Header -->
-        <header class="flex-none bg-white/90 backdrop-blur-md pt-14 pb-4 px-6 sm:px-8 border-b border-gray-100/80 z-20 transition-all shadow-sm">
-            <div class="flex justify-between items-start">
+        <header class="flex-none bg-white/90 backdrop-blur-md pt-8 sm:pt-10 pb-3 sm:pb-4 px-4 sm:px-6 border-b border-gray-100/80 z-20 transition-all shadow-sm">
+            <!-- จัด Layout ใหม่: ให้เรียงลงมาบนมือถือ และเรียงซ้ายขวาบนจอใหญ่ -->
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-0">
                 <div>
-                    <div class="flex items-center gap-2 mb-1">
-                        <p class="text-xs font-medium tracking-wide text-gray-500 uppercase">ยอดเงินคงเหลือ</p>
+                    <div class="flex items-center gap-2 mb-0.5 sm:mb-1">
+                        <p class="text-[0.65rem] sm:text-xs font-medium tracking-wide text-gray-500 uppercase">ยอดเงินคงเหลือ</p>
                         <span id="cloud-wrapper"><i data-lucide="cloud-off" class="w-3 h-3 text-gray-300 animate-pulse"></i></span>
                     </div>
-                    <h1 class="text-[2.75rem] font-medium tracking-tight text-[#1d1d1f] leading-none">
+                    <!-- ลดขนาดตัวเลขยอดเงินลง -->
+                    <h1 class="text-3xl sm:text-4xl font-medium tracking-tight text-[#1d1d1f] leading-none mt-1">
                         <span id="balance-display">0</span>
-                        <span class="text-2xl text-gray-400 font-normal ml-1 tracking-normal">฿</span>
+                        <span class="text-xl sm:text-2xl text-gray-400 font-normal ml-0.5 sm:ml-1 tracking-normal">฿</span>
                     </h1>
-                    <div class="flex gap-4 mt-3">
-                        <div class="flex items-center gap-1 text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-md">
-                            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> รับ <span id="income-display">0</span>
+                    <div class="flex flex-wrap gap-2 sm:gap-3 mt-2.5 sm:mt-3">
+                        <div class="flex items-center gap-1 text-[0.7rem] sm:text-[0.8rem] font-medium text-green-600 bg-green-50 px-2 py-1 rounded-md">
+                            <i data-lucide="trending-up" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i> รับ <span id="income-display">0</span>
                         </div>
-                        <div class="flex items-center gap-1 text-sm font-medium text-red-500 bg-red-50 px-2 py-0.5 rounded-md">
-                            <i data-lucide="trending-down" class="w-3.5 h-3.5"></i> จ่าย <span id="expense-display">0</span>
+                        <div class="flex items-center gap-1 text-[0.7rem] sm:text-[0.8rem] font-medium text-red-500 bg-red-50 px-2 py-1 rounded-md">
+                            <i data-lucide="trending-down" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i> จ่าย <span id="expense-display">0</span>
                         </div>
                     </div>
                 </div>
                 
-                <div class="flex bg-[#f5f5f7] p-1 rounded-xl mt-2 border border-gray-200/50">
-                    <button id="tab-list" onclick="switchTab('list')" class="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-all bg-white shadow-sm font-medium text-black">
-                        <i data-lucide="list" class="w-[15px] h-[15px]"></i> รายการ
+                <!-- ปุ่ม Tab ย่อขนาดลงเล็กน้อย -->
+                <div class="flex self-start sm:self-auto bg-[#f5f5f7] p-1 rounded-lg sm:rounded-xl border border-gray-200/50">
+                    <button id="tab-list" onclick="switchTab('list')" class="flex items-center justify-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-md sm:rounded-lg transition-all bg-white shadow-sm font-medium text-black">
+                        <i data-lucide="list" class="w-3.5 h-3.5 sm:w-[15px] sm:h-[15px]"></i> รายการ
                     </button>
-                    <button id="tab-daily" onclick="switchTab('daily')" class="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-all text-gray-500 hover:text-gray-700">
-                        <i data-lucide="calendar-days" class="w-[15px] h-[15px]"></i> รายวัน
+                    <button id="tab-daily" onclick="switchTab('daily')" class="flex items-center justify-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-md sm:rounded-lg transition-all text-gray-500 hover:text-gray-700">
+                        <i data-lucide="calendar-days" class="w-3.5 h-3.5 sm:w-[15px] sm:h-[15px]"></i> รายวัน
                     </button>
                 </div>
             </div>
 
             <!-- แถบสรุปหมวดหมู่แนวนอน -->
-            <div id="category-container" class="flex gap-2 overflow-x-auto w-full mt-4 pb-2 no-scrollbar">
+            <div id="category-container" class="flex gap-2 overflow-x-auto w-full mt-3 sm:mt-4 pb-2 no-scrollbar">
                 <!-- เนื้อหาหมวดหมู่จะถูกแทรกที่นี่ -->
             </div>
         </header>
 
         <!-- Main Content -->
-        <main id="main-content" class="flex-1 overflow-y-auto px-6 sm:px-8 py-4 flex flex-col scroll-smooth relative z-0 bg-white">
+        <main id="main-content" class="flex-1 overflow-y-auto px-4 sm:px-6 py-4 flex flex-col scroll-smooth relative z-0 bg-white">
             <div class="flex-1 flex items-center justify-center">
-                <i data-lucide="loader-2" class="w-8 h-8 animate-spin text-gray-300"></i>
+                <i data-lucide="loader-2" class="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-gray-300"></i>
             </div>
         </main>
 
         <!-- Footer (Input Area) -->
-        <footer class="flex-none bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 pb-8 sm:pb-4 z-20 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
-            <div class="flex items-end gap-2 bg-[#f5f5f7] p-1.5 rounded-[1.25rem] border border-gray-200/50 focus-within:border-gray-300 focus-within:bg-[#ebebed] transition-all">
+        <footer class="flex-none bg-white/95 backdrop-blur-md border-t border-gray-100 p-3 sm:p-4 pb-6 sm:pb-4 z-20 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
+            <div class="flex items-end gap-2 bg-[#f5f5f7] p-1 sm:p-1.5 rounded-[1.25rem] border border-gray-200/50 focus-within:border-gray-300 focus-within:bg-[#ebebed] transition-all">
                 <textarea
                     id="input-text"
                     disabled
                     placeholder="กำลังเชื่อมต่อ..."
-                    class="flex-1 bg-transparent px-4 py-2.5 text-[1.05rem] outline-none font-normal resize-none min-h-[44px] max-h-[150px] overflow-y-auto leading-relaxed disabled:opacity-50 no-scrollbar"
+                    class="flex-1 bg-transparent px-3 py-2 sm:px-4 sm:py-2.5 text-[0.95rem] sm:text-[1.05rem] outline-none font-normal resize-none min-h-[40px] sm:min-h-[44px] max-h-[120px] sm:max-h-[150px] overflow-y-auto leading-relaxed disabled:opacity-50 no-scrollbar"
                     rows="1"
                 ></textarea>
                 <button
@@ -108,30 +111,28 @@
                     onclick="submitEntries()"
                     class="p-2 mb-0.5 mr-0.5 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 bg-gray-200 text-gray-400"
                 >
-                    <span id="submit-wrapper"><i data-lucide="arrow-up" class="w-5 h-5"></i></span>
+                    <span id="submit-wrapper"><i data-lucide="arrow-up" class="w-4 h-4 sm:w-5 sm:h-5"></i></span>
                 </button>
             </div>
         </footer>
     </div>
 
-    <!-- Firebase SDK (โหลดผ่าน CDN ตรงๆ) -->
+    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // คอนฟิกูเรชัน (รองรับการใช้งานใน Canvas หรือใช้ Config ของคุณเมื่อเปิดใช้งานข้างนอก)
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : {
-                apiKey: "AIzaSyAgTWrI1G1t3GYVz4-SPM7btrsixSe0el8",
-                authDomain: "time-tracker-46283.firebaseapp.com",
-                projectId: "time-tracker-46283",
-                storageBucket: "time-tracker-46283.firebasestorage.app",
-                messagingSenderId: "882533547295",
-                appId: "1:882533547295:web:4b78bfc84322c58a50042a",
-                measurementId: "G-5DPBNCSWFW"
-            };
+        // คอนฟิกูเรชันจาก Firebase ของคุณ
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgTWrI1G1t3GYVz4-SPM7btrsixSe0el8",
+            authDomain: "time-tracker-46283.firebaseapp.com",
+            projectId: "time-tracker-46283",
+            storageBucket: "time-tracker-46283.firebasestorage.app",
+            messagingSenderId: "882533547295",
+            appId: "1:882533547295:web:4b78bfc84322c58a50042a",
+            measurementId: "G-5DPBNCSWFW"
+        };
             
         const appIdString = typeof __app_id !== 'undefined' ? __app_id : 'html-note-wallet';
 
@@ -144,18 +145,21 @@
             console.error("Firebase Init Error", e);
         }
 
-        // สถานะของแอป
         let user = null;
         let entries = [];
         let activeTab = 'list';
         let taggingEntryId = null;
         let isSyncing = false;
 
-        // --- 1. ระบบยืนยันตัวตน ---
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (tokenError) {
+                        console.warn("Token mismatch (using custom Firebase config). Falling back to anonymous auth.");
+                        await signInAnonymously(auth);
+                    }
                 } else {
                     await signInAnonymously(auth);
                 }
@@ -168,12 +172,11 @@
         onAuthStateChanged(auth, (currentUser) => {
             user = currentUser;
             const input = document.getElementById('input-text');
-            const submitBtn = document.getElementById('submit-btn');
             const cloudWrapper = document.getElementById('cloud-wrapper');
             
             if (user) {
                 input.disabled = false;
-                input.placeholder = "จดบันทึก... (เช่น น้ำ 20)";
+                input.placeholder = "จดบันทึก... (เช่น ข้าว 50)";
                 if (cloudWrapper) {
                     cloudWrapper.innerHTML = '<i data-lucide="cloud" class="w-3 h-3 text-blue-500"></i>';
                 }
@@ -182,7 +185,6 @@
             }
         });
 
-        // --- 2. การดึงข้อมูล ---
         const fetchData = () => {
             if (!user) return;
             const entriesCollection = collection(db, 'artifacts', appIdString, 'users', user.uid, 'entries');
@@ -200,7 +202,6 @@
             });
         };
 
-        // --- 3. ฟังก์ชันวิเคราะห์ข้อความ ---
         const getCategory = (text, type) => {
             const t = text.toLowerCase();
             if (type === 'income') {
@@ -242,9 +243,7 @@
             return { amount, description, category, type };
         };
 
-        // --- 4. การจัดการ UI ---
         const renderUI = () => {
-            // คำนวณยอดรวม
             const totals = entries.reduce((acc, curr) => {
                 if (curr.amount) {
                     if (curr.type === 'income') acc.income += curr.amount;
@@ -257,7 +256,6 @@
             document.getElementById('income-display').innerText = totals.income.toLocaleString();
             document.getElementById('expense-display').innerText = totals.expense.toLocaleString();
 
-            // คำนวณและแสดงหมวดหมู่
             const categorySummary = entries.reduce((acc, curr) => {
                 if (curr.amount && curr.category) {
                     const catName = curr.category.name;
@@ -270,10 +268,11 @@
             const catContainer = document.getElementById('category-container');
             if (Object.keys(categorySummary).length > 0) {
                 const sortedCats = Object.entries(categorySummary).sort((a, b) => b[1].amount - a[1].amount);
+                // ย่อขนาด Category Tag ลง
                 catContainer.innerHTML = sortedCats.map(([cat, data]) => `
-                    <div class="border rounded-xl px-3 py-1.5 flex items-center gap-1.5 whitespace-nowrap shadow-sm ${data.type === 'income' ? 'bg-green-50/50 border-green-100 text-green-600' : 'bg-[#f5f5f7] border-gray-200/60 text-gray-600'}">
-                        <span class="text-[0.85rem] font-medium">${cat}</span>
-                        <span class="text-[0.85rem] font-semibold ml-1 ${data.type === 'income' ? 'text-green-600' : 'text-[#1d1d1f]'}">
+                    <div class="border rounded-lg px-2 py-1 sm:px-2.5 sm:py-1 flex items-center gap-1 whitespace-nowrap shadow-sm ${data.type === 'income' ? 'bg-green-50/50 border-green-100 text-green-600' : 'bg-[#f5f5f7] border-gray-200/60 text-gray-600'}">
+                        <span class="text-[0.7rem] sm:text-[0.75rem] font-medium">${cat}</span>
+                        <span class="text-[0.7rem] sm:text-[0.75rem] font-semibold ml-0.5 ${data.type === 'income' ? 'text-green-600' : 'text-[#1d1d1f]'}">
                             ${data.type === 'income' ? '+' : ''}${data.amount.toLocaleString()}฿
                         </span>
                     </div>
@@ -283,45 +282,42 @@
                 catContainer.style.display = 'none';
             }
 
-            // แสดงเนื้อหาหลัก (รายการ หรือ ตาราง)
             const mainContent = document.getElementById('main-content');
             if (activeTab === 'list') {
                 if (entries.length === 0) {
-                    mainContent.innerHTML = `<div class="mt-8 text-gray-400 text-sm font-light text-center">ยังไม่มีข้อมูล<br><span class="text-[10px] mt-2 block">พิมพ์รายการที่ช่องด้านล่างเพื่อเริ่มต้น</span></div>`;
+                    mainContent.innerHTML = `<div class="mt-8 text-gray-400 text-xs sm:text-sm font-light text-center">ยังไม่มีข้อมูล<br><span class="text-[10px] mt-2 block">พิมพ์รายการที่ช่องด้านล่างเพื่อเริ่มต้น</span></div>`;
                 } else {
-                    mainContent.innerHTML = `<div class="flex flex-col gap-4 mt-2 fade-in">` + entries.map(entry => `
-                        <div class="flex justify-between items-center group border-b border-gray-50/80 pb-3 select-none touch-none active:bg-gray-50/50 rounded-lg px-1 -mx-1 transition-colors"
+                    mainContent.innerHTML = `<div class="flex flex-col gap-3 sm:gap-4 mt-1 sm:mt-2 fade-in">` + entries.map(entry => `
+                        <div class="flex justify-between items-center group border-b border-gray-50/80 pb-2.5 sm:pb-3 select-none touch-none active:bg-gray-50/50 rounded-lg px-1 -mx-1 transition-colors"
                              onpointerdown="startPress('${entry.id}', '${entry.customTag || ''}')"
                              onpointerup="cancelPress()"
                              onpointerleave="cancelPress()">
                             <div class="flex flex-col flex-1">
-                                <div class="flex items-center flex-wrap gap-2">
-                                    <span class="text-[1.05rem] text-[#1d1d1f] font-normal tracking-wide break-words">${entry.description}</span>
-                                    ${entry.customTag ? `<span class="text-[0.65rem] px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 font-bold border border-blue-100 uppercase tracking-tight">${entry.customTag}</span>` : ''}
-                                    ${entry.category ? `<span class="text-[0.65rem] px-1.5 py-0.5 rounded uppercase font-bold tracking-tighter ${entry.type === 'income' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">${entry.category.name}</span>` : ''}
+                                <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
+                                    <span class="text-[0.95rem] sm:text-[1.05rem] text-[#1d1d1f] font-normal tracking-wide break-words">${entry.description}</span>
+                                    ${entry.customTag ? `<span class="text-[0.6rem] sm:text-[0.65rem] px-1 sm:px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 font-bold border border-blue-100 uppercase tracking-tight">${entry.customTag}</span>` : ''}
+                                    ${entry.category ? `<span class="text-[0.6rem] sm:text-[0.65rem] px-1 sm:px-1.5 py-0.5 rounded uppercase font-bold tracking-tighter ${entry.type === 'income' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">${entry.category.name}</span>` : ''}
                                 </div>
-                                <span class="text-[0.65rem] text-gray-400 mt-1 flex items-center gap-2">
+                                <span class="text-[0.6rem] sm:text-[0.65rem] text-gray-400 mt-0.5 sm:mt-1 flex items-center gap-2">
                                     ${entry.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                    <span class="opacity-0 group-hover:opacity-100 text-[10px] italic transition-opacity text-gray-300 hidden sm:inline">กดค้างเพื่อติดแท็ก</span>
+                                    <span class="opacity-0 group-hover:opacity-100 text-[9px] sm:text-[10px] italic transition-opacity text-gray-300 hidden sm:inline">กดค้างเพื่อติดแท็ก</span>
                                 </span>
                             </div>
-                            <div class="flex items-center gap-3 pl-4">
-                                ${entry.amount !== null ? `<div class="text-[1.05rem] font-medium tracking-wide ${entry.type === 'income' ? 'text-green-600' : 'text-[#1d1d1f]'}">${entry.type === 'income' ? '+' : ''}${entry.amount.toLocaleString()}</div>` : ''}
-                                <button onclick="deleteEntry('${entry.id}', event)" class="text-gray-300 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-all duration-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
-                                    <i data-lucide="trash-2" class="w-[18px] h-[18px]"></i>
+                            <div class="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4">
+                                ${entry.amount !== null ? `<div class="text-[0.95rem] sm:text-[1.05rem] font-medium tracking-wide ${entry.type === 'income' ? 'text-green-600' : 'text-[#1d1d1f]'}">${entry.type === 'income' ? '+' : ''}${entry.amount.toLocaleString()}</div>` : ''}
+                                <button onclick="deleteEntry('${entry.id}', event)" class="text-gray-300 hover:text-red-500 hover:bg-red-50 p-1 sm:p-1.5 rounded-lg transition-all duration-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+                                    <i data-lucide="trash-2" class="w-4 h-4 sm:w-[18px] sm:h-[18px]"></i>
                                 </button>
                             </div>
                         </div>
-                    `).join('') + `<div id="list-end" class="h-4"></div></div>`;
+                    `).join('') + `<div id="list-end" class="h-2 sm:h-4"></div></div>`;
                     
-                    // เลื่อนลงไปข้างล่างสุด
                     setTimeout(() => {
                         const end = document.getElementById('list-end');
                         if(end) end.scrollIntoView({ behavior: 'smooth' });
                     }, 100);
                 }
             } else {
-                // โหมดรายวัน
                 const dailyMap = new Map();
                 entries.forEach(curr => {
                     if (curr.amount) {
@@ -342,29 +338,29 @@
                 }).reverse();
 
                 if (summaryArray.length === 0) {
-                    mainContent.innerHTML = `<div class="mt-8 text-gray-400 text-sm font-light text-center">ยังไม่มีข้อมูลรายวัน</div>`;
+                    mainContent.innerHTML = `<div class="mt-8 text-gray-400 text-xs sm:text-sm font-light text-center">ยังไม่มีข้อมูลรายวัน</div>`;
                 } else {
                     mainContent.innerHTML = `
-                    <div class="mt-2">
-                        <div class="border border-gray-100 rounded-2xl overflow-hidden shadow-sm bg-white mb-8">
+                    <div class="mt-1 sm:mt-2">
+                        <div class="border border-gray-100 rounded-xl sm:rounded-2xl overflow-hidden shadow-sm bg-white mb-6 sm:mb-8">
                             <table class="w-full text-left border-collapse">
-                                <thead class="bg-[#f5f5f7] border-b border-gray-100 text-gray-500 text-[0.85rem]">
+                                <thead class="bg-[#f5f5f7] border-b border-gray-100 text-gray-500 text-[0.75rem] sm:text-[0.85rem]">
                                     <tr>
-                                        <th class="py-3 px-3 sm:px-4 font-medium">วันที่</th>
-                                        <th class="py-3 px-2 font-medium text-right text-green-600">รับ</th>
-                                        <th class="py-3 px-2 font-medium text-right text-red-500">จ่าย</th>
-                                        <th class="py-3 px-3 sm:px-4 font-medium text-right text-blue-600">คงเหลือ</th>
+                                        <th class="py-2.5 sm:py-3 px-2 sm:px-4 font-medium">วันที่</th>
+                                        <th class="py-2.5 sm:py-3 px-1 sm:px-2 font-medium text-right text-green-600">รับ</th>
+                                        <th class="py-2.5 sm:py-3 px-1 sm:px-2 font-medium text-right text-red-500">จ่าย</th>
+                                        <th class="py-2.5 sm:py-3 px-2 sm:px-4 font-medium text-right text-blue-600">คงเหลือ</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-50">
                                     ${summaryArray.map(day => `
                                         <tr class="hover:bg-gray-50/50 transition-colors">
-                                            <td class="py-3.5 px-3 sm:px-4 text-[0.95rem] text-[#1d1d1f] whitespace-nowrap">
-                                                ${day.date}<span class="block text-[0.7rem] text-gray-400 mt-0.5">${day.count} รายการ</span>
+                                            <td class="py-2.5 sm:py-3.5 px-2 sm:px-4 text-[0.8rem] sm:text-[0.95rem] text-[#1d1d1f] whitespace-nowrap">
+                                                ${day.date}<span class="block text-[0.65rem] sm:text-[0.7rem] text-gray-400 mt-0.5">${day.count} รายการ</span>
                                             </td>
-                                            <td class="py-3.5 px-2 text-[0.95rem] sm:text-[1rem] font-medium text-green-600 text-right">${day.income > 0 ? `+${day.income.toLocaleString()}` : '-'}</td>
-                                            <td class="py-3.5 px-2 text-[0.95rem] sm:text-[1rem] font-medium text-red-500 text-right">${day.expense > 0 ? `-${day.expense.toLocaleString()}` : '-'}</td>
-                                            <td class="py-3.5 px-3 sm:px-4 text-[1rem] sm:text-[1.05rem] font-semibold text-[#1d1d1f] text-right">${day.balance.toLocaleString()}</td>
+                                            <td class="py-2.5 sm:py-3.5 px-1 sm:px-2 text-[0.85rem] sm:text-[1rem] font-medium text-green-600 text-right">${day.income > 0 ? `+${day.income.toLocaleString()}` : '-'}</td>
+                                            <td class="py-2.5 sm:py-3.5 px-1 sm:px-2 text-[0.85rem] sm:text-[1rem] font-medium text-red-500 text-right">${day.expense > 0 ? `-${day.expense.toLocaleString()}` : '-'}</td>
+                                            <td class="py-2.5 sm:py-3.5 px-2 sm:px-4 text-[0.9rem] sm:text-[1.05rem] font-semibold text-[#1d1d1f] text-right">${day.balance.toLocaleString()}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -374,11 +370,9 @@
                 }
             }
 
-            // เรนเดอร์ไอคอนใหม่ที่เพิ่งถูกเพิ่มเข้าไปใน DOM
             lucide.createIcons();
         };
 
-        // --- 5. การส่งข้อมูล (Submit) ---
         window.submitEntries = async () => {
             const input = document.getElementById('input-text');
             const text = input.value.trim();
@@ -403,8 +397,8 @@
                     });
                 }
                 input.value = '';
-                input.style.height = 'auto'; // รีเซ็ตความสูง
-                checkInput(); // อัปเดตปุ่ม
+                input.style.height = 'auto';
+                checkInput();
             } catch (error) {
                 console.error("Submit error:", error);
             } finally {
@@ -424,25 +418,25 @@
             }
         };
 
-        // --- 6. การจัดการ Interactions ทั่วไป ---
-        
-        // สลับแท็บ
+        // Class คงที่เพื่อให้สลับแท็บแล้วการตั้งค่า Responsive ไม่เพี้ยน
+        const activeTabClass = "flex items-center justify-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-md sm:rounded-lg transition-all bg-white shadow-sm font-medium text-black";
+        const inactiveTabClass = "flex items-center justify-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded-md sm:rounded-lg transition-all text-gray-500 hover:text-gray-700";
+
         window.switchTab = (tab) => {
             activeTab = tab;
             const btnList = document.getElementById('tab-list');
             const btnDaily = document.getElementById('tab-daily');
             
             if(tab === 'list') {
-                btnList.className = "flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-all bg-white shadow-sm font-medium text-black";
-                btnDaily.className = "flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-all text-gray-500 hover:text-gray-700";
+                btnList.className = activeTabClass;
+                btnDaily.className = inactiveTabClass;
             } else {
-                btnDaily.className = "flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-all bg-white shadow-sm font-medium text-black";
-                btnList.className = "flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-all text-gray-500 hover:text-gray-700";
+                btnDaily.className = activeTabClass;
+                btnList.className = inactiveTabClass;
             }
             renderUI();
         };
 
-        // ตรวจสอบ Input เพื่อเปิดปุ่มส่ง
         const inputEl = document.getElementById('input-text');
         const submitBtn = document.getElementById('submit-btn');
         
@@ -458,7 +452,7 @@
         };
         inputEl.addEventListener('input', function() {
             this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
             checkInput();
         });
         inputEl.addEventListener('keydown', function(e) {
@@ -468,19 +462,17 @@
             }
         });
 
-        // จัดการสถานะปุ่มตอนกำลังโหลด
         const toggleLoading = (loading) => {
             const wrapper = document.getElementById('submit-wrapper');
             if (loading) {
-                wrapper.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>';
+                wrapper.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 sm:w-5 sm:h-5 animate-spin"></i>';
             } else {
-                wrapper.innerHTML = '<i data-lucide="arrow-up" class="w-5 h-5"></i>';
+                wrapper.innerHTML = '<i data-lucide="arrow-up" class="w-4 h-4 sm:w-5 sm:h-5"></i>';
             }
             lucide.createIcons();
             inputEl.disabled = loading;
         }
 
-        // --- 7. ระบบแท็ก (กดค้าง) ---
         let longPressTimer;
         window.startPress = (id, currentTag) => {
             longPressTimer = setTimeout(() => {
@@ -510,7 +502,6 @@
             }
         };
 
-        // Render ไอคอนครั้งแรกสำหรับ Static HTML
         lucide.createIcons();
 
     </script>
