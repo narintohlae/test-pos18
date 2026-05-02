@@ -35,11 +35,6 @@
             min-height: 100vh;
         }
 
-        /* สำหรับ Input ที่ใช้ Custom Keyboard ยังคงให้เห็น Cursor กระพริบ */
-        input[inputmode="none"] {
-            caret-color: var(--ios-blue);
-        }
-
         .ios-app {
             width: 100%;
             max-width: 430px; 
@@ -164,8 +159,20 @@
         .type-btn[data-type="pos2"].active { color: var(--ios-purple); }
 
         .input-container {
-            margin: 0 20px 24px;
-            margin-top: auto; /* ดันช่องพิมพ์ลงด้านล่างสุด */
+            position: sticky;
+            bottom: 80px; /* เผื่อพื้นที่ tab bar บนมือถือ */
+            background: var(--ios-bg); /* ใส่พื้นหลังกันโปร่งใสเวลา scroll */
+            padding: 10px 20px 24px;
+            margin: auto 0 0 0;
+            z-index: 100;
+        }
+
+        body.keyboard-open .bottom-tab-bar {
+            display: none !important;
+        }
+        
+        body.keyboard-open .input-container {
+            bottom: 0 !important;
         }
 
         .input-wrapper {
@@ -536,80 +543,6 @@
             padding-bottom: 80px;
         }
 
-        /* ------------------ Custom Keyboard Styles ------------------ */
-        .custom-keyboard {
-            position: fixed;
-            bottom: -100%; /* ซ่อนตอนเริ่มต้น */
-            left: 0;
-            width: 100%;
-            background: #D1D5DB; /* สีเทาแบบ iOS */
-            padding: 8px 4px;
-            padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-            transition: bottom 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            z-index: 4000;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
-        }
-        .custom-keyboard.show {
-            bottom: 0;
-        }
-        .kb-row {
-            display: flex;
-            justify-content: center;
-            gap: 4px;
-            padding: 0 4px;
-        }
-        .kb-key {
-            background: #FFFFFF;
-            border-radius: 6px;
-            border: none;
-            box-shadow: 0 1px 1px rgba(0,0,0,0.3);
-            height: 42px;
-            flex: 1;
-            min-width: 0;
-            font-size: 18px;
-            color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            font-family: inherit;
-            padding: 0;
-        }
-        .kb-key:active {
-            background: #BCC0C5;
-        }
-        .kb-key.action {
-            background: #AEB3BA;
-            font-size: 14px;
-            font-weight: 500;
-            flex: 1.5;
-        }
-        .kb-key.space {
-            flex: 4;
-        }
-        .kb-key.enter {
-            background: var(--ios-blue);
-            color: white;
-            flex: 2;
-        }
-        .kb-key.enter:active {
-            background: #0056b3;
-        }
-        /* รูปแบบเมื่อเป็นแป้นตัวเลข */
-        .custom-keyboard[data-mode="num"] .kb-key {
-            height: 50px;
-            font-size: 24px;
-        }
-        .custom-keyboard[data-mode="num"] .kb-key.action {
-            font-size: 16px;
-        }
-
-
         /* ------------------ iPad & Desktop Layout ------------------ */
         @media (min-width: 768px) {
             .ios-app {
@@ -653,12 +586,8 @@
                 padding-top: 5px; 
             }
 
-            /* ปรับ Custom Keyboard สำหรับ Desktop ให้กว้างเต็มจอเหมือนเดิม */
-            .custom-keyboard {
-                max-width: 430px;
-                left: 50%;
-                transform: translateX(-50%);
-                border-radius: 16px 16px 0 0;
+            .input-container {
+                bottom: 0;
             }
         }
     </style>
@@ -682,8 +611,7 @@
 
             <div class="input-container">
                 <div class="input-wrapper">
-                    <!-- inputmode="none" เพื่อปิดคีย์บอร์ดระบบ -->
-                    <input type="text" id="expenseInput" placeholder="พิมพ์รายจ่ายและราคา..." autocomplete="off" inputmode="none">
+                    <input type="text" id="expenseInput" placeholder="พิมพ์รายจ่ายและราคา..." autocomplete="off">
                 </div>
                 <span class="hint" id="hintText">เว้นวรรคด้วยราคา เช่น ค่าไฟ 1200</span>
             </div>
@@ -731,9 +659,6 @@
                 <span>รายการ</span>
             </button>
         </nav>
-
-        <!-- Custom Keyboard Container -->
-        <div id="customKeyboard" class="custom-keyboard" data-mode="text"></div>
     </div>
 
     <!-- Edit Modal -->
@@ -742,18 +667,15 @@
             <h3>แก้ไขรายการ</h3>
             <div class="modal-field">
                 <label>ชื่อรายการ</label>
-                <!-- ปิดคีย์บอร์ดระบบ -->
-                <input type="text" id="editName" inputmode="none">
+                <input type="text" id="editName">
             </div>
             <div class="modal-field">
                 <label>ราคา/ยอดเงิน</label>
-                <!-- ปิดคีย์บอร์ดระบบ -->
-                <input type="number" id="editPrice" step="0.01" inputmode="none">
+                <input type="number" id="editPrice" step="0.01">
             </div>
             <div class="modal-field" id="editProfitField" style="display:none;">
                 <label>กำไร</label>
-                <!-- ปิดคีย์บอร์ดระบบ -->
-                <input type="number" id="editProfit" step="0.01" inputmode="none">
+                <input type="number" id="editProfit" step="0.01">
             </div>
             <div class="modal-field">
                 <label>วัน-เวลา</label>
@@ -826,199 +748,15 @@
         const navTabs = document.querySelectorAll('.bottom-tab-bar .tab-btn');
         const pages = document.querySelectorAll('.page');
 
-        // ================= Custom Keyboard Logic =================
-        const customKeyboard = document.getElementById('customKeyboard');
-        let kbLang = 'th';
-        let kbShift = false;
-        let kbMode = 'text'; // 'text' หรือ 'num'
-        let activeInput = null;
-
-        const layouts = {
-            th: [
-                ['ๅ','/','ภ','ถ','ุ','ึ','ค','ต','จ','ข','ช'],
-                ['ๆ','ไ','ำ','พ','ะ','ั','ี','ร','น','ย','บ','ล'],
-                ['ฟ','ห','ก','ด','เ','้','่','า','ส','ว','ง'],
-                ['shift', 'ผ','ป','แ','อ','ิ','ื','ท','ม','ใ','ฝ', 'backspace']
-            ],
-            th_shift: [
-                ['+','๑','๒','๓','๔','ู','฿','๕','๖','๗','๘','๙'],
-                ['๐','"','ฎ','ฑ','ธ','ํ','๊','ณ','ฯ','ญ','ฐ',','],
-                ['ฤ','ฆ','ฏ','โ','ฌ','็','๋','ษ','ศ','ซ','.'],
-                ['shift', '(',')','ฉ','ฮ','ฺ','์','?','ฒ','ฬ','ฦ', 'backspace']
-            ],
-            en: [
-                ['q','w','e','r','t','y','u','i','o','p'],
-                ['a','s','d','f','g','h','j','k','l'],
-                ['shift','z','x','c','v','b','n','m','backspace']
-            ],
-            en_shift: [
-                ['Q','W','E','R','T','Y','U','I','O','P'],
-                ['A','S','D','F','G','H','J','K','L'],
-                ['shift','Z','X','C','V','B','N','M','backspace']
-            ],
-            num: [
-                ['1','2','3'],
-                ['4','5','6'],
-                ['7','8','9'],
-                ['.','0','backspace']
-            ]
-        };
-
-        function renderKeyboard() {
-            customKeyboard.innerHTML = '';
-            customKeyboard.setAttribute('data-mode', kbMode);
-            
-            let layout;
-            if (kbMode === 'num') {
-                layout = layouts.num;
-            } else {
-                layout = kbLang === 'th' ? (kbShift ? layouts.th_shift : layouts.th) : (kbShift ? layouts.en_shift : layouts.en);
-            }
-
-            layout.forEach(row => {
-                const rowEl = document.createElement('div');
-                rowEl.className = 'kb-row';
-                row.forEach(key => {
-                    const keyEl = document.createElement('button');
-                    keyEl.className = 'kb-key';
-                    
-                    if (key === 'shift') {
-                        keyEl.classList.add('action');
-                        keyEl.innerHTML = kbShift ? '⬆️' : '⇧';
-                        keyEl.onclick = (e) => { e.preventDefault(); kbShift = !kbShift; renderKeyboard(); };
-                    } else if (key === 'backspace') {
-                        keyEl.classList.add('action');
-                        keyEl.innerHTML = '⌫';
-                        keyEl.onclick = (e) => { e.preventDefault(); handleKeypress('backspace'); };
-                    } else {
-                        keyEl.innerHTML = key;
-                        keyEl.onclick = (e) => { e.preventDefault(); handleKeypress(key); };
-                    }
-                    
-                    keyEl.onmousedown = (e) => e.preventDefault(); // ไม่ให้หลุด Focus ช่องพิมพ์
-                    rowEl.appendChild(keyEl);
-                });
-                customKeyboard.appendChild(rowEl);
-            });
-
-            // แถวล่างสุด (Bottom Row)
-            const bottomRow = document.createElement('div');
-            bottomRow.className = 'kb-row';
-            
-            if (kbMode === 'text') {
-                const numBtn = document.createElement('button');
-                numBtn.className = 'kb-key action';
-                numBtn.innerHTML = '123';
-                numBtn.onclick = (e) => { e.preventDefault(); kbMode = 'num'; renderKeyboard(); };
-                numBtn.onmousedown = (e) => e.preventDefault();
-                bottomRow.appendChild(numBtn);
-
-                const langBtn = document.createElement('button');
-                langBtn.className = 'kb-key action';
-                langBtn.innerHTML = kbLang === 'th' ? 'EN' : 'TH';
-                langBtn.onclick = (e) => { e.preventDefault(); kbLang = kbLang === 'th' ? 'en' : 'th'; kbShift = false; renderKeyboard(); };
-                langBtn.onmousedown = (e) => e.preventDefault();
-                bottomRow.appendChild(langBtn);
-
-                const spaceBtn = document.createElement('button');
-                spaceBtn.className = 'kb-key space';
-                spaceBtn.innerHTML = 'วรรค';
-                spaceBtn.onclick = (e) => { e.preventDefault(); handleKeypress(' '); };
-                spaceBtn.onmousedown = (e) => e.preventDefault();
-                bottomRow.appendChild(spaceBtn);
-
-                const enterBtn = document.createElement('button');
-                enterBtn.className = 'kb-key action enter';
-                enterBtn.innerHTML = 'ตกลง';
-                enterBtn.onclick = (e) => { e.preventDefault(); handleKeypress('enter'); };
-                enterBtn.onmousedown = (e) => e.preventDefault();
-                bottomRow.appendChild(enterBtn);
-            } else {
-                const textBtn = document.createElement('button');
-                textBtn.className = 'kb-key action space';
-                textBtn.innerHTML = 'กขค';
-                textBtn.onclick = (e) => { e.preventDefault(); kbMode = 'text'; renderKeyboard(); };
-                textBtn.onmousedown = (e) => e.preventDefault();
-                bottomRow.appendChild(textBtn);
-                
-                const spaceBtn = document.createElement('button');
-                spaceBtn.className = 'kb-key space';
-                spaceBtn.innerHTML = 'วรรค';
-                spaceBtn.onclick = (e) => { e.preventDefault(); handleKeypress(' '); };
-                spaceBtn.onmousedown = (e) => e.preventDefault();
-                bottomRow.appendChild(spaceBtn);
-
-                const enterBtn = document.createElement('button');
-                enterBtn.className = 'kb-key action enter';
-                enterBtn.innerHTML = 'ตกลง';
-                enterBtn.onclick = (e) => { e.preventDefault(); handleKeypress('enter'); };
-                enterBtn.onmousedown = (e) => e.preventDefault();
-                bottomRow.appendChild(enterBtn);
-            }
-
-            customKeyboard.appendChild(bottomRow);
-        }
-
-        function handleKeypress(key) {
-            if (!activeInput) return;
-            
-            const start = activeInput.selectionStart;
-            const end = activeInput.selectionEnd;
-            let val = activeInput.value;
-
-            if (key === 'backspace') {
-                if (start === end && start > 0) {
-                    activeInput.value = val.slice(0, start - 1) + val.slice(start);
-                    activeInput.setSelectionRange(start - 1, start - 1);
-                } else if (start !== end) {
-                    activeInput.value = val.slice(0, start) + val.slice(end);
-                    activeInput.setSelectionRange(start, start);
-                }
-            } else if (key === 'enter') {
-                if (activeInput.id === 'expenseInput') {
-                    addTransaction();
-                } else {
-                    activeInput.blur();
-                }
-                customKeyboard.classList.remove('show');
-            } else {
-                // กรองเฉพาะตัวเลขสำหรับช่อง number
-                if (activeInput.type === 'number' && !/^[0-9.]$/.test(key)) return;
-                
-                activeInput.value = val.slice(0, start) + key + val.slice(end);
-                activeInput.setSelectionRange(start + key.length, start + key.length);
-            }
-            activeInput.dispatchEvent(new Event('input')); // ทริกเกอร์ Input Event ให้ระบบรู้
-        }
-
-        function attachKeyboard(inputId) {
-            const el = document.getElementById(inputId);
-            if (!el) return;
-            el.addEventListener('focus', () => {
-                activeInput = el;
-                // ถ้าเป็นช่องประเภท number ให้สลับเป็นหน้าแป้นตัวเลขอัตโนมัติ
-                if (el.type === 'number') {
-                    kbMode = 'num';
-                } else {
-                    kbMode = 'text';
-                }
-                renderKeyboard();
-                customKeyboard.classList.add('show');
-            });
-        }
-
-        // เชื่อมคีย์บอร์ดจำลองเข้ากับ Input ต่างๆ
-        attachKeyboard('expenseInput');
-        attachKeyboard('editName');
-        attachKeyboard('editPrice');
-        attachKeyboard('editProfit');
-
-        // ปิดคีย์บอร์ดเมื่อคลิกพื้นที่ว่าง
-        document.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'INPUT' && !customKeyboard.contains(e.target)) {
-                customKeyboard.classList.remove('show');
-                if (activeInput) activeInput.blur();
-            }
+        // ================= Input & Native Keyboard Logic =================
+        // ซ่อน Tab Bar เมื่อพิมพ์ เพื่อให้ช่องพิมพ์ติดคีย์บอร์ดระบบพอดี
+        inputEl.addEventListener('focus', () => {
+            document.body.classList.add('keyboard-open');
+        });
+        
+        inputEl.addEventListener('blur', () => {
+            // หน่วงเวลาเล็กน้อยเผื่อผู้ใช้กดปุ่มตกลง จะได้ไม่กระตุก
+            setTimeout(() => document.body.classList.remove('keyboard-open'), 100);
         });
         // ==========================================================
 
@@ -1271,7 +1009,6 @@
         // ยกเลิกแก้ไข
         cancelEditBtn.addEventListener('click', () => {
             editModal.classList.remove('show');
-            customKeyboard.classList.remove('show');
             editingId = null;
         });
 
@@ -1296,7 +1033,6 @@
                 await updateDoc(getExpenseDoc(editingId), updateData);
                 
                 editModal.classList.remove('show');
-                customKeyboard.classList.remove('show');
                 editingId = null;
             } catch (err) {
                 console.error("Error updating document: ", err);
@@ -1492,7 +1228,13 @@
             }
         }
 
-        // จัดการเมื่อกดปุ่ม Enter จาก Custom Keyboard (ไม่ต้องดัก event จาก Physical Keyboard ถ้าไม่ได้ใช้คอม)
+        // จัดการเมื่อกดปุ่ม Enter จากคีย์บอร์ดมือถือ/คอมพิวเตอร์
+        inputEl.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addTransaction();
+            }
+        });
     </script>
 </body>
 </html>
