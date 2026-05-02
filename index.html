@@ -39,9 +39,9 @@
 
     <div class="w-full h-[100dvh] max-w-lg md:max-w-2xl lg:max-w-3xl sm:h-[90vh] md:h-[85vh] sm:rounded-[2.5rem] bg-white sm:shadow-[0_20px_40px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col relative border border-gray-100 transition-all">
         
-        <!-- Modal แก้ไขรายการ (แท็กและเวลา) -->
-        <div id="edit-modal" class="hidden absolute inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-center justify-center p-6">
-            <div class="bg-white w-full max-w-xs md:max-w-sm rounded-3xl shadow-2xl p-6 md:p-8 transition-all transform scale-100">
+        <!-- Modal แก้ไขรายการแบบเต็ม -->
+        <div id="edit-modal" class="hidden absolute inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
+            <div class="bg-white w-full max-w-xs md:max-w-sm rounded-3xl shadow-2xl p-5 md:p-8 transition-all transform scale-100 max-h-[90vh] overflow-y-auto no-scrollbar">
                 <div class="flex justify-between items-center mb-4 md:mb-6">
                     <h3 class="font-semibold text-base sm:text-lg md:text-xl">แก้ไขรายการ</h3>
                     <button onclick="closeEditModal()" class="text-gray-400 hover:text-black focus:outline-none">
@@ -49,31 +49,36 @@
                     </button>
                 </div>
                 
+                <div class="grid grid-cols-2 gap-3 mb-3 md:mb-4">
+                    <div class="col-span-2 sm:col-span-1">
+                        <label class="block text-xs font-medium text-gray-500 mb-1 ml-1">ประเภท</label>
+                        <select id="edit-type-input" class="w-full bg-[#f5f5f7] px-3 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]">
+                            <option value="expense">รายจ่าย</option>
+                            <option value="income">รายรับ</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2 sm:col-span-1">
+                        <label class="block text-xs font-medium text-gray-500 mb-1 ml-1">จำนวนเงิน (฿)</label>
+                        <input id="edit-amount-input" type="number" step="0.01" class="w-full bg-[#f5f5f7] px-3 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]" />
+                    </div>
+                </div>
+
                 <div class="mb-3 md:mb-4">
-                    <label class="block text-xs font-medium text-gray-500 mb-1 ml-1">แท็ก</label>
-                    <input 
-                        id="edit-tag-input"
-                        type="text" 
-                        placeholder="ชื่อแท็ก..."
-                        class="w-full bg-[#f5f5f7] px-4 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]"
-                        onkeydown="if(event.key === 'Enter') saveEdit()"
-                    />
+                    <label class="block text-xs font-medium text-gray-500 mb-1 ml-1">ชื่อรายการ</label>
+                    <input id="edit-desc-input" type="text" class="w-full bg-[#f5f5f7] px-3 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]" />
+                </div>
+
+                <div class="mb-3 md:mb-4">
+                    <label class="block text-xs font-medium text-gray-500 mb-1 ml-1">แท็กพิเศษ</label>
+                    <input id="edit-tag-input" type="text" placeholder="เช่น เที่ยว, ของขวัญ" class="w-full bg-[#f5f5f7] px-3 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]" />
                 </div>
 
                 <div class="mb-5 md:mb-6">
                     <label class="block text-xs font-medium text-gray-500 mb-1 ml-1">วันเวลา</label>
-                    <input 
-                        id="edit-datetime-input"
-                        type="datetime-local" 
-                        class="w-full bg-[#f5f5f7] px-4 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]"
-                        onkeydown="if(event.key === 'Enter') saveEdit()"
-                    />
+                    <input id="edit-datetime-input" type="datetime-local" class="w-full bg-[#f5f5f7] px-3 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]" />
                 </div>
 
-                <button 
-                    onclick="saveEdit()"
-                    class="w-full bg-black text-white py-2.5 sm:py-3 md:py-3.5 rounded-xl font-medium active:scale-95 transition-all text-[0.95rem] sm:text-[1rem] md:text-[1.1rem]"
-                >
+                <button onclick="saveEdit()" class="w-full bg-black text-white py-2.5 sm:py-3 md:py-3.5 rounded-xl font-medium active:scale-95 transition-all text-[0.95rem] sm:text-[1rem] md:text-[1.1rem]">
                     บันทึกการแก้ไข
                 </button>
             </div>
@@ -138,7 +143,6 @@
         </section>
 
         <!-- Main Content -->
-        <!-- เพิ่ม pb-12 เผื่อพื้นที่ด้านล่างสุดของจอให้เลื่อนสุดได้พอดี -->
         <main id="main-content" class="flex-1 overflow-y-auto px-4 sm:px-6 md:px-10 py-4 md:py-6 pb-12 sm:pb-16 flex flex-col scroll-smooth relative z-0 bg-white">
             <div class="flex-1 flex items-center justify-center">
                 <i data-lucide="loader-2" class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 animate-spin text-gray-300"></i>
@@ -154,7 +158,6 @@
         import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // *** เปลี่ยนตัวเลขเวอร์ชันนี้ทุกครั้งที่คุณอัปเดตโค้ดบน GitHub ***
-        // เช่น ครั้งหน้าเปลี่ยนเป็น "1.0.2" เพื่อบังคับให้มือถือของผู้ใช้รีเฟรชอัปเดตใหม่
         const APP_VERSION = "1.0.1";
 
         // คอนฟิกูเรชันจาก Firebase ของคุณ
@@ -182,7 +185,7 @@
         let user = null;
         let entries = [];
         let activeTab = 'list';
-        let taggingEntryId = null;
+        let editingEntryId = null; // เปลี่ยนจาก tagging เป็น editing
         let isSyncing = false;
 
         const initAuth = async () => {
@@ -191,7 +194,7 @@
                     try {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } catch (tokenError) {
-                        console.warn("Token mismatch (using custom Firebase config). Falling back to anonymous auth.");
+                        console.warn("Token mismatch. Falling back to anonymous auth.");
                         await signInAnonymously(auth);
                     }
                 } else {
@@ -224,7 +227,6 @@
             const entriesCollection = collection(db, 'artifacts', appIdString, 'users', user.uid, 'entries');
             
             onSnapshot(entriesCollection, (snapshot) => {
-                // เรียงจาก ใหม่ล่าสุด -> เก่าสุด (b.timestamp - a.timestamp) 
                 entries = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data(),
@@ -302,7 +304,6 @@
 
             const catContainer = document.getElementById('category-container');
             if (Object.keys(categorySummary).length > 0) {
-                // เรียงยอดสูงสุดไปต่ำสุด
                 const sortedCats = Object.entries(categorySummary).sort((a, b) => b[1].amount - a[1].amount);
                 catContainer.innerHTML = sortedCats.map(([cat, data]) => `
                     <div class="border rounded-lg px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 flex items-center gap-1 sm:gap-1.5 md:gap-2 whitespace-nowrap shadow-sm ${data.type === 'income' ? 'bg-green-50/50 border-green-100 text-green-600' : 'bg-[#f5f5f7] border-gray-200/60 text-gray-600'}">
@@ -323,10 +324,7 @@
                     mainContent.innerHTML = `<div class="mt-8 text-gray-400 text-xs sm:text-sm md:text-base font-light text-center">ยังไม่มีข้อมูล<br><span class="text-[10px] md:text-xs mt-2 block">พิมพ์รายการที่ช่องด้านบนเพื่อเริ่มต้น</span></div>`;
                 } else {
                     mainContent.innerHTML = `<div class="flex flex-col gap-3 sm:gap-4 md:gap-5 mt-1 sm:mt-2 md:mt-3 fade-in">` + entries.map(entry => `
-                        <div class="flex justify-between items-center group border-b border-gray-50/80 pb-2.5 sm:pb-3 md:pb-4 select-none touch-none active:bg-gray-50/50 rounded-lg px-2 -mx-2 transition-colors"
-                             onpointerdown="startPress('${entry.id}', '${entry.customTag || ''}', '${entry.timestamp.toISOString()}')"
-                             onpointerup="cancelPress()"
-                             onpointerleave="cancelPress()">
+                        <div class="flex justify-between items-center group border-b border-gray-50/80 pb-2.5 sm:pb-3 md:pb-4 select-none rounded-lg px-2 -mx-2 transition-colors hover:bg-gray-50/30">
                             <div class="flex flex-col flex-1">
                                 <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
                                     <span class="text-[0.95rem] sm:text-[1.05rem] md:text-[1.15rem] text-[#1d1d1f] font-normal tracking-wide break-words">${entry.description}</span>
@@ -335,23 +333,23 @@
                                 </div>
                                 <span class="text-[0.6rem] sm:text-[0.65rem] md:text-[0.75rem] text-gray-400 mt-0.5 sm:mt-1 flex items-center gap-2">
                                     ${entry.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                    <span class="md:opacity-0 md:group-hover:opacity-100 text-[9px] sm:text-[10px] md:text-[11px] italic transition-opacity text-gray-300 hidden sm:inline">กดค้างเพื่อแก้ไขแท็ก/เวลา</span>
                                 </span>
                             </div>
-                            <div class="flex items-center gap-2 sm:gap-3 md:gap-4 pl-2 sm:pl-4 md:pl-6">
-                                ${entry.amount !== null ? `<div class="text-[0.95rem] sm:text-[1.05rem] md:text-[1.15rem] font-medium tracking-wide ${entry.type === 'income' ? 'text-green-600' : 'text-[#1d1d1f]'}">${entry.type === 'income' ? '+' : ''}${entry.amount.toLocaleString()}</div>` : ''}
-                                <button onclick="deleteEntry('${entry.id}', event)" class="text-gray-300 hover:text-red-500 hover:bg-red-50 p-1 sm:p-1.5 md:p-2 rounded-lg transition-all duration-200">
-                                    <i data-lucide="trash-2" class="w-4 h-4 sm:w-[18px] sm:h-[18px] md:w-5 md:h-5"></i>
-                                </button>
+                            <div class="flex items-center gap-1 sm:gap-2 pl-2 sm:pl-4">
+                                ${entry.amount !== null ? `<div class="text-[0.95rem] sm:text-[1.05rem] md:text-[1.15rem] font-medium tracking-wide ${entry.type === 'income' ? 'text-green-600' : 'text-[#1d1d1f]'} mr-1 sm:mr-2">${entry.type === 'income' ? '+' : ''}${entry.amount.toLocaleString()}</div>` : ''}
+                                <div class="flex items-center">
+                                    <button onclick="openEditModal('${entry.id}')" class="text-gray-400 hover:text-blue-500 hover:bg-blue-50 p-1.5 sm:p-2 rounded-lg transition-all duration-200" title="แก้ไข">
+                                        <i data-lucide="pencil" class="w-4 h-4 sm:w-[18px] sm:h-[18px] md:w-5 md:h-5"></i>
+                                    </button>
+                                    <button onclick="deleteEntry('${entry.id}', event)" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-1.5 sm:p-2 rounded-lg transition-all duration-200" title="ลบ">
+                                        <i data-lucide="trash-2" class="w-4 h-4 sm:w-[18px] sm:h-[18px] md:w-5 md:h-5"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `).join('') + `</div>`;
                     
-                    // เลื่อนหน้าจอไปอยู่บนสุด (ให้เห็นรายการใหม่ทันที)
-                    setTimeout(() => {
-                        const mainContentDiv = document.getElementById('main-content');
-                        if(mainContentDiv) mainContentDiv.scrollTo({ top: 0, behavior: 'smooth' });
-                    }, 100);
+                    // ปิดการเลื่อนจอลงมาสุด เพราะรายการใหม่อยู่ด้านบนแล้ว
                 }
             } else {
                 const dailyMap = new Map();
@@ -403,11 +401,6 @@
                             </table>
                         </div>
                     </div>`;
-                    
-                    setTimeout(() => {
-                        const mainContentDiv = document.getElementById('main-content');
-                        if(mainContentDiv) mainContentDiv.scrollTo({ top: 0, behavior: 'smooth' });
-                    }, 100);
                 }
             }
 
@@ -422,7 +415,6 @@
             isSyncing = true;
             toggleLoading(true);
             
-            // แยกบรรทัดจากล่างขึ้นบน เพื่อให้บรรทัดแรกที่พิมพ์อยู่บนสุด (ใหม่สุด) เมื่อเรียงด้วย Timestamp
             const lines = text.split('\n').filter(line => line.trim() !== '').reverse();
             const entriesCollection = collection(db, 'artifacts', appIdString, 'users', user.uid, 'entries');
 
@@ -441,6 +433,11 @@
                 input.value = '';
                 input.style.height = 'auto';
                 checkInput();
+                
+                setTimeout(() => {
+                    const mainContentDiv = document.getElementById('main-content');
+                    if(mainContentDiv) mainContentDiv.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 100);
             } catch (error) {
                 console.error("Submit error:", error);
             } finally {
@@ -457,6 +454,69 @@
                 await deleteDoc(docRef);
             } catch (error) {
                 console.error("Delete error:", error);
+            }
+        };
+
+        // --- ระบบแก้ไข (Edit) ---
+        window.openEditModal = (id) => {
+            const entry = entries.find(e => e.id === id);
+            if (!entry) return;
+            
+            editingEntryId = id;
+            
+            // ดึงข้อมูลเดิมมาใส่ในฟอร์ม
+            document.getElementById('edit-type-input').value = entry.type || 'expense';
+            document.getElementById('edit-desc-input').value = entry.description || '';
+            document.getElementById('edit-amount-input').value = entry.amount || '';
+            document.getElementById('edit-tag-input').value = entry.customTag || '';
+            
+            if (entry.timestamp) {
+                const dateObj = new Date(entry.timestamp);
+                const tzOffset = dateObj.getTimezoneOffset() * 60000;
+                const localISOTime = (new Date(dateObj - tzOffset)).toISOString().slice(0, 16);
+                document.getElementById('edit-datetime-input').value = localISOTime;
+            }
+
+            document.getElementById('edit-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('edit-amount-input').focus(), 100);
+        };
+
+        window.closeEditModal = () => {
+            document.getElementById('edit-modal').classList.add('hidden');
+            editingEntryId = null;
+        };
+
+        window.saveEdit = async () => {
+            if (!user || !editingEntryId) return;
+            
+            const newType = document.getElementById('edit-type-input').value;
+            const newDesc = document.getElementById('edit-desc-input').value.trim();
+            const newAmountStr = document.getElementById('edit-amount-input').value;
+            const newTag = document.getElementById('edit-tag-input').value.trim();
+            const newDateTimeStr = document.getElementById('edit-datetime-input').value;
+            
+            const newAmount = newAmountStr ? parseFloat(newAmountStr) : null;
+            const newCategory = getCategory(newDesc, newType); // คำนวณหมวดหมู่ใหม่
+            
+            closeEditModal();
+            
+            try {
+                const docRef = doc(db, 'artifacts', appIdString, 'users', user.uid, 'entries', editingEntryId);
+                const updateData = { 
+                    type: newType,
+                    description: newDesc || (newType === 'income' ? 'รายรับ' : 'รายการไม่มีชื่อ'),
+                    amount: newAmount,
+                    category: newCategory,
+                    customTag: newTag 
+                };
+                
+                if (newDateTimeStr) {
+                    updateData.timestamp = new Date(newDateTimeStr);
+                }
+                
+                await updateDoc(docRef, updateData);
+            } catch (e) {
+                console.error("Save edit error:", e);
             }
         };
 
@@ -514,55 +574,6 @@
             lucide.createIcons();
             inputEl.disabled = loading;
         }
-
-        let longPressTimer;
-        window.startPress = (id, currentTag, isoString) => {
-            longPressTimer = setTimeout(() => {
-                taggingEntryId = id;
-                document.getElementById('edit-tag-input').value = currentTag || '';
-                
-                // จัดการรูปแบบวันที่ให้อยู่ในฟอร์แมต YYYY-MM-DDThh:mm เพื่อให้แสดงผลใน input datetime-local ได้พอดี
-                if (isoString) {
-                    const dateObj = new Date(isoString);
-                    const tzOffset = dateObj.getTimezoneOffset() * 60000;
-                    const localISOTime = (new Date(dateObj - tzOffset)).toISOString().slice(0, 16);
-                    document.getElementById('edit-datetime-input').value = localISOTime;
-                }
-
-                document.getElementById('edit-modal').classList.remove('hidden');
-                setTimeout(() => document.getElementById('edit-tag-input').focus(), 100);
-                if (navigator.vibrate) navigator.vibrate(50);
-            }, 600);
-        };
-        window.cancelPress = () => {
-            clearTimeout(longPressTimer);
-        };
-        window.closeEditModal = () => {
-            document.getElementById('edit-modal').classList.add('hidden');
-            taggingEntryId = null;
-        };
-        window.saveEdit = async () => {
-            if (!user || !taggingEntryId) return;
-            
-            const newTag = document.getElementById('edit-tag-input').value.trim();
-            const newDateTimeStr = document.getElementById('edit-datetime-input').value;
-            
-            closeEditModal();
-            
-            try {
-                const docRef = doc(db, 'artifacts', appIdString, 'users', user.uid, 'entries', taggingEntryId);
-                const updateData = { customTag: newTag };
-                
-                // หากมีการระบุวันเวลาใหม่ ให้อัปเดต timestamp ด้วย
-                if (newDateTimeStr) {
-                    updateData.timestamp = new Date(newDateTimeStr);
-                }
-                
-                await updateDoc(docRef, updateData);
-            } catch (e) {
-                console.error("Save edit error:", e);
-            }
-        };
 
         // --- ระบบแจ้งเตือนอัปเดตสำหรับ GitHub Pages ---
         window.showUpdateToast = () => {
