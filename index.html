@@ -39,27 +39,42 @@
 
     <div class="w-full h-[100dvh] max-w-lg md:max-w-2xl lg:max-w-3xl sm:h-[90vh] md:h-[85vh] sm:rounded-[2.5rem] bg-white sm:shadow-[0_20px_40px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col relative border border-gray-100 transition-all">
         
-        <!-- Modal จัดการแท็ก -->
-        <div id="tag-modal" class="hidden absolute inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-center justify-center p-6">
+        <!-- Modal แก้ไขรายการ (แท็กและเวลา) -->
+        <div id="edit-modal" class="hidden absolute inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-center justify-center p-6">
             <div class="bg-white w-full max-w-xs md:max-w-sm rounded-3xl shadow-2xl p-6 md:p-8 transition-all transform scale-100">
                 <div class="flex justify-between items-center mb-4 md:mb-6">
-                    <h3 class="font-semibold text-base sm:text-lg md:text-xl">จัดการแท็ก</h3>
-                    <button onclick="closeTagModal()" class="text-gray-400 hover:text-black focus:outline-none">
+                    <h3 class="font-semibold text-base sm:text-lg md:text-xl">แก้ไขรายการ</h3>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-black focus:outline-none">
                         <i data-lucide="x" class="w-5 h-5 md:w-6 md:h-6"></i>
                     </button>
                 </div>
-                <input 
-                    id="tag-input"
-                    type="text" 
-                    placeholder="ชื่อแท็ก..."
-                    class="w-full bg-[#f5f5f7] px-4 py-2.5 sm:py-3 md:py-3.5 rounded-xl outline-none mb-4 md:mb-6 text-[0.95rem] sm:text-[1rem] md:text-[1.1rem]"
-                    onkeydown="if(event.key === 'Enter') saveTag()"
-                />
+                
+                <div class="mb-3 md:mb-4">
+                    <label class="block text-xs font-medium text-gray-500 mb-1 ml-1">แท็ก</label>
+                    <input 
+                        id="edit-tag-input"
+                        type="text" 
+                        placeholder="ชื่อแท็ก..."
+                        class="w-full bg-[#f5f5f7] px-4 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]"
+                        onkeydown="if(event.key === 'Enter') saveEdit()"
+                    />
+                </div>
+
+                <div class="mb-5 md:mb-6">
+                    <label class="block text-xs font-medium text-gray-500 mb-1 ml-1">วันเวลา</label>
+                    <input 
+                        id="edit-datetime-input"
+                        type="datetime-local" 
+                        class="w-full bg-[#f5f5f7] px-4 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]"
+                        onkeydown="if(event.key === 'Enter') saveEdit()"
+                    />
+                </div>
+
                 <button 
-                    onclick="saveTag()"
+                    onclick="saveEdit()"
                     class="w-full bg-black text-white py-2.5 sm:py-3 md:py-3.5 rounded-xl font-medium active:scale-95 transition-all text-[0.95rem] sm:text-[1rem] md:text-[1.1rem]"
                 >
-                    บันทึกแท็ก
+                    บันทึกการแก้ไข
                 </button>
             </div>
         </div>
@@ -309,7 +324,7 @@
                 } else {
                     mainContent.innerHTML = `<div class="flex flex-col gap-3 sm:gap-4 md:gap-5 mt-1 sm:mt-2 md:mt-3 fade-in">` + entries.map(entry => `
                         <div class="flex justify-between items-center group border-b border-gray-50/80 pb-2.5 sm:pb-3 md:pb-4 select-none touch-none active:bg-gray-50/50 rounded-lg px-2 -mx-2 transition-colors"
-                             onpointerdown="startPress('${entry.id}', '${entry.customTag || ''}')"
+                             onpointerdown="startPress('${entry.id}', '${entry.customTag || ''}', '${entry.timestamp.toISOString()}')"
                              onpointerup="cancelPress()"
                              onpointerleave="cancelPress()">
                             <div class="flex flex-col flex-1">
@@ -320,7 +335,7 @@
                                 </div>
                                 <span class="text-[0.6rem] sm:text-[0.65rem] md:text-[0.75rem] text-gray-400 mt-0.5 sm:mt-1 flex items-center gap-2">
                                     ${entry.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                    <span class="md:opacity-0 md:group-hover:opacity-100 text-[9px] sm:text-[10px] md:text-[11px] italic transition-opacity text-gray-300 hidden sm:inline">กดค้างเพื่อติดแท็ก</span>
+                                    <span class="md:opacity-0 md:group-hover:opacity-100 text-[9px] sm:text-[10px] md:text-[11px] italic transition-opacity text-gray-300 hidden sm:inline">กดค้างเพื่อแก้ไขแท็ก/เวลา</span>
                                 </span>
                             </div>
                             <div class="flex items-center gap-2 sm:gap-3 md:gap-4 pl-2 sm:pl-4 md:pl-6">
@@ -501,31 +516,51 @@
         }
 
         let longPressTimer;
-        window.startPress = (id, currentTag) => {
+        window.startPress = (id, currentTag, isoString) => {
             longPressTimer = setTimeout(() => {
                 taggingEntryId = id;
-                document.getElementById('tag-input').value = currentTag || '';
-                document.getElementById('tag-modal').classList.remove('hidden');
-                setTimeout(() => document.getElementById('tag-input').focus(), 100);
+                document.getElementById('edit-tag-input').value = currentTag || '';
+                
+                // จัดการรูปแบบวันที่ให้อยู่ในฟอร์แมต YYYY-MM-DDThh:mm เพื่อให้แสดงผลใน input datetime-local ได้พอดี
+                if (isoString) {
+                    const dateObj = new Date(isoString);
+                    const tzOffset = dateObj.getTimezoneOffset() * 60000;
+                    const localISOTime = (new Date(dateObj - tzOffset)).toISOString().slice(0, 16);
+                    document.getElementById('edit-datetime-input').value = localISOTime;
+                }
+
+                document.getElementById('edit-modal').classList.remove('hidden');
+                setTimeout(() => document.getElementById('edit-tag-input').focus(), 100);
                 if (navigator.vibrate) navigator.vibrate(50);
             }, 600);
         };
         window.cancelPress = () => {
             clearTimeout(longPressTimer);
         };
-        window.closeTagModal = () => {
-            document.getElementById('tag-modal').classList.add('hidden');
+        window.closeEditModal = () => {
+            document.getElementById('edit-modal').classList.add('hidden');
             taggingEntryId = null;
         };
-        window.saveTag = async () => {
+        window.saveEdit = async () => {
             if (!user || !taggingEntryId) return;
-            const newTag = document.getElementById('tag-input').value.trim();
-            closeTagModal();
+            
+            const newTag = document.getElementById('edit-tag-input').value.trim();
+            const newDateTimeStr = document.getElementById('edit-datetime-input').value;
+            
+            closeEditModal();
+            
             try {
                 const docRef = doc(db, 'artifacts', appIdString, 'users', user.uid, 'entries', taggingEntryId);
-                await updateDoc(docRef, { customTag: newTag });
+                const updateData = { customTag: newTag };
+                
+                // หากมีการระบุวันเวลาใหม่ ให้อัปเดต timestamp ด้วย
+                if (newDateTimeStr) {
+                    updateData.timestamp = new Date(newDateTimeStr);
+                }
+                
+                await updateDoc(docRef, updateData);
             } catch (e) {
-                console.error("Save tag error:", e);
+                console.error("Save edit error:", e);
             }
         };
 
