@@ -49,6 +49,8 @@
         .left-panel {
             display: flex;
             flex-direction: column;
+            min-height: calc(100vh - 80px); /* เผื่อพื้นที่ให้ Tab Bar ด้านล่าง */
+            min-height: calc(100dvh - 80px); /* รองรับมือถือเวลามีคีย์บอร์ดหรือแถบ URL */
         }
 
         .header {
@@ -143,7 +145,6 @@
             position: relative;
         }
 
-        /* ขีดเส้นใต้ระหว่างแถว (เว้นแถวสุดท้าย) */
         .summary-table tr:not(:last-child) td::after {
             content: '';
             position: absolute;
@@ -180,7 +181,6 @@
             font-size: 15px;
         }
 
-        /* สีตัวหนังสือในตาราง */
         .summary-table .income { color: var(--ios-green); }
         .summary-table .expense { color: var(--ios-red); }
         .summary-table .pos1 { color: var(--ios-blue); }
@@ -214,7 +214,6 @@
             box-shadow: 0 3px 8px rgba(0,0,0,0.08);
         }
         
-        /* Active indicator colors for tabs */
         .type-btn[data-type="income"].active { color: var(--ios-green); }
         .type-btn[data-type="expense"].active { color: var(--ios-red); }
         .type-btn[data-type="pos1"].active { color: var(--ios-blue); }
@@ -222,6 +221,7 @@
 
         .input-container {
             margin: 0 20px 24px;
+            margin-top: auto; /* คำสั่งหลักที่ใช้ดันช่องพิมพ์ลงไปด้านล่างสุด */
         }
 
         .input-wrapper {
@@ -426,6 +426,75 @@
             font-weight: 400;
         }
 
+        /* ------------------ Mobile Page Logic & Tab Bar ------------------ */
+        .page {
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.25s ease-out;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .left-panel.page.active {
+            display: flex; /* รักษาคุณสมบัติ flex ของฝั่งซ้าย */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bottom-tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(242, 242, 247, 0.85); /* var(--ios-bg) */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--ios-separator);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+            z-index: 1000;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--ios-text-secondary);
+            font-size: 10px;
+            font-weight: 500;
+            gap: 4px;
+            cursor: pointer;
+            width: 70px;
+            transition: color 0.2s;
+        }
+
+        .tab-btn.active {
+            color: var(--ios-blue);
+        }
+
+        .tab-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* เพิ่มพื้นที่ด้านล่างเผื่อ Tab Bar บนมือถือ */
+        .ios-app {
+            padding-bottom: 80px;
+        }
+
         /* ------------------ iPad & Desktop Layout ------------------ */
         @media (min-width: 768px) {
             .ios-app {
@@ -433,7 +502,20 @@
                 flex-direction: row; 
                 align-items: flex-start;
                 padding-top: 40px;
+                padding-bottom: 40px;
                 gap: 20px;
+            }
+
+            /* ยกเลิกระบบ Page บนหน้าจอใหญ่ ให้แสดงพร้อมกัน */
+            .page {
+                display: block !important;
+                animation: none;
+            }
+            .left-panel.page {
+                display: flex !important;
+            }
+            .bottom-tab-bar {
+                display: none !important; /* ซ่อน Tab Bar บน Desktop */
             }
 
             .left-panel {
@@ -441,11 +523,10 @@
                 flex-shrink: 0;
                 position: sticky; 
                 top: 40px;
-                max-height: calc(100vh - 40px);
+                height: calc(100vh - 80px); /* กำหนดความสูงตายตัวสำหรับหน้าจอใหญ่เพื่อให้ดันลงล่างได้ */
                 overflow-y: auto;
             }
             
-            /* ซ่อน Scrollbar ของซ้ายมือใน Desktop แต่เลื่อนได้ */
             .left-panel::-webkit-scrollbar { display: none; }
             .left-panel { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -463,60 +544,15 @@
 <body>
 
     <div class="ios-app">
-        <!-- ฝั่งซ้าย -->
-        <div class="left-panel">
+        <!-- ฝั่งซ้าย (หน้า 1: บันทึก) -->
+        <div class="left-panel page active" id="pageHome">
             <div class="header">
                 <h1>บัญชี</h1>
                 <span class="status" id="loadingStatus">กำลังเชื่อมต่อ...</span>
             </div>
-
-            <div class="balance-card">
-                <div class="balance-label" id="balanceLabel">ยอดเงินคงเหลือสุทธิ (วันนี้)</div>
-                <div class="balance-amount">฿<span id="totalAmount">0</span></div>
-
-                <div class="filter-tabs">
-                    <button class="filter-btn active" data-filter="day">วันนี้</button>
-                    <button class="filter-btn" data-filter="week">สัปดาห์นี้</button>
-                    <button class="filter-btn" data-filter="month">เดือนนี้</button>
-                    <button class="filter-btn" data-filter="all">ทั้งหมด</button>
-                </div>
-            </div>
-
-            <!-- ตารางสรุป -->
-            <div class="summary-table-card">
-                <table class="summary-table">
-                    <tbody>
-                        <tr>
-                            <td>รับอื่นๆ</td>
-                            <td class="income" id="tblIncome">+0 ฿</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ยอดขาย POS1
-                                <span class="profit-text" id="tblPos1Profit">กำไร: 0 ฿</span>
-                            </td>
-                            <td class="pos1" id="tblPos1">+0 ฿</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ยอดขาย POS2
-                                <span class="profit-text" id="tblPos2Profit">กำไร: 0 ฿</span>
-                            </td>
-                            <td class="pos2" id="tblPos2">+0 ฿</td>
-                        </tr>
-                        <tr class="total-row">
-                            <td>รวมรายรับทั้งหมด</td>
-                            <td class="income" id="tblTotalIncome">+0 ฿</td>
-                        </tr>
-                        <tr class="total-row">
-                            <td>รวมรายจ่ายทั้งหมด</td>
-                            <td class="expense" id="tblTotalExpense">-0 ฿</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
             
-            <div class="type-toggle">
+            <!-- Type Tabs แก้ไข ID เพื่อให้ผูก Event ได้ง่าย -->
+            <div class="type-toggle" id="entryTypeToggle">
                 <button class="type-btn" data-type="income">รับอื่นๆ</button>
                 <button class="type-btn active" data-type="expense">รายจ่าย</button>
                 <button class="type-btn" data-type="pos1">POS1</button>
@@ -531,8 +567,22 @@
             </div>
         </div>
 
-        <!-- ฝั่งขวา -->
-        <div class="right-panel">
+        <!-- ฝั่งขวา (หน้า 2: รายการ/ประวัติ) -->
+        <div class="right-panel page" id="pageHistory">
+            
+            <!-- ย้ายการ์ดมาไว้ที่นี่ -->
+            <div class="balance-card" style="margin-top: calc(var(--safe-area-top) + 10px);">
+                <div class="balance-label" id="balanceLabel">ยอดเงินคงเหลือสุทธิ (วันนี้)</div>
+                <div class="balance-amount">฿<span id="totalAmount">0</span></div>
+
+                <div class="filter-tabs">
+                    <button class="filter-btn active" data-filter="day">วันนี้</button>
+                    <button class="filter-btn" data-filter="week">สัปดาห์นี้</button>
+                    <button class="filter-btn" data-filter="month">เดือนนี้</button>
+                    <button class="filter-btn" data-filter="all">ทั้งหมด</button>
+                </div>
+            </div>
+
             <div class="view-toggle-container">
                 <div class="type-toggle" style="margin: 0;">
                     <button class="type-btn view-btn active" data-view="list">📝 รายการ</button>
@@ -548,6 +598,18 @@
                 <!-- ตารางสรุปรายวันจะถูกสร้างที่นี่ -->
             </div>
         </div>
+
+        <!-- Bottom Tab Bar (เฉพาะหน้าจอมือถือ) -->
+        <nav class="bottom-tab-bar">
+            <button class="tab-btn active" data-target="pageHome">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>บันทึก</span>
+            </button>
+            <button class="tab-btn" data-target="pageHistory">
+                <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                <span>รายการ</span>
+            </button>
+        </nav>
     </div>
 
     <!-- Firebase JS SDK -->
@@ -558,7 +620,7 @@
             getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, serverTimestamp 
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ตั้งค่า Firebase
+        // ตั้งค่า Firebase - รองรับ Canvas Environment
         const userFirebaseConfig = {
             apiKey: "AIzaSyAgTWrI1G1t3GYVz4-SPM7btrsixSe0el8",
             authDomain: "time-tracker-46283.firebaseapp.com",
@@ -579,7 +641,7 @@
         let transactions = [];
         let currentFilter = 'day';
         let currentType = 'expense'; 
-        let currentView = 'list'; // เพิ่ม State สำหรับมุมมอง
+        let currentView = 'list';
         let initialLoad = true;
         let unsubscribeSnapshot = null;
         
@@ -588,24 +650,38 @@
         const listEl = document.getElementById('expenseList');
         const totalEl = document.getElementById('totalAmount');
         
-        // Element ของตารางสรุป
-        const tblIncome = document.getElementById('tblIncome');
-        const tblPos1 = document.getElementById('tblPos1');
-        const tblPos1Profit = document.getElementById('tblPos1Profit');
-        const tblPos2 = document.getElementById('tblPos2');
-        const tblPos2Profit = document.getElementById('tblPos2Profit');
-        const tblTotalIncome = document.getElementById('tblTotalIncome');
-        const tblTotalExpense = document.getElementById('tblTotalExpense');
-        
         const dailySummaryContainer = document.getElementById('dailySummaryContainer');
         const viewBtns = document.querySelectorAll('.view-btn');
 
         const loadingEl = document.getElementById('loadingStatus');
         const balanceLabel = document.getElementById('balanceLabel');
         const filterBtns = document.querySelectorAll('.filter-btn');
-        const typeBtns = document.querySelectorAll('.type-btn');
+        
+        // ปุ่มสลับประเภท รายรับ/รายจ่าย/POS (เฉพาะกลุ่มซ้ายมือ)
+        const entryTypeBtns = document.querySelectorAll('#entryTypeToggle .type-btn');
 
-        // จัดการ Filter วัน/สัปดาห์/เดือน
+        // ระบบนำทาง (Tab Bar) สำหรับมือถือ
+        const navTabs = document.querySelectorAll('.bottom-tab-bar .tab-btn');
+        const pages = document.querySelectorAll('.page');
+
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // ล้างสถานะ active เดิม
+                navTabs.forEach(t => t.classList.remove('active'));
+                pages.forEach(p => p.classList.remove('active'));
+
+                // ตั้งสถานะ active ให้ tab ที่ถูกคลิก
+                tab.classList.add('active');
+
+                // แสดงหน้าที่เลือก
+                const targetId = tab.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // ฟังก์ชันจัดการ Filter วัน/สัปดาห์/เดือน
         filterBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 filterBtns.forEach(b => b.classList.remove('active'));
@@ -620,6 +696,31 @@
                 };
                 balanceLabel.innerText = labelMap[currentFilter];
                 renderTransactions();
+            });
+        });
+
+        // จัดการ Tab สลับประเภท (ส่วนที่เพิ่มเข้ามาให้ใช้งานได้)
+        entryTypeBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                entryTypeBtns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentType = e.target.getAttribute('data-type');
+                
+                // อัปเดต Placeholder และ Hint Text ตามประเภทที่เลือก
+                if (currentType === 'pos1' || currentType === 'pos2') {
+                    inputEl.placeholder = `พิมพ์ยอดขาย ${currentType.toUpperCase()} และกำไร...`;
+                    hintTextEl.innerText = "เว้นวรรค เช่น: ยอดขาย 1500 กำไร 300 (พิมพ์ 1500 300)";
+                } else if (currentType === 'income') {
+                    inputEl.placeholder = "พิมพ์รายรับและราคา...";
+                    hintTextEl.innerText = "เว้นวรรคด้วยราคา เช่น รับเงินคืน 500";
+                } else {
+                    inputEl.placeholder = "พิมพ์รายจ่ายและราคา...";
+                    hintTextEl.innerText = "เว้นวรรคด้วยราคา เช่น ค่าไฟ 1200";
+                }
+                
+                // เรนเดอร์รายการใหม่ให้ตรงกับ Tab ปัจจุบัน
+                renderTransactions();
+                inputEl.focus();
             });
         });
 
@@ -642,17 +743,12 @@
         });
 
         const getExpensesCollection = () => {
-            if (typeof __firebase_config !== 'undefined') {
-                return collection(db, 'artifacts', appId, 'users', currentUser.uid, 'expenses');
-            }
-            return collection(db, "expenses");
+            // โครงสร้าง Path แบบ Private ของผู้ใช้ (ปลอดภัยและเป็นไปตามกฎ)
+            return collection(db, 'artifacts', appId, 'users', currentUser.uid, 'expenses');
         };
 
         const getExpenseDoc = (id) => {
-            if (typeof __firebase_config !== 'undefined') {
-                return doc(db, 'artifacts', appId, 'users', currentUser.uid, 'expenses', id);
-            }
-            return doc(db, "expenses", id);
+            return doc(db, 'artifacts', appId, 'users', currentUser.uid, 'expenses', id);
         };
 
         const initAuth = async () => {
@@ -772,7 +868,7 @@
                 inputEl.value = '';
                 
                 if (currentType === 'pos1' || currentType === 'pos2') {
-                    inputEl.placeholder = "ผิดรูปแบบ! พิมพ์ ยอดขายและกำไร (เช่น 1500 300)";
+                    inputEl.placeholder = "ผิดรูปแบบ! พิมพ์ยอดขายและกำไร (เช่น 1500 300)";
                 } else {
                     inputEl.placeholder = "ผิดรูปแบบ! พิมพ์รายการและราคา (เช่น น้ำ 15)";
                 }
@@ -854,20 +950,12 @@
             const totalAllIncome = totalOtherIncome + totalPos1Sales + totalPos2Sales;
             const netBalance = totalAllIncome - totalExpense;
 
-            // 3. อัปเดตตารางสรุป และ ยอดคงเหลือ
+            // 3. อัปเดตยอดคงเหลือ
             totalEl.innerText = netBalance.toLocaleString();
-            
-            tblIncome.innerText = `+${totalOtherIncome.toLocaleString()} ฿`;
-            tblPos1.innerText = `+${totalPos1Sales.toLocaleString()} ฿`;
-            tblPos1Profit.innerText = `กำไร: ${totalPos1Profit.toLocaleString()} ฿`;
-            tblPos2.innerText = `+${totalPos2Sales.toLocaleString()} ฿`;
-            tblPos2Profit.innerText = `กำไร: ${totalPos2Profit.toLocaleString()} ฿`;
-            
-            tblTotalIncome.innerText = `+${totalAllIncome.toLocaleString()} ฿`;
-            tblTotalExpense.innerText = `-${totalExpense.toLocaleString()} ฿`;
 
             // ---------------- สร้างตารางสรุปรายวัน (ฝั่งขวา) ----------------
             const dailyGroup = {};
+            
             // จัดกลุ่มข้อมูลทั้งหมดตามวันที่ (ไม่สน currentType)
             timeFilteredData.forEach(exp => {
                 const expDate = exp.createdAt && exp.createdAt.toDate ? exp.createdAt.toDate() : new Date();
