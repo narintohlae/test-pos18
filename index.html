@@ -120,11 +120,20 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // คอนฟิกูเรชัน (รองรับการใช้งานใน Canvas หรือหากไม่มีจะพยายามเชื่อมต่อแบบออฟไลน์/ทดสอบ)
+        // คอนฟิกูเรชัน (รองรับการใช้งานใน Canvas หรือใช้ Config ของคุณเมื่อเปิดใช้งานข้างนอก)
         const firebaseConfig = typeof __firebase_config !== 'undefined' 
             ? JSON.parse(__firebase_config) 
-            : { apiKey: "demo", projectId: "demo" }; // Demo fallback
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'html-note-wallet';
+            : {
+                apiKey: "AIzaSyAgTWrI1G1t3GYVz4-SPM7btrsixSe0el8",
+                authDomain: "time-tracker-46283.firebaseapp.com",
+                projectId: "time-tracker-46283",
+                storageBucket: "time-tracker-46283.firebasestorage.app",
+                messagingSenderId: "882533547295",
+                appId: "1:882533547295:web:4b78bfc84322c58a50042a",
+                measurementId: "G-5DPBNCSWFW"
+            };
+            
+        const appIdString = typeof __app_id !== 'undefined' ? __app_id : 'html-note-wallet';
 
         let app, auth, db;
         try {
@@ -176,7 +185,7 @@
         // --- 2. การดึงข้อมูล ---
         const fetchData = () => {
             if (!user) return;
-            const entriesCollection = collection(db, 'artifacts', appId, 'users', user.uid, 'entries');
+            const entriesCollection = collection(db, 'artifacts', appIdString, 'users', user.uid, 'entries');
             
             onSnapshot(entriesCollection, (snapshot) => {
                 entries = snapshot.docs.map(doc => ({
@@ -379,7 +388,7 @@
             toggleLoading(true);
             
             const lines = text.split('\n').filter(line => line.trim() !== '');
-            const entriesCollection = collection(db, 'artifacts', appId, 'users', user.uid, 'entries');
+            const entriesCollection = collection(db, 'artifacts', appIdString, 'users', user.uid, 'entries');
 
             try {
                 for (const line of lines) {
@@ -408,7 +417,7 @@
             event.stopPropagation();
             if (!user) return;
             try {
-                const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'entries', id);
+                const docRef = doc(db, 'artifacts', appIdString, 'users', user.uid, 'entries', id);
                 await deleteDoc(docRef);
             } catch (error) {
                 console.error("Delete error:", error);
@@ -494,7 +503,7 @@
             const newTag = document.getElementById('tag-input').value.trim();
             closeTagModal();
             try {
-                const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'entries', taggingEntryId);
+                const docRef = doc(db, 'artifacts', appIdString, 'users', user.uid, 'entries', taggingEntryId);
                 await updateDoc(docRef, { customTag: newTag });
             } catch (e) {
                 console.error("Save tag error:", e);
