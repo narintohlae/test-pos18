@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- ป้องกันการ Cache หน้าเว็บหลักเบื้องต้น -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Note Wallet</title>
     <!-- โหลด Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,12 +24,12 @@
 </head>
 <body class="bg-[#f5f5f7] text-[#1d1d1f] font-sans selection:bg-gray-200 p-0 sm:p-4 md:p-8 lg:p-12 flex justify-center items-center min-h-screen">
 
-    <!-- Toast Notification สำหรับอัปเดตแอป -->
+    <!-- Toast Notification สำหรับอัปเดตแอป (GitHub Pages) -->
     <div id="update-toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 translate-y-24 opacity-0 bg-[#1d1d1f]/95 backdrop-blur-md text-white px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-4 z-[200] transition-all duration-500 pointer-events-none w-[90%] max-w-sm">
         <div class="flex-1 text-[0.95rem] font-medium flex items-center gap-2">
             <i data-lucide="sparkles" class="w-4 h-4 text-yellow-400"></i> มีอัปเดตแอปเวอร์ชันใหม่
         </div>
-        <button onclick="refreshApp()" class="bg-blue-500 hover:bg-blue-600 text-white text-[0.85rem] font-semibold px-4 py-2 rounded-full transition-colors pointer-events-auto shadow-sm active:scale-95">
+        <button onclick="forceRefresh()" class="bg-blue-500 hover:bg-blue-600 text-white text-[0.85rem] font-semibold px-4 py-2 rounded-full transition-colors pointer-events-auto shadow-sm active:scale-95">
             รีเฟรชเลย
         </button>
         <button onclick="closeUpdateToast()" class="text-gray-400 hover:text-white p-1 pointer-events-auto transition-colors">
@@ -131,6 +135,10 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // *** เปลี่ยนตัวเลขเวอร์ชันนี้ทุกครั้งที่คุณอัปเดตโค้ดบน GitHub ***
+        // เช่น ครั้งหน้าเปลี่ยนเป็น "1.0.2" เพื่อบังคับให้มือถือของผู้ใช้รีเฟรชอัปเดตใหม่
+        const APP_VERSION = "1.0.1";
 
         // คอนฟิกูเรชันจาก Firebase ของคุณ
         const firebaseConfig = {
@@ -426,7 +434,6 @@
             }
         };
 
-        // Class คงที่เพื่อให้สลับแท็บแล้วการตั้งค่า Responsive ไม่เพี้ยน
         const activeTabClass = "flex items-center justify-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm md:text-base rounded-md sm:rounded-lg md:rounded-xl transition-all bg-white shadow-sm font-medium text-black";
         const inactiveTabClass = "flex items-center justify-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm md:text-base rounded-md sm:rounded-lg md:rounded-xl transition-all text-gray-500 hover:text-gray-700";
 
@@ -511,12 +518,9 @@
             }
         };
 
-        // --- ระบบ PWA / Service Worker Notification ---
-        
-        // ฟังก์ชันควบคุม UI ของ Toast แจ้งเตือนอัปเดต
+        // --- ระบบแจ้งเตือนอัปเดตสำหรับ GitHub Pages ---
         window.showUpdateToast = () => {
             const toast = document.getElementById('update-toast');
-            // เอาคลาสซ่อนออก และใส่คลาสแสดงผลให้เด้งขึ้นมา
             toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
         };
 
@@ -525,46 +529,38 @@
             toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
         };
 
-        window.refreshApp = () => {
-            // ถ้ามี Service Worker ตัวใหม่กำลังรออยู่ (waiting) ให้สั่งข้าม (skip waiting)
-            if (window.newWorker) {
-                window.newWorker.postMessage({ type: 'SKIP_WAITING' });
-            }
-            // หน่วงเวลานิดนึงเพื่อให้ SW ทำงาน แล้วรีเฟรชหน้าเว็บ
-            setTimeout(() => {
-                window.location.reload();
-            }, 100);
+        window.forceRefresh = () => {
+            // บังคับ Reload ข้าม Cache ไปเลย
+            window.location.reload(true); 
         };
 
-        // ลงทะเบียน Service Worker และจับเหตุการณ์มีอัปเดตใหม่
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then(registration => {
-                    // ตรวจจับเมื่อเจอ Service worker เวอร์ชันใหม่ที่กำลังติดตั้ง
-                    registration.addEventListener('updatefound', () => {
-                        window.newWorker = registration.installing;
-                        window.newWorker.addEventListener('statechange', () => {
-                            // ถ้าติดตั้งเสร็จแล้ว และมี Service Worker ตัวเก่าควบคุมหน้าเว็บอยู่ (แปลว่านี่คืออัปเดตใหม่)
-                            if (window.newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                // แสดง Toast แจ้งเตือนผู้ใช้
-                                showUpdateToast();
-                            }
-                        });
-                    });
-                }).catch(err => {
-                    // ไม่เป็นไรหากรันแบบไม่มี sw.js 
-                    console.log('No Service Worker found or registration failed.', err);
+        // ตรวจสอบอัปเดตทุกครั้งที่เปิดหน้าเว็บ โดยเช็คกับไฟล์บนเซิร์ฟเวอร์
+        const checkForUpdates = async () => {
+            try {
+                // เติม ?v=สุ่ม เพื่อบังคับให้เบราว์เซอร์ไปโหลดไฟล์ index.html ใหม่มาเทียบ (เลี่ยง Cache)
+                const cacheBuster = new Date().getTime();
+                const response = await fetch(window.location.href.split('?')[0] + '?v=' + cacheBuster, {
+                    cache: 'no-store' 
                 });
+                const htmlText = await response.text();
+                
+                // ใช้ Regex ดึงตัวเลข APP_VERSION ออกมาจากไฟล์ HTML ใหม่
+                const versionMatch = htmlText.match(/const\s+APP_VERSION\s*=\s*['"]([^'"]+)['"]/);
+                
+                if (versionMatch && versionMatch[1]) {
+                    const serverVersion = versionMatch[1];
+                    // ถ้าเลขเวอร์ชันบนเซิร์ฟเวอร์ไม่ตรงกับที่อยู่ในเครื่องปัจจุบัน (แอปมีการอัปเดต)
+                    if (serverVersion !== APP_VERSION) {
+                        showUpdateToast();
+                    }
+                }
+            } catch (err) {
+                console.log("Update check failed (might be offline)", err);
+            }
+        };
 
-                // เมื่อ Service Worker ตัวใหม่เข้าควบคุมระบบ (ผลจากการสั่ง SKIP_WAITING) ให้รีเฟรชหน้าเลย
-                let refreshing;
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                    if (refreshing) return;
-                    refreshing = true;
-                    window.location.reload();
-                });
-            });
-        }
+        // หน่วงเวลาเช็คอัปเดต 2 วินาทีหลังจากเปิดเว็บ เพื่อไม่ให้กระทบประสิทธิภาพตอนโหลดครั้งแรก
+        setTimeout(checkForUpdates, 2000);
 
         lucide.createIcons();
 
