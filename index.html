@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <title>สมุดบัญชีรายรับ-รายจ่าย & POS</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -33,6 +33,8 @@
             display: flex;
             justify-content: center;
             min-height: 100vh;
+            /* ป้องกันการเด้งไปมาของหน้าจอเวลาคีย์บอร์ดขึ้น */
+            overscroll-behavior-y: none;
         }
 
         .ios-app {
@@ -40,7 +42,7 @@
             max-width: 430px; 
             background: var(--ios-bg);
             position: relative;
-            padding-bottom: 40px;
+            padding-bottom: 80px; /* เผื่อที่ให้ Tab Bar */
             display: flex;
             flex-direction: column;
         }
@@ -158,21 +160,36 @@
         .type-btn[data-type="pos1"].active { color: var(--ios-blue); }
         .type-btn[data-type="pos2"].active { color: var(--ios-purple); }
 
+        /* ------------------ Input Container (Sticky to Keyboard) ------------------ */
         .input-container {
             position: sticky;
-            bottom: 80px; /* เผื่อพื้นที่ tab bar บนมือถือ */
-            background: var(--ios-bg); /* ใส่พื้นหลังกันโปร่งใสเวลา scroll */
+            bottom: 80px; /* พื้นที่เหนือ tab bar ปกติ */
+            background: var(--ios-bg);
             padding: 10px 20px 24px;
             margin: auto 0 0 0;
             z-index: 100;
+            transition: padding 0.2s, background 0.2s, bottom 0.2s ease-out; 
         }
 
+        /* เมื่อคีย์บอร์ดเปิด */
+        body.keyboard-open .input-container {
+            position: fixed !important;
+            /* bottom จะถูกคำนวณและสั่งงานผ่าน JS แบบเป๊ะๆ */
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            width: 100% !important;
+            max-width: 430px !important;
+            margin: 0 !important;
+            padding: 12px 20px 10px !important; /* เอาพื้นที่ Padding ล่างออก ให้ขอบแนบติดคีย์บอร์ดพอดี */
+            background: #F2F2F7 !important; /* ทึบกันโปร่งใส */
+            border-top: 1px solid var(--ios-separator);
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.05); /* เพิ่มเงาให้ดูลอยเหนือคีย์บอร์ดเล็กน้อย */
+            z-index: 9999 !important;
+        }
+
+        /* ซ่อน Tab Bar ตอนพิมพ์ */
         body.keyboard-open .bottom-tab-bar {
             display: none !important;
-        }
-        
-        body.keyboard-open .input-container {
-            bottom: 0 !important;
         }
 
         .input-wrapper {
@@ -292,49 +309,24 @@
         .item-price.pos2 { color: var(--ios-purple); }
         .item-price.expense { color: var(--ios-text); } 
 
-        .delete-btn {
+        .delete-btn, .edit-btn {
             background: transparent;
             border: none;
-            color: var(--ios-separator);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 4px;
-            transition: color 0.2s;
+            transition: opacity 0.2s;
         }
+        
+        .delete-btn { color: var(--ios-separator); }
+        .delete-btn:active { color: var(--ios-red); }
+        .edit-btn { color: var(--ios-blue); }
+        .edit-btn:active { opacity: 0.5; }
 
-        .delete-btn:active {
-            color: var(--ios-red);
-        }
-
-        .delete-btn svg {
-            width: 20px;
-            height: 20px;
-            pointer-events: none;
-        }
-
-        .edit-btn {
-            background: transparent;
-            border: none;
-            color: var(--ios-blue);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 4px;
-            transition: color 0.2s;
-        }
-
-        .edit-btn:active {
-            opacity: 0.5;
-        }
-
-        .edit-btn svg {
-            width: 18px;
-            height: 18px;
-            pointer-events: none;
-        }
+        .delete-btn svg { width: 20px; height: 20px; pointer-events: none; }
+        .edit-btn svg { width: 18px; height: 18px; pointer-events: none; }
 
         /* ------------------ Modal Styles ------------------ */
         .modal-overlay {
@@ -348,10 +340,7 @@
             opacity: 0;
             transition: opacity 0.2s;
         }
-        .modal-overlay.show {
-            display: flex;
-            opacity: 1;
-        }
+        .modal-overlay.show { display: flex; opacity: 1; }
         .modal-card {
             background: var(--ios-card);
             width: 90%;
@@ -362,232 +351,88 @@
             transform: scale(0.95);
             transition: transform 0.2s;
         }
-        .modal-overlay.show .modal-card {
-            transform: scale(1);
-        }
-        .modal-card h3 {
-            margin-bottom: 16px;
-            text-align: center;
-            font-size: 17px;
-        }
-        .modal-field {
-            margin-bottom: 12px;
-        }
-        .modal-field label {
-            display: block;
-            font-size: 13px;
-            color: var(--ios-text-secondary);
-            margin-bottom: 4px;
-        }
+        .modal-overlay.show .modal-card { transform: scale(1); }
+        .modal-card h3 { margin-bottom: 16px; text-align: center; font-size: 17px; }
+        .modal-field { margin-bottom: 12px; }
+        .modal-field label { display: block; font-size: 13px; color: var(--ios-text-secondary); margin-bottom: 4px; }
         .modal-field input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--ios-separator);
-            border-radius: 8px;
-            font-size: 15px;
-            outline: none;
-            background: #F2F2F7;
-            color: var(--ios-text);
+            width: 100%; padding: 10px; border: 1px solid var(--ios-separator);
+            border-radius: 8px; font-size: 15px; outline: none; background: #F2F2F7; color: var(--ios-text);
         }
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .modal-btn.cancel {
-            background: #E3E3E8;
-            color: var(--ios-text);
-        }
-        .modal-btn.save {
-            background: var(--ios-blue);
-            color: white;
-        }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-btn { flex: 1; padding: 12px; border-radius: 8px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; }
+        .modal-btn.cancel { background: #E3E3E8; color: var(--ios-text); }
+        .modal-btn.save { background: var(--ios-blue); color: white; }
 
-        .empty-state {
-            text-align: center;
-            color: var(--ios-text-secondary);
-            font-size: 15px;
-            margin-top: 40px;
-        }
+        .empty-state { text-align: center; color: var(--ios-text-secondary); font-size: 15px; margin-top: 40px; }
 
         /* ------------------ Daily Summary Table ------------------ */
-        .view-toggle-container {
-            padding: 0 20px;
-            margin-bottom: 16px;
-        }
-
-        .daily-table-wrapper {
-            background: var(--ios-card);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            margin: 0 20px 24px;
-        }
-
-        .daily-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .daily-table th, .daily-table td {
-            padding: 12px 10px;
-            text-align: right;
-            font-size: 14px;
-            border-bottom: 1px solid var(--ios-separator);
-        }
-
-        .daily-table th {
-            background: #F8F8F8;
-            font-weight: 600;
-            color: var(--ios-text-secondary);
-            font-size: 13px;
-        }
-
-        .daily-table th:first-child, .daily-table td:first-child {
-            text-align: left;
-            padding-left: 16px;
-        }
-
-        .daily-table th:last-child, .daily-table td:last-child {
-            padding-right: 16px;
-        }
-
-        .daily-table tr:last-child td {
-            border-bottom: none;
-        }
-
+        .view-toggle-container { padding: 0 20px; margin-bottom: 16px; }
+        .daily-table-wrapper { background: var(--ios-card); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin: 0 20px 24px; }
+        .daily-table { width: 100%; border-collapse: collapse; }
+        .daily-table th, .daily-table td { padding: 12px 10px; text-align: right; font-size: 14px; border-bottom: 1px solid var(--ios-separator); }
+        .daily-table th { background: #F8F8F8; font-weight: 600; color: var(--ios-text-secondary); font-size: 13px; }
+        .daily-table th:first-child, .daily-table td:first-child { text-align: left; padding-left: 16px; }
+        .daily-table th:last-child, .daily-table td:last-child { padding-right: 16px; }
+        .daily-table tr:last-child td { border-bottom: none; }
         .daily-table .net-positive { color: var(--ios-green); font-weight: 600; }
         .daily-table .net-negative { color: var(--ios-red); font-weight: 600; }
-        .daily-table .profit-hint {
-            display: block;
-            font-size: 11px;
-            color: var(--ios-text-secondary);
-            margin-top: 2px;
-            font-weight: 400;
-        }
+        .daily-table .profit-hint { display: block; font-size: 11px; color: var(--ios-text-secondary); margin-top: 2px; font-weight: 400; }
 
         /* ------------------ Mobile Page Logic & Tab Bar ------------------ */
-        .page {
-            display: none;
-            width: 100%;
-            animation: fadeIn 0.25s ease-out;
-        }
-        
-        .page.active {
-            display: block;
-        }
-        
-        .left-panel.page.active {
-            display: flex;
-        }
+        .page { display: none; width: 100%; animation: fadeIn 0.25s ease-out; }
+        .page.active { display: block; }
+        .left-panel.page.active { display: flex; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         .bottom-tab-bar {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+            bottom: 0; left: 0; width: 100%;
             background: rgba(242, 242, 247, 0.85); 
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border-top: 1px solid var(--ios-separator);
-            display: flex;
-            justify-content: space-around;
+            display: flex; justify-content: space-around;
             padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
             z-index: 1000;
         }
 
         .tab-btn {
-            background: none;
-            border: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--ios-text-secondary);
-            font-size: 10px;
-            font-weight: 500;
-            gap: 4px;
-            cursor: pointer;
-            width: 70px;
-            transition: color 0.2s;
+            background: none; border: none; display: flex; flex-direction: column; align-items: center;
+            color: var(--ios-text-secondary); font-size: 10px; font-weight: 500; gap: 4px; cursor: pointer;
+            width: 70px; transition: color 0.2s;
         }
-
-        .tab-btn.active {
-            color: var(--ios-blue);
-        }
-
-        .tab-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .ios-app {
-            padding-bottom: 80px;
-        }
+        .tab-btn.active { color: var(--ios-blue); }
+        .tab-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
         /* ------------------ iPad & Desktop Layout ------------------ */
         @media (min-width: 768px) {
             .ios-app {
-                max-width: 900px;
-                flex-direction: row; 
-                align-items: flex-start;
-                padding-top: 40px;
-                padding-bottom: 40px;
-                gap: 20px;
+                max-width: 900px; flex-direction: row; align-items: flex-start;
+                padding-top: 40px; padding-bottom: 40px; gap: 20px;
             }
-
-            .page {
-                display: block !important;
-                animation: none;
-            }
-            .left-panel.page {
-                display: flex !important;
-            }
-            .bottom-tab-bar {
-                display: none !important;
-            }
+            .page { display: block !important; animation: none; }
+            .left-panel.page { display: flex !important; }
+            .bottom-tab-bar { display: none !important; }
 
             .left-panel {
-                width: 380px;
-                flex-shrink: 0;
-                position: sticky; 
-                top: 40px;
-                height: calc(100vh - 80px); 
-                overflow-y: auto;
+                width: 380px; flex-shrink: 0; position: sticky; top: 40px;
+                height: calc(100vh - 80px); overflow-y: auto;
             }
-            
             .left-panel::-webkit-scrollbar { display: none; }
             .left-panel { -ms-overflow-style: none; scrollbar-width: none; }
+            .header { padding-top: 0; }
+            .right-panel { flex-grow: 1; padding-top: 5px; }
 
-            .header {
-                padding-top: 0;
-            }
-
-            .right-panel {
-                flex-grow: 1;
-                padding-top: 5px; 
-            }
-
-            .input-container {
-                bottom: 0;
+            /* Desktop ไม่ต้องติดคีย์บอร์ดด้านล่างสุด */
+            body.keyboard-open .input-container {
+                position: sticky !important;
+                bottom: 0 !important;
+                left: auto !important;
+                transform: none !important;
+                width: auto !important;
+                padding: 10px 20px 24px !important; 
+                box-shadow: none !important;
             }
         }
     </style>
@@ -611,6 +456,7 @@
 
             <div class="input-container">
                 <div class="input-wrapper">
+                    <!-- คืนค่าใช้คีย์บอร์ดมือถือระบบปกติ -->
                     <input type="text" id="expenseInput" placeholder="พิมพ์รายจ่ายและราคา..." autocomplete="off">
                 </div>
                 <span class="hint" id="hintText">เว้นวรรคด้วยราคา เช่น ค่าไฟ 1200</span>
@@ -659,6 +505,7 @@
                 <span>รายการ</span>
             </button>
         </nav>
+
     </div>
 
     <!-- Edit Modal -->
@@ -724,10 +571,8 @@
         const hintTextEl = document.getElementById('hintText');
         const listEl = document.getElementById('expenseList');
         const totalEl = document.getElementById('totalAmount');
-        
         const dailySummaryContainer = document.getElementById('dailySummaryContainer');
         const viewBtns = document.querySelectorAll('.view-btn');
-
         const loadingEl = document.getElementById('loadingStatus');
         const balanceLabel = document.getElementById('balanceLabel');
         const filterBtns = document.querySelectorAll('.filter-btn');
@@ -747,18 +592,50 @@
         const entryTypeBtns = document.querySelectorAll('#entryTypeToggle .type-btn');
         const navTabs = document.querySelectorAll('.bottom-tab-bar .tab-btn');
         const pages = document.querySelectorAll('.page');
+        const inputContainer = document.querySelector('.input-container');
 
-        // ================= Input & Native Keyboard Logic =================
-        // ซ่อน Tab Bar เมื่อพิมพ์ เพื่อให้ช่องพิมพ์ติดคีย์บอร์ดระบบพอดี
+        // ================= Native Keyboard Sticky Logic =================
+        // เมื่อจิ้มที่ช่องกรอกข้อมูล จะเติม class แจ้งให้ CSS รู้ว่าคีย์บอร์ดกำลังมา
         inputEl.addEventListener('focus', () => {
             document.body.classList.add('keyboard-open');
+            adjustInputPosition(); // สั่งจัดตำแหน่งทันที
         });
         
         inputEl.addEventListener('blur', () => {
-            // หน่วงเวลาเล็กน้อยเผื่อผู้ใช้กดปุ่มตกลง จะได้ไม่กระตุก
-            setTimeout(() => document.body.classList.remove('keyboard-open'), 100);
+            // หน่วงเวลาเล็กน้อยเวลาคีย์บอร์ดปิดลง ป้องกันจอภาพกระตุก
+            setTimeout(() => {
+                document.body.classList.remove('keyboard-open');
+                inputContainer.style.bottom = ''; // ปล่อยให้กลับไปตำแหน่งเดิม
+            }, 100);
         });
-        // ==========================================================
+
+        // ใช้ฟังก์ชันพิเศษในการคำนวณพื้นที่คีย์บอร์ดในมือถือจริงๆ อย่างแม่นยำ
+        function adjustInputPosition() {
+            if (!document.body.classList.contains('keyboard-open')) return;
+            
+            if (window.visualViewport) {
+                // คำนวณหาความสูงของคีย์บอร์ดที่ดันจอขึ้นมา
+                const viewportHeight = window.visualViewport.height;
+                const windowHeight = window.innerHeight;
+                const offset = windowHeight - viewportHeight;
+                
+                // ถ้าระบบจับได้ว่าคีย์บอร์ดเด้งขึ้นมาจริงๆ ให้ดันช่องพิมพ์ไปอยู่ขอบบนของคีย์บอร์ดพอดี
+                if (offset > 50) {
+                    inputContainer.style.bottom = `${offset}px`;
+                } else {
+                    inputContainer.style.bottom = '0px';
+                }
+            } else {
+                inputContainer.style.bottom = '0px'; // สำหรับเครื่องที่เก่ามากๆ
+            }
+        }
+
+        // ดักจับจังหวะที่คีย์บอร์ดเปลี่ยนขนาด หรือกำลังเด้งขึ้น-ลง
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', adjustInputPosition);
+            window.visualViewport.addEventListener('scroll', adjustInputPosition);
+        }
+        // ================================================================
 
         // ระบบนำทาง (Tab Bar)
         navTabs.forEach(tab => {
@@ -944,7 +821,7 @@
                     console.error("Error adding document: ", e);
                     if(inputEl.value === '') inputEl.value = rawText; 
                 } finally {
-                    // inputEl.focus(); // ไม่สั่งให้ Focus กลับเพื่อป้องกันคีย์บอร์ดเด้งค้างหลังกดตกลง
+                    // ปล่อยให้ Focus ไว้ เผื่อต้องการพิมพ์ต่อ
                 }
             } else {
                 const originalPlaceholder = inputEl.placeholder;
@@ -962,6 +839,14 @@
                 }, 2000);
             }
         }
+
+        // กดบันทึกด้วยปุ่ม Enter ในคีย์บอร์ดจริง
+        inputEl.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addTransaction();
+            }
+        });
 
         listEl.addEventListener('click', async (e) => {
             const deleteBtn = e.target.closest('.delete-btn');
@@ -1227,14 +1112,6 @@
                 listEl.appendChild(section);
             }
         }
-
-        // จัดการเมื่อกดปุ่ม Enter จากคีย์บอร์ดมือถือ/คอมพิวเตอร์
-        inputEl.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addTransaction();
-            }
-        });
     </script>
 </body>
 </html>
