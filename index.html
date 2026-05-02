@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>สมุดบัญชีรายรับ-รายจ่าย & POS</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -27,40 +27,75 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        body {
+        /* ล็อก Body ไม่ให้ขยับ มอบหน้าที่ Scroll ให้กับคอนเทนต์ด้านใน */
+        html, body {
+            height: 100%;
+            overflow: hidden;
             background-color: var(--ios-bg);
             color: var(--ios-text);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            /* ป้องกันการเด้งไปมาของหน้าจอเวลาคีย์บอร์ดขึ้น */
-            overscroll-behavior-y: none;
         }
 
+        body {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* โครงสร้างหลักแบบ App 100% Viewport Height */
         .ios-app {
             width: 100%;
             max-width: 430px; 
+            height: 100%;
+            height: 100dvh; /* รองรับ Safari แถบด้านล่าง */
             background: var(--ios-bg);
+            display: flex;
+            flex-direction: column;
             position: relative;
-            padding-bottom: 80px; /* เผื่อที่ให้ Tab Bar */
-            display: flex;
-            flex-direction: column;
-            transition: padding-bottom 0.2s ease-out;
         }
 
-        /* ------------------ Left Panel ------------------ */
-        .left-panel {
-            display: flex;
-            flex-direction: column;
-            min-height: calc(100vh - 80px);
-            min-height: calc(100dvh - 80px);
+        /* ------------------ Page Container ------------------ */
+        .page-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden; /* ซ่อนหน้าที่ไม่ได้ใช้งาน */
         }
 
+        .page {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: none;
+            flex-direction: column;
+            background: var(--ios-bg);
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* พื้นที่ที่สามารถ Scroll ได้ */
+        .scrollable-area {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 20px;
+        }
+
+        /* ซ่อน Scrollbar */
+        .scrollable-area::-webkit-scrollbar { display: none; }
+        .scrollable-area { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* ------------------ Header ------------------ */
         .header {
             padding: var(--safe-area-top) 20px 10px;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
+            flex-shrink: 0;
         }
 
         .header h1 {
@@ -76,65 +111,14 @@
             margin-bottom: 6px;
         }
 
-        /* Balance Card */
-        .balance-card {
-            background: #1C1C1E;
-            color: white;
-            border-radius: 16px; 
-            margin: 10px 20px 16px;
-            padding: 16px 20px 16px; 
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-        }
-
-        .balance-label {
-            font-size: 14px; 
-            color: #EBEBF5;
-            opacity: 0.8;
-            margin-bottom: 4px; 
-            transition: all 0.3s ease;
-        }
-
-        .balance-amount {
-            font-size: 30px; 
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin-bottom: 16px; 
-        }
-
-        .filter-tabs {
-            display: flex;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 9px;
-            padding: 2px;
-        }
-
-        .filter-btn {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: #EBEBF5;
-            font-size: 13px;
-            font-weight: 500;
-            padding: 6px 0;
-            border-radius: 7px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .filter-btn.active {
-            background: #FFFFFF;
-            color: #1C1C1E;
-            font-weight: 600;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-        }
-
-        /* Type Toggle (4 Tabs) */
+        /* ------------------ Type Toggle (Tabs) ------------------ */
         .type-toggle {
             display: flex;
             background: #E3E3E8;
             border-radius: 8px;
             padding: 2px;
             margin: 0 20px 16px;
+            flex-shrink: 0;
         }
 
         .type-btn {
@@ -161,76 +145,9 @@
         .type-btn[data-type="pos1"].active { color: var(--ios-blue); }
         .type-btn[data-type="pos2"].active { color: var(--ios-purple); }
 
-        /* ------------------ Input Container (Sticky to Keyboard) ------------------ */
-        .input-container {
-            position: sticky;
-            bottom: 80px; /* พื้นที่เหนือ tab bar ปกติ */
-            background: var(--ios-bg);
-            padding: 10px 20px 24px;
-            margin: 0;
-            z-index: 100;
-            transition: padding 0.2s, background 0.2s, bottom 0.2s ease-out; 
-        }
-
-        /* เมื่อคีย์บอร์ดเปิด */
-        body.keyboard-open .input-container {
-            position: fixed !important;
-            /* bottom จะถูกคำนวณและสั่งงานผ่าน JS แบบเป๊ะๆ */
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            width: 100% !important;
-            max-width: 430px !important;
-            margin: 0 !important;
-            padding: 12px 20px 10px !important; /* เอาพื้นที่ Padding ล่างออก ให้ขอบแนบติดคีย์บอร์ดพอดี */
-            background: #F2F2F7 !important; /* ทึบกันโปร่งใส */
-            border-top: 1px solid var(--ios-separator);
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.05); /* เพิ่มเงาให้ดูลอยเหนือคีย์บอร์ดเล็กน้อย */
-            z-index: 9999 !important;
-        }
-
-        /* ซ่อน Tab Bar ตอนพิมพ์ */
-        body.keyboard-open .bottom-tab-bar {
-            display: none !important;
-        }
-
-        .input-wrapper {
-            background-color: #E3E3E8;
-            border-radius: 12px;
-            padding: 2px;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-wrapper input {
-            flex-grow: 1;
-            background: transparent;
-            border: none;
-            padding: 12px 14px;
-            font-size: 17px;
-            outline: none;
-            color: var(--ios-text);
-        }
-
-        .input-wrapper input::placeholder {
-            color: var(--ios-text-secondary);
-        }
-
-        .hint {
-            display: block;
-            font-size: 13px;
-            color: var(--ios-text-secondary);
-            margin-top: 8px;
-            margin-left: 4px;
-        }
-
-        /* ------------------ Right Panel (Lists) ------------------ */
-        .right-panel {
-            flex: 1;
-        }
-
+        /* ------------------ Expense List ------------------ */
         .expense-container {
             padding: 0 20px;
-            flex: 1; /* ขยายพื้นที่ให้เต็มเพื่อให้ช่องพิมพ์ถูกดันลงไปด้านล่างเสมอ */
         }
 
         .ios-section {
@@ -274,84 +191,150 @@
             background-color: var(--ios-separator);
         }
 
-        .item-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .item-name {
-            font-size: 17px;
-            font-weight: 500;
-        }
-
-        .item-time {
-            font-size: 13px;
-            color: var(--ios-text-secondary);
-            margin-top: 2px;
-        }
-        
-        .item-profit {
-            color: var(--ios-green);
-            font-weight: 500;
-        }
-
-        .item-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .item-price {
-            font-size: 17px;
-            font-weight: 600;
-        }
-        
+        .item-info { display: flex; flex-direction: column; }
+        .item-name { font-size: 17px; font-weight: 500; }
+        .item-time { font-size: 13px; color: var(--ios-text-secondary); margin-top: 2px; }
+        .item-profit { color: var(--ios-green); font-weight: 500; }
+        .item-right { display: flex; align-items: center; gap: 12px; }
+        .item-price { font-size: 17px; font-weight: 600; }
         .item-price.income { color: var(--ios-green); }
         .item-price.pos1 { color: var(--ios-blue); }
         .item-price.pos2 { color: var(--ios-purple); }
         .item-price.expense { color: var(--ios-text); } 
 
         .delete-btn, .edit-btn {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 4px;
-            transition: opacity 0.2s;
+            background: transparent; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            padding: 4px; transition: opacity 0.2s;
         }
-        
         .delete-btn { color: var(--ios-separator); }
         .delete-btn:active { color: var(--ios-red); }
         .edit-btn { color: var(--ios-blue); }
         .edit-btn:active { opacity: 0.5; }
-
         .delete-btn svg { width: 20px; height: 20px; pointer-events: none; }
         .edit-btn svg { width: 18px; height: 18px; pointer-events: none; }
 
+        .empty-state {
+            text-align: center;
+            color: var(--ios-text-secondary);
+            font-size: 15px;
+            margin-top: 40px;
+        }
+
+        /* ------------------ Input Container ------------------ */
+        /* ถูกตรึงไว้ด้านล่างสุดของหน้าจอเสมอ */
+        .input-container {
+            flex-shrink: 0;
+            background: var(--ios-bg);
+            padding: 10px 20px 10px;
+            border-top: 1px solid var(--ios-separator);
+            z-index: 100;
+        }
+
+        .input-wrapper {
+            background-color: #E3E3E8;
+            border-radius: 12px;
+            padding: 2px;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 14px;
+            font-size: 17px;
+            outline: none;
+            color: var(--ios-text);
+        }
+
+        .input-wrapper input::placeholder {
+            color: var(--ios-text-secondary);
+        }
+
+        .hint {
+            display: block;
+            font-size: 13px;
+            color: var(--ios-text-secondary);
+            margin-top: 6px;
+            margin-left: 4px;
+        }
+
+        /* ------------------ Summary Page (Page 2) ------------------ */
+        .balance-card {
+            background: #1C1C1E;
+            color: white;
+            border-radius: 16px; 
+            margin: calc(var(--safe-area-top) + 10px) 20px 16px;
+            padding: 16px 20px 16px; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .balance-label { font-size: 14px; color: #EBEBF5; opacity: 0.8; margin-bottom: 4px; }
+        .balance-amount { font-size: 30px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 16px; }
+
+        .filter-tabs {
+            display: flex; background: rgba(255, 255, 255, 0.15); border-radius: 9px; padding: 2px;
+        }
+        .filter-tabs .filter-btn {
+            flex: 1; background: transparent; border: none; color: #EBEBF5;
+            font-size: 13px; font-weight: 500; padding: 6px 0; border-radius: 7px; cursor: pointer;
+        }
+        .filter-tabs .filter-btn.active {
+            background: #FFFFFF; color: #1C1C1E; font-weight: 600; box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        }
+
+        .daily-table-wrapper {
+            background: var(--ios-card); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin: 0 20px 24px;
+        }
+        .daily-table { width: 100%; border-collapse: collapse; }
+        .daily-table th, .daily-table td { padding: 12px 10px; text-align: right; font-size: 14px; border-bottom: 1px solid var(--ios-separator); }
+        .daily-table th { background: #F8F8F8; font-weight: 600; color: var(--ios-text-secondary); font-size: 13px; }
+        .daily-table th:first-child, .daily-table td:first-child { text-align: left; padding-left: 16px; }
+        .daily-table th:last-child, .daily-table td:last-child { padding-right: 16px; }
+        .daily-table tr:last-child td { border-bottom: none; }
+        .daily-table .net-positive { color: var(--ios-green); font-weight: 600; }
+        .daily-table .net-negative { color: var(--ios-red); font-weight: 600; }
+        .daily-table .profit-hint { display: block; font-size: 11px; color: var(--ios-text-secondary); margin-top: 2px; font-weight: 400; }
+
+        /* ------------------ Bottom Tab Bar ------------------ */
+        .bottom-tab-bar {
+            flex-shrink: 0;
+            background: rgba(242, 242, 247, 0.85); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--ios-separator);
+            display: flex; 
+            justify-content: space-around;
+            padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px)); /* เว้นที่ Safe Area ขอบล่างมือถือ */
+            z-index: 1000;
+        }
+
+        .tab-btn {
+            background: none; border: none; display: flex; flex-direction: column; align-items: center;
+            color: var(--ios-text-secondary); font-size: 10px; font-weight: 500; gap: 4px; cursor: pointer;
+            width: 70px; transition: color 0.2s;
+        }
+        .tab-btn.active { color: var(--ios-blue); }
+        .tab-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* การซ่อน Tab Bar เมื่อคีย์บอร์ดเปิด (อาศัย Class จาก JS) */
+        .ios-app.keyboard-open .bottom-tab-bar {
+            display: none;
+        }
+
         /* ------------------ Modal Styles ------------------ */
         .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            opacity: 0;
-            transition: opacity 0.2s;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: center;
+            z-index: 2000; opacity: 0; transition: opacity 0.2s;
         }
         .modal-overlay.show { display: flex; opacity: 1; }
         .modal-card {
-            background: var(--ios-card);
-            width: 90%;
-            max-width: 320px;
-            border-radius: 14px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transform: scale(0.95);
-            transition: transform 0.2s;
+            background: var(--ios-card); width: 90%; max-width: 320px; border-radius: 14px;
+            padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: scale(0.95); transition: transform 0.2s;
         }
         .modal-overlay.show .modal-card { transform: scale(1); }
         .modal-card h3 { margin-bottom: 16px; text-align: center; font-size: 17px; }
@@ -366,139 +349,99 @@
         .modal-btn.cancel { background: #E3E3E8; color: var(--ios-text); }
         .modal-btn.save { background: var(--ios-blue); color: white; }
 
-        .empty-state { text-align: center; color: var(--ios-text-secondary); font-size: 15px; margin-top: 40px; }
-
-        /* ------------------ Daily Summary Table ------------------ */
-        .daily-table-wrapper { background: var(--ios-card); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin: 0 20px 24px; }
-        .daily-table { width: 100%; border-collapse: collapse; }
-        .daily-table th, .daily-table td { padding: 12px 10px; text-align: right; font-size: 14px; border-bottom: 1px solid var(--ios-separator); }
-        .daily-table th { background: #F8F8F8; font-weight: 600; color: var(--ios-text-secondary); font-size: 13px; }
-        .daily-table th:first-child, .daily-table td:first-child { text-align: left; padding-left: 16px; }
-        .daily-table th:last-child, .daily-table td:last-child { padding-right: 16px; }
-        .daily-table tr:last-child td { border-bottom: none; }
-        .daily-table .net-positive { color: var(--ios-green); font-weight: 600; }
-        .daily-table .net-negative { color: var(--ios-red); font-weight: 600; }
-        .daily-table .profit-hint { display: block; font-size: 11px; color: var(--ios-text-secondary); margin-top: 2px; font-weight: 400; }
-
-        /* ------------------ Mobile Page Logic & Tab Bar ------------------ */
-        .page { display: none; width: 100%; animation: fadeIn 0.25s ease-out; }
-        .page.active { display: block; }
-        .left-panel.page.active { display: flex; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        .bottom-tab-bar {
-            position: fixed;
-            bottom: 0; left: 0; width: 100%;
-            background: rgba(242, 242, 247, 0.85); 
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--ios-separator);
-            display: flex; justify-content: space-around;
-            padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
-            z-index: 1000;
-        }
-
-        .tab-btn {
-            background: none; border: none; display: flex; flex-direction: column; align-items: center;
-            color: var(--ios-text-secondary); font-size: 10px; font-weight: 500; gap: 4px; cursor: pointer;
-            width: 70px; transition: color 0.2s;
-        }
-        .tab-btn.active { color: var(--ios-blue); }
-        .tab-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-        /* ------------------ iPad & Desktop Layout ------------------ */
+        /* ------------------ Desktop/Tablet Layout ------------------ */
         @media (min-width: 768px) {
+            body { padding: 20px 0; align-items: flex-start; }
             .ios-app {
-                max-width: 900px; flex-direction: row; align-items: flex-start;
-                padding-top: 40px; padding-bottom: 40px; gap: 20px;
+                max-width: 900px;
+                height: 90vh; /* ให้มีความสูงจำกัดบนจอคอม */
+                border-radius: 20px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+                overflow: hidden;
             }
-            .page { display: block !important; animation: none; }
-            .left-panel.page { display: flex !important; }
-            .bottom-tab-bar { display: none !important; }
-
-            .left-panel {
-                width: 380px; flex-shrink: 0; position: sticky; top: 40px;
-                height: calc(100vh - 80px); overflow-y: auto;
+            .page-container {
+                display: flex;
+                flex-direction: row;
+                overflow: visible;
             }
-            .left-panel::-webkit-scrollbar { display: none; }
-            .left-panel { -ms-overflow-style: none; scrollbar-width: none; }
-            .header { padding-top: 0; }
-            .right-panel { flex-grow: 1; padding-top: 5px; }
-
-            /* Desktop ไม่ต้องติดคีย์บอร์ดด้านล่างสุด */
-            body.keyboard-open .input-container {
-                position: sticky !important;
-                bottom: 0 !important;
-                left: auto !important;
-                transform: none !important;
-                width: auto !important;
-                padding: 10px 20px 24px !important; 
-                box-shadow: none !important;
+            .page {
+                position: static;
+                display: flex !important; /* บังคับแสดงทั้งสองหน้าบนคอม */
+                height: 100%;
             }
+            #pageHome { width: 400px; flex-shrink: 0; border-right: 1px solid var(--ios-separator); }
+            #pageSummary { flex: 1; }
+            
+            .bottom-tab-bar { display: none; } /* ซ่อน Tab bar ไปเลย */
         }
     </style>
 </head>
 <body>
 
-    <div class="ios-app">
-        <!-- ฝั่งซ้าย (หน้า 1: บันทึก และรายการประวัติ) -->
-        <div class="left-panel page active" id="pageHome">
-            <div class="header">
-                <h1>บัญชี</h1>
-                <span class="status" id="loadingStatus">กำลังเชื่อมต่อ...</span>
-            </div>
-            
-            <div class="type-toggle" id="entryTypeToggle">
-                <button class="type-btn" data-type="income">รับอื่นๆ</button>
-                <button class="type-btn active" data-type="expense">รายจ่าย</button>
-                <button class="type-btn" data-type="pos1">POS1</button>
-                <button class="type-btn" data-type="pos2">POS2</button>
-            </div>
+    <div class="ios-app" id="appContainer">
+        
+        <div class="page-container">
+            <!-- ================= หน้า 1: บันทึก และรายการประวัติ ================= -->
+            <div class="page active" id="pageHome">
+                
+                <!-- ส่วนที่เลื่อนได้ (หัว + แท็บ + รายการ) -->
+                <div class="scrollable-area" id="homeScrollArea">
+                    <div class="header">
+                        <h1>บัญชี</h1>
+                        <span class="status" id="loadingStatus">กำลังเชื่อมต่อ...</span>
+                    </div>
+                    
+                    <div class="type-toggle" id="entryTypeToggle">
+                        <button class="type-btn" data-type="income">รับอื่นๆ</button>
+                        <button class="type-btn active" data-type="expense">รายจ่าย</button>
+                        <button class="type-btn" data-type="pos1">POS1</button>
+                        <button class="type-btn" data-type="pos2">POS2</button>
+                    </div>
 
-            <!-- ย้ายรายการมาแสดงหน้าแรกตรงนี้ เพื่อให้เลื่อนดูได้ขณะพิมพ์ -->
-            <div class="expense-container" id="expenseList">
-                <!-- รายการจะถูกเพิ่มที่นี่ผ่าน JS -->
-            </div>
-
-            <!-- กล่องพิมพ์ถูกตรึงติดด้านล่างสุด -->
-            <div class="input-container">
-                <div class="input-wrapper">
-                    <!-- คืนค่าใช้คีย์บอร์ดมือถือระบบปกติ -->
-                    <input type="text" id="expenseInput" placeholder="พิมพ์รายจ่ายและราคา..." autocomplete="off">
+                    <!-- รายการประวัติที่บันทึก -->
+                    <div class="expense-container" id="expenseList">
+                        <!-- รายการจะถูกเพิ่มที่นี่ผ่าน JS -->
+                    </div>
                 </div>
-                <span class="hint" id="hintText">เว้นวรรคด้วยราคา เช่น ค่าไฟ 1200</span>
+
+                <!-- กล่องพิมพ์ (ถูกตรึงไว้ด้านล่างหน้าตลอดเวลา) -->
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <input type="text" id="expenseInput" placeholder="พิมพ์รายจ่ายและราคา..." autocomplete="off">
+                    </div>
+                    <span class="hint" id="hintText">เว้นวรรคด้วยราคา เช่น ค่าไฟ 1200</span>
+                </div>
+            </div>
+
+            <!-- ================= หน้า 2: สรุปภาพรวม ================= -->
+            <div class="page" id="pageSummary">
+                <div class="scrollable-area">
+                    <div class="balance-card">
+                        <div class="balance-label" id="balanceLabel">ยอดเงินคงเหลือสุทธิ (วันนี้)</div>
+                        <div class="balance-amount">฿<span id="totalAmount">0</span></div>
+
+                        <div class="filter-tabs">
+                            <button class="filter-btn active" data-filter="day">วันนี้</button>
+                            <button class="filter-btn" data-filter="week">สัปดาห์นี้</button>
+                            <button class="filter-btn" data-filter="month">เดือนนี้</button>
+                            <button class="filter-btn" data-filter="all">ทั้งหมด</button>
+                        </div>
+                    </div>
+                    
+                    <div id="dailySummaryContainer">
+                        <!-- ข้อมูลสรุปรายวันจะถูกสร้างที่นี่ -->
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- ฝั่งขวา (หน้า 2: หน้าสรุปภาพรวม/Dashboard) -->
-        <div class="right-panel page" id="pageSummary">
-            
-            <div class="balance-card" style="margin-top: calc(var(--safe-area-top) + 10px);">
-                <div class="balance-label" id="balanceLabel">ยอดเงินคงเหลือสุทธิ (วันนี้)</div>
-                <div class="balance-amount">฿<span id="totalAmount">0</span></div>
-
-                <div class="filter-tabs">
-                    <button class="filter-btn active" data-filter="day">วันนี้</button>
-                    <button class="filter-btn" data-filter="week">สัปดาห์นี้</button>
-                    <button class="filter-btn" data-filter="month">เดือนนี้</button>
-                    <button class="filter-btn" data-filter="all">ทั้งหมด</button>
-                </div>
-            </div>
-            
-            <!-- ตารางสรุปรายวันจะแสดงผลตรงนี้เลยโดยไม่ต้องกดสลับ Tab -->
-            <div id="dailySummaryContainer">
-                <!-- ข้อมูลสรุปจะถูกสร้างที่นี่ -->
-            </div>
-        </div>
-
-        <!-- Bottom Tab Bar (เฉพาะหน้าจอมือถือ) -->
-        <nav class="bottom-tab-bar">
+        <!-- ================= Bottom Tab Bar ================= -->
+        <nav class="bottom-tab-bar" id="bottomTabBar">
             <button class="tab-btn active" data-target="pageHome">
                 <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                 <span>บันทึก</span>
             </button>
             <button class="tab-btn" data-target="pageSummary">
-                <!-- ไอคอนเปลี่ยนเป็นรูปกราฟสะท้อนความเป็นหน้าสรุป -->
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="20" x2="18" y2="10"></line>
                     <line x1="12" y1="20" x2="12" y2="4"></line>
@@ -565,15 +508,15 @@
         let transactions = [];
         let currentFilter = 'day';
         let currentType = 'expense'; 
-        let initialLoad = true;
         let unsubscribeSnapshot = null;
         
+        const appContainer = document.getElementById('appContainer');
+        const homeScrollArea = document.getElementById('homeScrollArea');
         const inputEl = document.getElementById('expenseInput');
         const hintTextEl = document.getElementById('hintText');
         const listEl = document.getElementById('expenseList');
         const totalEl = document.getElementById('totalAmount');
         const dailySummaryContainer = document.getElementById('dailySummaryContainer');
-        
         const loadingEl = document.getElementById('loadingStatus');
         const balanceLabel = document.getElementById('balanceLabel');
         const filterBtns = document.querySelectorAll('.filter-btn');
@@ -589,62 +532,28 @@
         const saveEditBtn = document.getElementById('saveEditBtn');
         let editingId = null;
 
-        // Tabs
         const entryTypeBtns = document.querySelectorAll('#entryTypeToggle .type-btn');
         const navTabs = document.querySelectorAll('.bottom-tab-bar .tab-btn');
         const pages = document.querySelectorAll('.page');
-        const inputContainer = document.querySelector('.input-container');
-        const iosAppContainer = document.querySelector('.ios-app');
 
-        // ================= Native Keyboard Sticky Logic =================
-        // เมื่อจิ้มที่ช่องกรอกข้อมูล จะเติม class แจ้งให้ CSS รู้ว่าคีย์บอร์ดกำลังมา
+        // ================= Keyboard Handling =================
+        // วิธีนี้รับประกันว่าไม่พังบนมือถือ: เพียงแค่ซ่อน Tab Bar ตัว Container ด้านบนจะขยายตัวลงมาดัน Input ให้ติดขอบคีย์บอร์ดพอดี
         inputEl.addEventListener('focus', () => {
-            document.body.classList.add('keyboard-open');
-            adjustInputPosition(); // สั่งจัดตำแหน่งทันที
+            appContainer.classList.add('keyboard-open');
+            // สั่งเลื่อนลงไปให้เห็นรายการล่าสุด
+            setTimeout(() => {
+                homeScrollArea.scrollTop = homeScrollArea.scrollHeight;
+            }, 100);
         });
         
         inputEl.addEventListener('blur', () => {
-            // หน่วงเวลาเล็กน้อยเวลาคีย์บอร์ดปิดลง ป้องกันจอภาพกระตุก
             setTimeout(() => {
-                document.body.classList.remove('keyboard-open');
-                inputContainer.style.bottom = ''; // ปล่อยให้กลับไปตำแหน่งเดิม
-                iosAppContainer.style.paddingBottom = '80px'; // คืนค่า padding เดิม
-            }, 100);
+                appContainer.classList.remove('keyboard-open');
+            }, 50);
         });
+        // =====================================================
 
-        // ใช้ฟังก์ชันพิเศษในการคำนวณพื้นที่คีย์บอร์ดในมือถือจริงๆ อย่างแม่นยำ
-        function adjustInputPosition() {
-            if (!document.body.classList.contains('keyboard-open')) return;
-            
-            if (window.visualViewport) {
-                // คำนวณหาความสูงของคีย์บอร์ดที่ดันจอขึ้นมา
-                const viewportHeight = window.visualViewport.height;
-                const windowHeight = window.innerHeight;
-                const offset = windowHeight - viewportHeight;
-                
-                // ถ้าระบบจับได้ว่าคีย์บอร์ดเด้งขึ้นมาจริงๆ ให้ดันช่องพิมพ์ไปอยู่ขอบบนของคีย์บอร์ดพอดี
-                if (offset > 50) {
-                    inputContainer.style.bottom = `${offset}px`;
-                    // เพิ่มพื้นที่ว่างด้านล่างแอป เพื่อให้รายการตัวสุดท้ายไม่ถูกคีย์บอร์ดบังตอนเลื่อนลงสุด
-                    iosAppContainer.style.paddingBottom = `${offset + 80}px`;
-                } else {
-                    inputContainer.style.bottom = '0px';
-                    iosAppContainer.style.paddingBottom = '80px';
-                }
-            } else {
-                inputContainer.style.bottom = '0px'; 
-                iosAppContainer.style.paddingBottom = '80px';
-            }
-        }
-
-        // ดักจับจังหวะที่คีย์บอร์ดเปลี่ยนขนาด หรือกำลังเด้งขึ้น-ลง
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', adjustInputPosition);
-            window.visualViewport.addEventListener('scroll', adjustInputPosition);
-        }
-        // ================================================================
-
-        // ระบบนำทาง (Tab Bar)
+        // ระบบนำทาง
         navTabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 navTabs.forEach(t => t.classList.remove('active'));
@@ -653,12 +562,10 @@
                 
                 const targetId = tab.getAttribute('data-target');
                 document.getElementById(targetId).classList.add('active');
-                
-                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         });
 
-        // จัดการ Filter วัน/สัปดาห์/เดือน
+        // จัดการ Filter (หน้าสรุป)
         filterBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 filterBtns.forEach(b => b.classList.remove('active'));
@@ -676,7 +583,7 @@
             });
         });
 
-        // จัดการ Tab สลับประเภทบันทึก
+        // จัดการ Tab สลับประเภทบันทึก (หน้าแรก)
         entryTypeBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 entryTypeBtns.forEach(b => b.classList.remove('active'));
@@ -698,13 +605,8 @@
             });
         });
 
-        const getExpensesCollection = () => {
-            return collection(db, 'artifacts', appId, 'users', currentUser.uid, 'expenses');
-        };
-
-        const getExpenseDoc = (id) => {
-            return doc(db, 'artifacts', appId, 'users', currentUser.uid, 'expenses', id);
-        };
+        const getExpensesCollection = () => collection(db, 'artifacts', appId, 'users', currentUser.uid, 'expenses');
+        const getExpenseDoc = (id) => doc(db, 'artifacts', appId, 'users', currentUser.uid, 'expenses', id);
 
         const initAuth = async () => {
             try {
@@ -714,7 +616,6 @@
                     await signInAnonymously(auth);
                 }
             } catch (error) {
-                console.error("Auth error:", error);
                 loadingEl.innerText = 'ออฟไลน์';
             }
         };
@@ -723,7 +624,6 @@
             currentUser = user;
             if (user) {
                 const expensesCol = getExpensesCollection();
-                
                 unsubscribeSnapshot = onSnapshot(expensesCol, (snapshot) => {
                     transactions = [];
                     snapshot.forEach((doc) => {
@@ -731,18 +631,20 @@
                     });
                     
                     transactions.sort((a, b) => {
-                        const timeA = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : Date.now();
-                        const timeB = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : Date.now();
-                        return timeB - timeA;
+                        const timeA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : Date.now();
+                        const timeB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : Date.now();
+                        return timeA - timeB; // เรียงจากเก่าไปใหม่ เพื่อให้รายการล่าสุดอยู่ล่างสุด
                     });
 
                     renderTransactions();
-                    
                     loadingEl.innerText = 'เชื่อมต่อแล้ว';
                     loadingEl.style.color = '#007AFF';
-
+                    
+                    // เลื่อนจอลงอัตโนมัติเมื่อข้อมูลมาใหม่
+                    setTimeout(() => {
+                        homeScrollArea.scrollTop = homeScrollArea.scrollHeight;
+                    }, 100);
                 }, (error) => {
-                    console.error("Error fetching data:", error);
                     loadingEl.innerText = 'ออฟไลน์';
                     loadingEl.style.color = '#FF3B30';
                 });
@@ -758,9 +660,7 @@
             const regex = /^(.*?)\s*(\d+(?:\.\d+)?)\s*(?:บาท|b|baht|฿)?$/i;
             const match = text.match(regex);
             if (match) {
-                let itemName = match[1].trim() || "ไม่ระบุรายการ";
-                let itemPrice = parseFloat(match[2]);
-                return { name: itemName, price: itemPrice, profit: 0 };
+                return { name: match[1].trim() || "ไม่ระบุรายการ", price: parseFloat(match[2]), profit: 0 };
             }
             return null;
         }
@@ -768,16 +668,11 @@
         function parsePosInput(text) {
             const parts = text.trim().split(/\s+/);
             if (parts.length >= 2) {
-                const sales = parseFloat(parts[0]);
-                const profit = parseFloat(parts[1]);
-                if (!isNaN(sales) && !isNaN(profit)) {
-                    return { name: "ยอดขายประจำวัน", price: sales, profit: profit };
-                }
+                const sales = parseFloat(parts[0]), profit = parseFloat(parts[1]);
+                if (!isNaN(sales) && !isNaN(profit)) return { name: "ยอดขายประจำวัน", price: sales, profit: profit };
             } else if (parts.length === 1) {
                 const sales = parseFloat(parts[0]);
-                if (!isNaN(sales)) {
-                    return { name: "ยอดขายประจำวัน", price: sales, profit: 0 };
-                }
+                if (!isNaN(sales)) return { name: "ยอดขายประจำวัน", price: sales, profit: 0 };
             }
             return null;
         }
@@ -787,19 +682,12 @@
             const rawText = inputEl.value;
             if (!rawText) return;
 
-            let parsedData = null;
-            if (currentType === 'pos1' || currentType === 'pos2') {
-                parsedData = parsePosInput(rawText);
-            } else {
-                parsedData = parseNormalInput(rawText);
-            }
+            let parsedData = (currentType === 'pos1' || currentType === 'pos2') ? parsePosInput(rawText) : parseNormalInput(rawText);
 
             if (parsedData) {
                 inputEl.value = '';
-
                 try {
-                    const expensesCol = getExpensesCollection();
-                    await addDoc(expensesCol, {
+                    await addDoc(getExpensesCollection(), {
                         name: parsedData.name,
                         price: parsedData.price,
                         profit: parsedData.profit || 0,
@@ -807,21 +695,14 @@
                         createdAt: serverTimestamp()
                     });
                 } catch (e) {
-                    console.error("Error adding document: ", e);
                     if(inputEl.value === '') inputEl.value = rawText; 
                 } finally {
-                    // ปล่อยให้ Focus ไว้ เผื่อต้องการพิมพ์ต่อ
+                    inputEl.focus(); // เผื่อพิมพ์ต่อ
                 }
             } else {
                 const originalPlaceholder = inputEl.placeholder;
                 inputEl.value = '';
-                
-                if (currentType === 'pos1' || currentType === 'pos2') {
-                    inputEl.placeholder = "ผิดรูปแบบ! พิมพ์ยอดขายและกำไร (เช่น 1500 300)";
-                } else {
-                    inputEl.placeholder = "ผิดรูปแบบ! พิมพ์รายการและราคา (เช่น น้ำ 15)";
-                }
-                
+                inputEl.placeholder = "ผิดรูปแบบ! โปรดลองอีกครั้ง";
                 setTimeout(() => {
                     inputEl.placeholder = originalPlaceholder;
                     inputEl.value = rawText;
@@ -829,7 +710,6 @@
             }
         }
 
-        // กดบันทึกด้วยปุ่ม Enter ในคีย์บอร์ดจริง
         inputEl.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -842,12 +722,7 @@
             const editBtn = e.target.closest('.edit-btn');
             
             if(deleteBtn && currentUser) {
-                const id = deleteBtn.getAttribute('data-id');
-                try {
-                    await deleteDoc(getExpenseDoc(id));
-                } catch (err) {
-                    console.error("Error deleting document: ", err);
-                }
+                await deleteDoc(getExpenseDoc(deleteBtn.getAttribute('data-id')));
             }
 
             if(editBtn && currentUser) {
@@ -866,184 +741,121 @@
                         editProfit.value = 0;
                     }
 
-                    const expDate = exp.createdAt && exp.createdAt.toDate ? exp.createdAt.toDate() : new Date();
+                    const expDate = exp.createdAt?.toDate ? exp.createdAt.toDate() : new Date();
                     const pad = n => n < 10 ? '0'+n : n;
-                    const yyyy = expDate.getFullYear();
-                    const MM = pad(expDate.getMonth() + 1);
-                    const dd = pad(expDate.getDate());
-                    const hh = pad(expDate.getHours());
-                    const mm = pad(expDate.getMinutes());
-                    editDatetime.value = `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
-
+                    editDatetime.value = `${expDate.getFullYear()}-${pad(expDate.getMonth() + 1)}-${pad(expDate.getDate())}T${pad(expDate.getHours())}:${pad(expDate.getMinutes())}`;
                     editModal.classList.add('show');
                 }
             }
         });
 
-        // ยกเลิกแก้ไข
         cancelEditBtn.addEventListener('click', () => {
             editModal.classList.remove('show');
             editingId = null;
         });
 
-        // บันทึกแก้ไข
         saveEditBtn.addEventListener('click', async () => {
             if (!editingId || !currentUser) return;
-            
             try {
                 const exp = transactions.find(t => t.id === editingId);
-                const newDate = new Date(editDatetime.value);
-                
                 const updateData = {
                     name: editName.value,
                     price: parseFloat(editPrice.value) || 0,
-                    createdAt: Timestamp.fromDate(newDate)
+                    createdAt: Timestamp.fromDate(new Date(editDatetime.value))
                 };
-                
                 if (exp.type === 'pos1' || exp.type === 'pos2') {
                     updateData.profit = parseFloat(editProfit.value) || 0;
                 }
-
                 await updateDoc(getExpenseDoc(editingId), updateData);
-                
                 editModal.classList.remove('show');
                 editingId = null;
             } catch (err) {
-                console.error("Error updating document: ", err);
+                console.error(err);
             }
         });
 
-        function isSameWeek(dateStr1, dateStr2) {
-            const d1 = new Date(dateStr1);
-            const d2 = new Date(dateStr2);
-            d1.setHours(0,0,0,0);
-            d2.setHours(0,0,0,0);
-            
-            const diff = d1.getDate() - d1.getDay(); 
-            const startOfWeek1 = new Date(d1.setDate(diff));
-            const diff2 = d2.getDate() - d2.getDay();
-            const startOfWeek2 = new Date(d2.setDate(diff2));
-            return startOfWeek1.getTime() === startOfWeek2.getTime();
+        function isSameWeek(d1, d2) {
+            d1 = new Date(d1); d2 = new Date(d2);
+            d1.setHours(0,0,0,0); d2.setHours(0,0,0,0);
+            const start1 = new Date(d1.setDate(d1.getDate() - d1.getDay()));
+            const start2 = new Date(d2.setDate(d2.getDate() - d2.getDay()));
+            return start1.getTime() === start2.getTime();
         }
 
         function renderTransactions() {
             listEl.innerHTML = '';
-            let totalOtherIncome = 0;
-            let totalExpense = 0;
-            let totalPos1Sales = 0, totalPos1Profit = 0;
-            let totalPos2Sales = 0, totalPos2Profit = 0;
-            
+            let totalOtherIncome = 0, totalExpense = 0, totalPos1Sales = 0, totalPos1Profit = 0, totalPos2Sales = 0, totalPos2Profit = 0;
             const now = new Date();
 
             const timeFilteredData = transactions.filter(exp => {
-                const expDate = exp.createdAt && exp.createdAt.toDate ? exp.createdAt.toDate() : new Date();
-
-                if (currentFilter === 'day') {
-                    return expDate.toDateString() === now.toDateString();
-                } else if (currentFilter === 'week') {
-                    return isSameWeek(expDate, now);
-                } else if (currentFilter === 'month') {
-                    return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear();
-                }
+                const expDate = exp.createdAt?.toDate ? exp.createdAt.toDate() : new Date();
+                if (currentFilter === 'day') return expDate.toDateString() === now.toDateString();
+                if (currentFilter === 'week') return isSameWeek(expDate, now);
+                if (currentFilter === 'month') return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear();
                 return true; 
             });
 
-            timeFilteredData.forEach(exp => {
-                const type = exp.type || 'expense';
-                const price = exp.price || 0;
-                const profit = exp.profit || 0;
-                
-                if (type === 'income') {
-                    totalOtherIncome += price;
-                } else if (type === 'pos1') {
-                    totalPos1Sales += price;
-                    totalPos1Profit += profit;
-                } else if (type === 'pos2') {
-                    totalPos2Sales += price;
-                    totalPos2Profit += profit;
-                } else {
-                    totalExpense += price;
-                }
-            });
-
-            const totalAllIncome = totalOtherIncome + totalPos1Sales + totalPos2Sales;
-            const netBalance = totalAllIncome - totalExpense;
-
-            totalEl.innerText = netBalance.toLocaleString();
-
             const dailyGroup = {};
-            
             timeFilteredData.forEach(exp => {
-                const expDate = exp.createdAt && exp.createdAt.toDate ? exp.createdAt.toDate() : new Date();
-                const dateKey = expDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }); 
+                const type = exp.type || 'expense', price = exp.price || 0, profit = exp.profit || 0;
                 
-                if (!dailyGroup[dateKey]) {
-                    dailyGroup[dateKey] = { income: 0, expense: 0, profit: 0 };
-                }
+                // สำหรับยอดรวม
+                if (type === 'income') totalOtherIncome += price;
+                else if (type === 'pos1') { totalPos1Sales += price; totalPos1Profit += profit; }
+                else if (type === 'pos2') { totalPos2Sales += price; totalPos2Profit += profit; }
+                else totalExpense += price;
+
+                // สำหรับตารางสรุปรายวัน
+                const dateKey = (exp.createdAt?.toDate ? exp.createdAt.toDate() : new Date()).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }); 
+                if (!dailyGroup[dateKey]) dailyGroup[dateKey] = { income: 0, expense: 0, profit: 0 };
                 
-                const type = exp.type || 'expense';
-                const price = exp.price || 0;
-                const profit = exp.profit || 0;
-                
-                if (type === 'income' || type === 'pos1' || type === 'pos2') {
+                if (type === 'expense') {
+                    dailyGroup[dateKey].expense += price;
+                } else {
                     dailyGroup[dateKey].income += price;
                     if (type === 'pos1' || type === 'pos2') dailyGroup[dateKey].profit += profit;
-                } else {
-                    dailyGroup[dateKey].expense += price;
                 }
             });
 
+            totalEl.innerText = ((totalOtherIncome + totalPos1Sales + totalPos2Sales) - totalExpense).toLocaleString();
+
+            // Render ตารางสรุป
             if (Object.keys(dailyGroup).length === 0) {
                 dailySummaryContainer.innerHTML = `<div class="empty-state">ไม่มีข้อมูลสรุปรายวันในช่วงเวลานี้</div>`;
             } else {
-                let dailyHTML = `<div class="daily-table-wrapper"><table class="daily-table">
-                    <thead><tr><th>วันที่</th><th>รับรวม</th><th>จ่าย</th><th>คงเหลือ</th></tr></thead><tbody>`;
-                
-                for (const [date, totals] of Object.entries(dailyGroup)) {
+                let dailyHTML = `<div class="daily-table-wrapper"><table class="daily-table"><thead><tr><th>วันที่</th><th>รับรวม</th><th>จ่าย</th><th>คงเหลือ</th></tr></thead><tbody>`;
+                // แปลง object เป็น array เพื่อเรียงวันล่าสุดขึ้นก่อน (เฉพาะตารางสรุป)
+                const sortedDays = Object.entries(dailyGroup).reverse();
+                for (const [date, totals] of sortedDays) {
                     const net = totals.income - totals.expense;
                     const netClass = net >= 0 ? 'net-positive' : 'net-negative';
                     const prefix = net > 0 ? '+' : '';
-                    
                     const profitStr = totals.profit > 0 ? `<span class="profit-hint">(กำไร ${totals.profit.toLocaleString()})</span>` : '';
                     
-                    dailyHTML += `<tr>
-                        <td>${date}</td>
+                    dailyHTML += `<tr><td>${date}</td>
                         <td style="color:var(--ios-green);">${totals.income.toLocaleString()} ${profitStr}</td>
                         <td style="color:var(--ios-red);">${totals.expense.toLocaleString()}</td>
-                        <td class="${netClass}">${prefix}${net.toLocaleString()}</td>
-                    </tr>`;
+                        <td class="${netClass}">${prefix}${net.toLocaleString()}</td></tr>`;
                 }
                 dailyHTML += `</tbody></table></div>`;
                 dailySummaryContainer.innerHTML = dailyHTML;
             }
 
-            const listData = timeFilteredData.filter(exp => {
-                const type = exp.type || 'expense';
-                return type === currentType;
-            });
-
+            // Render รายการหน้าแรก (List)
+            const listData = timeFilteredData.filter(exp => (exp.type || 'expense') === currentType);
+            
             if (listData.length === 0) {
-                let emptyText = 'รายการ';
-                if (currentType === 'income') emptyText = 'รายรับอื่นๆ';
-                else if (currentType === 'expense') emptyText = 'รายจ่าย';
-                else if (currentType === 'pos1') emptyText = 'ยอดขาย POS1';
-                else if (currentType === 'pos2') emptyText = 'ยอดขาย POS2';
-                
-                listEl.innerHTML = `<div class="empty-state">ไม่มี${emptyText}ในช่วงเวลานี้</div>`;
+                listEl.innerHTML = `<div class="empty-state">ไม่มีรายการในช่วงเวลานี้</div>`;
                 return;
             }
 
             const groupedData = {};
-            
             listData.forEach((exp) => {
-                const expDate = exp.createdAt && exp.createdAt.toDate ? exp.createdAt.toDate() : new Date();
+                const expDate = exp.createdAt?.toDate ? exp.createdAt.toDate() : new Date();
                 const dateKey = expDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
                 const timeStr = expDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
-                if (!groupedData[dateKey]) {
-                    groupedData[dateKey] = { items: [], totalDay: 0 };
-                }
-                
+                if (!groupedData[dateKey]) groupedData[dateKey] = { items: [], totalDay: 0 };
                 groupedData[dateKey].items.push({...exp, timeStr});
                 groupedData[dateKey].totalDay += exp.price;
             });
@@ -1051,15 +863,8 @@
             for (const [date, data] of Object.entries(groupedData)) {
                 const section = document.createElement('div');
                 section.className = 'ios-section';
-
-                const header = document.createElement('div');
-                header.className = 'ios-section-header';
-                header.innerHTML = `
-                    <span>${date}</span>
-                    <span>รวมยอด ${data.totalDay.toLocaleString()} ฿</span>
-                `;
-                section.appendChild(header);
-
+                section.innerHTML = `<div class="ios-section-header"><span>${date}</span><span>รวมยอด ${data.totalDay.toLocaleString()} ฿</span></div>`;
+                
                 const ul = document.createElement('ul');
                 ul.className = 'ios-list';
 
@@ -1067,36 +872,23 @@
                     const li = document.createElement('li');
                     li.className = 'ios-list-item';
                     
-                    const deleteSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
-                    const editSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
-                    
-                    let priceClass = 'item-price';
-                    let prefix = '';
-                    let subText = exp.timeStr || '...';
-                    
-                    if (exp.type === 'income') { priceClass += ' income'; prefix = '+'; }
-                    else if (exp.type === 'pos1') { priceClass += ' pos1'; prefix = '+'; }
-                    else if (exp.type === 'pos2') { priceClass += ' pos2'; prefix = '+'; }
-                    else { priceClass += ' expense'; prefix = '-'; }
+                    let priceClass = 'item-price expense', prefix = '-';
+                    if (exp.type === 'income') { priceClass = 'item-price income'; prefix = '+'; }
+                    else if (exp.type === 'pos1') { priceClass = 'item-price pos1'; prefix = '+'; }
+                    else if (exp.type === 'pos2') { priceClass = 'item-price pos2'; prefix = '+'; }
 
-                    if ((exp.type === 'pos1' || exp.type === 'pos2') && exp.profit > 0) {
-                        subText += ` <span class="item-profit">• กำไร ${exp.profit.toLocaleString()} ฿</span>`;
-                    }
+                    let subText = exp.timeStr || '...';
+                    if ((exp.type === 'pos1' || exp.type === 'pos2') && exp.profit > 0) subText += ` <span class="item-profit">• กำไร ${exp.profit.toLocaleString()} ฿</span>`;
 
                     li.innerHTML = `
-                        <div class="item-info">
-                            <span class="item-name">${exp.name}</span>
-                            <span class="item-time">${subText}</span>
-                        </div>
+                        <div class="item-info"><span class="item-name">${exp.name}</span><span class="item-time">${subText}</span></div>
                         <div class="item-right">
                             <span class="${priceClass}">${prefix}${exp.price.toLocaleString()} ฿</span>
-                            <button class="edit-btn" data-id="${exp.id}">${editSvg}</button>
-                            <button class="delete-btn" data-id="${exp.id}">${deleteSvg}</button>
-                        </div>
-                    `;
+                            <button class="edit-btn" data-id="${exp.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                            <button class="delete-btn" data-id="${exp.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg></button>
+                        </div>`;
                     ul.appendChild(li);
                 });
-
                 section.appendChild(ul);
                 listEl.appendChild(section);
             }
