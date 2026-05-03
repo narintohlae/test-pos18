@@ -22,130 +22,152 @@
         body { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
-<body class="bg-[#f5f5f7] text-[#1d1d1f] font-sans selection:bg-gray-200 p-0 sm:p-4 md:p-8 lg:p-12 flex justify-center items-center min-h-screen">
+<body class="bg-[#f5f5f7] text-[#1d1d1f] font-sans selection:bg-gray-200 p-0 sm:p-4 md:p-8 lg:p-10 flex justify-center items-center min-h-screen">
 
     <!-- Toast Notification สำหรับอัปเดตแอป (GitHub Pages) -->
     <div id="update-toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 translate-y-24 opacity-0 bg-[#1d1d1f]/95 backdrop-blur-md text-white px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-4 z-[200] transition-all duration-500 pointer-events-none w-[90%] max-w-sm">
-        <div class="flex-1 text-[0.95rem] font-medium flex items-center gap-2">
-            <i data-lucide="sparkles" class="w-4 h-4 text-yellow-400"></i> มีอัปเดตแอปเวอร์ชันใหม่
+        <div class="flex-1 text-base font-medium flex items-center gap-2">
+            <i data-lucide="sparkles" class="w-5 h-5 text-yellow-400"></i> มีอัปเดตแอปเวอร์ชันใหม่
         </div>
-        <button onclick="forceRefresh()" class="bg-blue-500 hover:bg-blue-600 text-white text-[0.85rem] font-semibold px-4 py-2 rounded-full transition-colors pointer-events-auto shadow-sm active:scale-95">
+        <button onclick="forceRefresh()" class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors pointer-events-auto shadow-sm active:scale-95">
             รีเฟรชเลย
         </button>
-        <button onclick="closeUpdateToast()" class="text-gray-400 hover:text-white p-1 pointer-events-auto transition-colors">
-            <i data-lucide="x" class="w-4 h-4"></i>
+        <button onclick="closeUpdateToast()" class="text-gray-400 hover:text-white p-1.5 pointer-events-auto transition-colors">
+            <i data-lucide="x" class="w-5 h-5"></i>
         </button>
     </div>
 
-    <div class="w-full h-[100dvh] max-w-lg md:max-w-2xl lg:max-w-3xl sm:h-[90vh] md:h-[85vh] sm:rounded-[2.5rem] bg-white sm:shadow-[0_20px_40px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col relative border border-gray-100 transition-all">
+    <div class="w-full h-[100dvh] max-w-xl md:max-w-3xl lg:max-w-4xl sm:h-[95vh] sm:rounded-[2.5rem] bg-white sm:shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden flex flex-col relative border border-gray-100 transition-all">
         
         <!-- Modal แก้ไขรายการแบบเต็ม -->
         <div id="edit-modal" class="hidden absolute inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
-            <div class="bg-white w-full max-w-xs md:max-w-sm rounded-3xl shadow-2xl p-5 md:p-8 transition-all transform scale-100 max-h-[90vh] overflow-y-auto no-scrollbar">
-                <div class="flex justify-between items-center mb-4 md:mb-6">
-                    <h3 class="font-semibold text-base sm:text-lg md:text-xl">แก้ไขรายการ</h3>
-                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-black focus:outline-none">
-                        <i data-lucide="x" class="w-5 h-5 md:w-6 md:h-6"></i>
+            <div class="bg-white w-full max-w-sm md:max-w-md lg:max-w-lg rounded-3xl shadow-2xl p-6 md:p-10 transition-all transform scale-100 max-h-[90vh] overflow-y-auto no-scrollbar">
+                <div class="flex justify-between items-center mb-5 md:mb-8">
+                    <h3 class="font-semibold text-lg sm:text-xl md:text-2xl">แก้ไขรายการ</h3>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-black focus:outline-none p-1">
+                        <i data-lucide="x" class="w-6 h-6 md:w-7 md:h-7"></i>
                     </button>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-3 mb-3 md:mb-4">
+                <div class="grid grid-cols-2 gap-4 mb-4 md:mb-5">
                     <div class="col-span-2 sm:col-span-1">
-                        <label class="block text-xs font-medium text-gray-500 mb-1 ml-1">ประเภท</label>
-                        <select id="edit-type-input" class="w-full bg-[#f5f5f7] px-3 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]">
+                        <label class="block text-sm md:text-base font-medium text-gray-500 mb-1.5 ml-1">ประเภท</label>
+                        <select id="edit-type-input" class="w-full bg-[#f5f5f7] px-4 py-3 sm:py-3.5 md:py-4 rounded-xl outline-none text-base sm:text-lg">
                             <option value="expense">รายจ่าย</option>
                             <option value="income">รายรับ</option>
                         </select>
                     </div>
                     <div class="col-span-2 sm:col-span-1">
-                        <label class="block text-xs font-medium text-gray-500 mb-1 ml-1">จำนวนเงิน (฿)</label>
-                        <input id="edit-amount-input" type="number" step="0.01" class="w-full bg-[#f5f5f7] px-3 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]" />
+                        <label class="block text-sm md:text-base font-medium text-gray-500 mb-1.5 ml-1">จำนวนเงิน (฿)</label>
+                        <input id="edit-amount-input" type="number" step="0.01" class="w-full bg-[#f5f5f7] px-4 py-3 sm:py-3.5 md:py-4 rounded-xl outline-none text-base sm:text-lg font-medium" />
                     </div>
                 </div>
 
-                <div class="mb-3 md:mb-4">
-                    <label class="block text-xs font-medium text-gray-500 mb-1 ml-1">ชื่อรายการ</label>
-                    <input id="edit-desc-input" type="text" class="w-full bg-[#f5f5f7] px-3 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]" />
+                <div class="mb-4 md:mb-5">
+                    <label class="block text-sm md:text-base font-medium text-gray-500 mb-1.5 ml-1">ชื่อรายการ</label>
+                    <input id="edit-desc-input" type="text" class="w-full bg-[#f5f5f7] px-4 py-3 sm:py-3.5 md:py-4 rounded-xl outline-none text-base sm:text-lg" />
                 </div>
 
-                <div class="mb-3 md:mb-4">
-                    <label class="block text-xs font-medium text-gray-500 mb-1 ml-1">แท็กพิเศษ</label>
-                    <input id="edit-tag-input" type="text" placeholder="เช่น เที่ยว, ของขวัญ" class="w-full bg-[#f5f5f7] px-3 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]" />
+                <div class="mb-4 md:mb-5">
+                    <label class="block text-sm md:text-base font-medium text-gray-500 mb-1.5 ml-1">แท็กพิเศษ</label>
+                    <input id="edit-tag-input" type="text" placeholder="เช่น เที่ยว, ของขวัญ" class="w-full bg-[#f5f5f7] px-4 py-3 sm:py-3.5 md:py-4 rounded-xl outline-none text-base sm:text-lg" />
                 </div>
 
-                <div class="mb-5 md:mb-6">
-                    <label class="block text-xs font-medium text-gray-500 mb-1 ml-1">วันเวลา</label>
-                    <input id="edit-datetime-input" type="datetime-local" class="w-full bg-[#f5f5f7] px-3 py-2.5 sm:py-3 rounded-xl outline-none text-[0.95rem] sm:text-[1rem]" />
+                <div class="mb-6 md:mb-8">
+                    <label class="block text-sm md:text-base font-medium text-gray-500 mb-1.5 ml-1">วันเวลา</label>
+                    <input id="edit-datetime-input" type="datetime-local" class="w-full bg-[#f5f5f7] px-4 py-3 sm:py-3.5 md:py-4 rounded-xl outline-none text-base sm:text-lg" />
                 </div>
 
-                <button onclick="saveEdit()" class="w-full bg-black text-white py-2.5 sm:py-3 md:py-3.5 rounded-xl font-medium active:scale-95 transition-all text-[0.95rem] sm:text-[1rem] md:text-[1.1rem]">
+                <button onclick="saveEdit()" class="w-full bg-black text-white py-3.5 sm:py-4 md:py-5 rounded-xl font-medium active:scale-95 transition-all text-base sm:text-lg md:text-xl">
                     บันทึกการแก้ไข
                 </button>
             </div>
         </div>
 
-        <!-- Header -->
-        <header class="flex-none bg-white/90 backdrop-blur-md pt-8 sm:pt-10 md:pt-12 pb-3 sm:pb-4 md:pb-5 px-4 sm:px-6 md:px-10 border-b border-gray-100/80 z-20 transition-all shadow-sm">
-            <div class="flex flex-row justify-between items-start gap-2">
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-0.5 sm:mb-1 md:mb-2">
-                        <p class="text-[0.65rem] sm:text-xs md:text-sm font-medium tracking-wide text-gray-500 uppercase truncate">ยอดเงินคงเหลือ</p>
-                        <span id="cloud-wrapper"><i data-lucide="cloud-off" class="w-3 h-3 md:w-4 md:h-4 text-gray-300 animate-pulse"></i></span>
+        <!-- ========================================== -->
+        <!-- ส่วนบน (Top Section) ยอดเงินและช่องบันทึกข้อมูล -->
+        <!-- ========================================== -->
+        <div class="flex-none bg-white z-20 relative shadow-[0_10px_30px_-15px_rgba(0,0,0,0.04)] border-b border-gray-100">
+            
+            <!-- ยอดเงินรวม -->
+            <header class="pt-8 sm:pt-10 md:pt-12 pb-5 sm:pb-6 px-5 sm:px-8 md:px-12 transition-all">
+                <div class="flex items-center justify-between mb-1 sm:mb-2 md:mb-3">
+                    <div class="flex items-center gap-2">
+                        <p class="text-xs sm:text-sm md:text-base font-medium tracking-wide text-gray-500 uppercase truncate">ยอดเงินคงเหลือ</p>
+                        <span id="cloud-wrapper"><i data-lucide="cloud-off" class="w-4 h-4 md:w-5 md:h-5 text-gray-300 animate-pulse"></i></span>
                     </div>
-                    <h1 class="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-[#1d1d1f] leading-none mt-1 md:mt-2 truncate">
-                        <span id="balance-display">0</span>
-                        <span class="text-xl sm:text-2xl md:text-3xl text-gray-400 font-normal ml-0.5 sm:ml-1 md:ml-2 tracking-normal">฿</span>
-                    </h1>
-                    <div class="flex flex-wrap gap-2 sm:gap-3 md:gap-4 mt-2.5 sm:mt-3 md:mt-4">
-                        <div class="flex items-center gap-1 text-[0.7rem] sm:text-[0.8rem] md:text-[0.9rem] font-medium text-green-600 bg-green-50 px-2 py-1 md:px-3 md:py-1.5 rounded-md md:rounded-lg whitespace-nowrap">
-                            <i data-lucide="trending-up" class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4"></i> รับ <span id="income-display">0</span>
-                        </div>
-                        <div class="flex items-center gap-1 text-[0.7rem] sm:text-[0.8rem] md:text-[0.9rem] font-medium text-red-500 bg-red-50 px-2 py-1 md:px-3 md:py-1.5 rounded-md md:rounded-lg whitespace-nowrap">
-                            <i data-lucide="trending-down" class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4"></i> จ่าย <span id="expense-display">0</span>
-                        </div>
+                    
+                    <!-- Auth Section สำหรับแสดงปุ่มล็อคอิน/รูปโปรไฟล์ -->
+                    <div id="auth-section">
+                        <!-- จะถูกเติมด้วย JavaScript -->
                     </div>
                 </div>
-                
-                <div class="flex shrink-0 self-start bg-[#f5f5f7] p-1 rounded-lg sm:rounded-xl md:rounded-2xl border border-gray-200/50">
-                    <button id="tab-list" onclick="switchTab('list')" class="flex items-center justify-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm md:text-base rounded-md sm:rounded-lg md:rounded-xl transition-all bg-white shadow-sm font-medium text-black">
-                        <i data-lucide="list" class="w-3.5 h-3.5 sm:w-[15px] sm:h-[15px] md:w-[18px] md:h-[18px]"></i> รายการ
+
+                <h1 class="text-4xl sm:text-5xl md:text-6xl font-medium tracking-tight text-[#1d1d1f] leading-none mt-2 md:mt-3 truncate">
+                    <span id="balance-display">0</span>
+                    <span class="text-2xl sm:text-3xl md:text-4xl text-gray-400 font-normal ml-1 sm:ml-2 tracking-normal">฿</span>
+                </h1>
+                <div class="flex flex-wrap gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-5 md:mt-6">
+                    <div class="flex items-center gap-1.5 text-xs sm:text-sm md:text-base font-medium text-green-600 bg-green-50 px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl whitespace-nowrap">
+                        <i data-lucide="trending-up" class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5"></i> รับ <span id="income-display">0</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-xs sm:text-sm md:text-base font-medium text-red-500 bg-red-50 px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl whitespace-nowrap">
+                        <i data-lucide="trending-down" class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5"></i> จ่าย <span id="expense-display">0</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ช่องบันทึก (อยู่ติดกับยอดเงินเพื่อความต่อเนื่อง) -->
+            <section class="px-5 sm:px-8 md:px-12 pb-6 sm:pb-8">
+                <div class="flex items-end gap-3 bg-[#f5f5f7] p-1.5 sm:p-2 md:p-2.5 rounded-[1.5rem] md:rounded-[2rem] border border-gray-200/50 focus-within:border-gray-300 focus-within:bg-white focus-within:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] transition-all duration-300">
+                    <textarea
+                        id="input-text"
+                        disabled
+                        placeholder="กำลังเชื่อมต่อ..."
+                        class="flex-1 bg-transparent px-4 py-2.5 sm:px-5 sm:py-3 md:px-6 md:py-4 text-base sm:text-lg md:text-xl outline-none font-normal resize-none min-h-[48px] sm:min-h-[56px] md:min-h-[64px] max-h-[140px] sm:max-h-[180px] md:max-h-[240px] overflow-y-auto leading-relaxed disabled:opacity-50 no-scrollbar"
+                        rows="1"
+                    ></textarea>
+                    <button
+                        id="submit-btn"
+                        disabled
+                        onclick="submitEntries()"
+                        class="p-2.5 md:p-4 mb-0.5 mr-0.5 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 bg-gray-200 text-gray-400"
+                    >
+                        <span id="submit-wrapper"><i data-lucide="arrow-up" class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7"></i></span>
                     </button>
-                    <button id="tab-daily" onclick="switchTab('daily')" class="flex items-center justify-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm md:text-base rounded-md sm:rounded-lg md:rounded-xl transition-all text-gray-500 hover:text-gray-700">
-                        <i data-lucide="calendar-days" class="w-3.5 h-3.5 sm:w-[15px] sm:h-[15px] md:w-[18px] md:h-[18px]"></i> รายวัน
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ส่วนควบคุมรายการ (Filter & Tabs Section) -->
+        <!-- ========================================== -->
+        <div class="flex-none bg-white border-b border-gray-100 px-5 sm:px-8 md:px-12 py-3 sm:py-4 z-10 flex flex-col gap-3 transition-all relative">
+            <div class="flex justify-between items-center gap-4">
+                <!-- กลุ่มปุ่ม Tabs (ปรับให้เต็มจอบนมือถือ) -->
+                <div class="flex bg-[#f5f5f7] p-1.5 rounded-xl sm:rounded-2xl border border-gray-200/50 w-full sm:w-max">
+                    <button id="tab-list" onclick="switchTab('list')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:px-6 md:px-8 md:py-2.5 text-sm sm:text-base md:text-lg rounded-lg sm:rounded-xl transition-all bg-white shadow-sm font-medium text-black">
+                        <i data-lucide="list" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"></i> รายการ
+                    </button>
+                    <button id="tab-daily" onclick="switchTab('daily')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:px-6 md:px-8 md:py-2.5 text-sm sm:text-base md:text-lg rounded-lg sm:rounded-xl transition-all text-gray-500 hover:text-gray-700">
+                        <i data-lucide="calendar-days" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"></i> รายวัน
                     </button>
                 </div>
             </div>
-
-            <div id="category-container" class="flex gap-2 overflow-x-auto w-full mt-3 sm:mt-4 md:mt-5 pb-2 no-scrollbar">
+            
+            <!-- สรุปหมวดหมู่แนวนอน (ซ่อนอัตโนมัติถ้าไม่มีข้อมูล) -->
+            <div id="category-container" class="flex gap-2.5 overflow-x-auto w-full no-scrollbar pb-1" style="display: none;">
                 <!-- เนื้อหาหมวดหมู่จะถูกแทรกที่นี่ -->
             </div>
-        </header>
+        </div>
 
-        <!-- Input Area (Moved to Top) -->
-        <section class="flex-none bg-white/95 backdrop-blur-md border-b border-gray-100 p-3 sm:p-4 md:p-6 z-20 shadow-sm">
-            <div class="flex items-end gap-2 bg-[#f5f5f7] p-1 sm:p-1.5 md:p-2 rounded-[1.25rem] md:rounded-[1.5rem] border border-gray-200/50 focus-within:border-gray-300 focus-within:bg-[#ebebed] transition-all">
-                <textarea
-                    id="input-text"
-                    disabled
-                    placeholder="กำลังเชื่อมต่อ..."
-                    class="flex-1 bg-transparent px-3 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-[0.95rem] sm:text-[1.05rem] md:text-[1.15rem] outline-none font-normal resize-none min-h-[40px] sm:min-h-[44px] md:min-h-[50px] max-h-[120px] sm:max-h-[150px] md:max-h-[200px] overflow-y-auto leading-relaxed disabled:opacity-50 no-scrollbar"
-                    rows="1"
-                ></textarea>
-                <button
-                    id="submit-btn"
-                    disabled
-                    onclick="submitEntries()"
-                    class="p-2 md:p-3 mb-0.5 mr-0.5 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 bg-gray-200 text-gray-400"
-                >
-                    <span id="submit-wrapper"><i data-lucide="arrow-up" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"></i></span>
-                </button>
-            </div>
-        </section>
-
-        <!-- Main Content -->
-        <main id="main-content" class="flex-1 overflow-y-auto px-4 sm:px-6 md:px-10 py-4 md:py-6 pb-12 sm:pb-16 flex flex-col scroll-smooth relative z-0 bg-white">
+        <!-- ========================================== -->
+        <!-- ส่วนเนื้อหาหลัก (Main Content - สไลด์เลื่อนได้) -->
+        <!-- ========================================== -->
+        <main id="main-content" class="flex-1 overflow-y-auto px-5 sm:px-8 md:px-12 py-5 md:py-8 pb-16 sm:pb-20 flex flex-col scroll-smooth relative z-0 bg-white">
             <div class="flex-1 flex items-center justify-center">
-                <i data-lucide="loader-2" class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 animate-spin text-gray-300"></i>
+                <i data-lucide="loader-2" class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 animate-spin text-gray-300"></i>
             </div>
         </main>
 
@@ -154,11 +176,11 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, linkWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // *** เปลี่ยนตัวเลขเวอร์ชันนี้ทุกครั้งที่คุณอัปเดตโค้ดบน GitHub ***
-        const APP_VERSION = "1.0.1";
+        const APP_VERSION = "1.0.4";
 
         // คอนฟิกูเรชันจาก Firebase ของคุณ
         const firebaseConfig = {
@@ -185,7 +207,7 @@
         let user = null;
         let entries = [];
         let activeTab = 'list';
-        let editingEntryId = null; // เปลี่ยนจาก tagging เป็น editing
+        let editingEntryId = null;
         let isSyncing = false;
 
         const initAuth = async () => {
@@ -206,16 +228,73 @@
         };
         if(auth) initAuth();
 
+        // --- ระบบ Login ด้วย Google ---
+        window.loginWithGoogle = async () => {
+            try {
+                const provider = new GoogleAuthProvider();
+                
+                // หากผู้ใช้เคยจดบันทึกในฐานะผู้ใช้ทั่วไป (Anonymous) ระบบจะพยายามเชื่อมโยง (Link) บัญชีให้
+                if (auth.currentUser && auth.currentUser.isAnonymous) {
+                    await linkWithPopup(auth.currentUser, provider);
+                } else {
+                    await signInWithPopup(auth, provider);
+                }
+            } catch (error) {
+                if (error.code === 'auth/credential-already-in-use') {
+                    // กรณีที่อีเมล Google นี้เคยถูกใช้ล็อคอินแล้ว ให้ทำการบังคับล็อคอินตามปกติ (ข้อมูลที่จดแบบ Anonymous ปัจจุบันจะหายไป)
+                    const provider = new GoogleAuthProvider();
+                    await signInWithPopup(auth, provider);
+                } else {
+                    console.error("Google Login Error:", error);
+                    alert("เกิดข้อผิดพลาดในการล็อคอิน กรุณาตรวจสอบว่าเปิดใช้งาน Google Sign-In ใน Firebase แล้วหรือยัง");
+                }
+            }
+        };
+
+        window.logout = async () => {
+            try {
+                await signOut(auth);
+                window.location.reload(); // รีเฟรชหน้าเพื่อให้กลับเป็น Anonymous User อีกครั้ง
+            } catch (error) {
+                console.error("Logout Error:", error);
+            }
+        };
+        // -----------------------------
+
         onAuthStateChanged(auth, (currentUser) => {
             user = currentUser;
             const input = document.getElementById('input-text');
             const cloudWrapper = document.getElementById('cloud-wrapper');
+            const authSection = document.getElementById('auth-section');
             
             if (user) {
+                // จัดการ UI สำหรับล็อคอิน
+                if (user.isAnonymous) {
+                    authSection.innerHTML = `
+                        <button onclick="loginWithGoogle()" class="flex items-center gap-1.5 bg-[#f5f5f7] border border-gray-200 text-gray-700 hover:bg-white hover:shadow-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all active:scale-95">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4 sm:w-5 sm:h-5" alt="Google">
+                            <span>ซิงค์ข้อมูล</span>
+                        </button>
+                    `;
+                } else {
+                    authSection.innerHTML = `
+                        <div class="flex items-center gap-2 sm:gap-3 bg-white border border-gray-100 pl-2 pr-3 sm:pr-4 py-1.5 rounded-full shadow-sm">
+                            <img src="${user.photoURL || 'https://via.placeholder.com/150'}" alt="Profile" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-gray-100">
+                            <div class="flex flex-col">
+                                <span class="text-[0.6rem] sm:text-[0.7rem] leading-none text-gray-400">ซิงค์แล้ว</span>
+                                <span class="text-xs sm:text-sm font-medium leading-none text-[#1d1d1f] max-w-[80px] sm:max-w-[120px] truncate">${user.displayName || 'User'}</span>
+                            </div>
+                            <button onclick="logout()" class="ml-1 sm:ml-2 text-gray-400 hover:text-red-500 transition-colors p-1" title="ออกจากระบบ">
+                                <i data-lucide="log-out" class="w-4 h-4 sm:w-4.5 sm:h-4.5"></i>
+                            </button>
+                        </div>
+                    `;
+                }
+
                 input.disabled = false;
                 input.placeholder = "จดบันทึก...";
                 if (cloudWrapper) {
-                    cloudWrapper.innerHTML = '<i data-lucide="cloud" class="w-3 h-3 text-blue-500"></i>';
+                    cloudWrapper.innerHTML = '<i data-lucide="cloud" class="w-4 h-4 md:w-5 md:h-5 text-blue-500"></i>';
                 }
                 lucide.createIcons();
                 fetchData();
@@ -306,9 +385,9 @@
             if (Object.keys(categorySummary).length > 0) {
                 const sortedCats = Object.entries(categorySummary).sort((a, b) => b[1].amount - a[1].amount);
                 catContainer.innerHTML = sortedCats.map(([cat, data]) => `
-                    <div class="border rounded-lg px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 flex items-center gap-1 sm:gap-1.5 md:gap-2 whitespace-nowrap shadow-sm ${data.type === 'income' ? 'bg-green-50/50 border-green-100 text-green-600' : 'bg-[#f5f5f7] border-gray-200/60 text-gray-600'}">
-                        <span class="text-[0.7rem] sm:text-[0.75rem] md:text-[0.85rem] font-medium">${cat}</span>
-                        <span class="text-[0.7rem] sm:text-[0.75rem] md:text-[0.85rem] font-semibold ml-0.5 ${data.type === 'income' ? 'text-green-600' : 'text-[#1d1d1f]'}">
+                    <div class="border rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shadow-sm ${data.type === 'income' ? 'bg-green-50/50 border-green-100 text-green-600' : 'bg-[#f5f5f7] border-gray-200/60 text-gray-600'}">
+                        <span class="text-xs sm:text-sm md:text-base font-medium">${cat}</span>
+                        <span class="text-xs sm:text-sm md:text-base font-semibold ml-1 ${data.type === 'income' ? 'text-green-600' : 'text-[#1d1d1f]'}">
                             ${data.type === 'income' ? '+' : ''}${data.amount.toLocaleString()}฿
                         </span>
                     </div>
@@ -321,35 +400,33 @@
             const mainContent = document.getElementById('main-content');
             if (activeTab === 'list') {
                 if (entries.length === 0) {
-                    mainContent.innerHTML = `<div class="mt-8 text-gray-400 text-xs sm:text-sm md:text-base font-light text-center">ยังไม่มีข้อมูล<br><span class="text-[10px] md:text-xs mt-2 block">พิมพ์รายการที่ช่องด้านบนเพื่อเริ่มต้น</span></div>`;
+                    mainContent.innerHTML = `<div class="mt-10 text-gray-400 text-sm sm:text-base md:text-lg font-light text-center">ยังไม่มีข้อมูล<br><span class="text-xs md:text-sm mt-3 block">พิมพ์รายการที่ช่องด้านบนเพื่อเริ่มต้น</span></div>`;
                 } else {
-                    mainContent.innerHTML = `<div class="flex flex-col gap-3 sm:gap-4 md:gap-5 mt-1 sm:mt-2 md:mt-3 fade-in">` + entries.map(entry => `
-                        <div class="flex justify-between items-center group border-b border-gray-50/80 pb-2.5 sm:pb-3 md:pb-4 select-none rounded-lg px-2 -mx-2 transition-colors hover:bg-gray-50/30">
+                    mainContent.innerHTML = `<div class="flex flex-col gap-4 sm:gap-5 md:gap-6 mt-2 sm:mt-3 md:mt-4 fade-in">` + entries.map(entry => `
+                        <div class="flex justify-between items-center group border-b border-gray-50/80 pb-3 sm:pb-4 md:pb-5 select-none rounded-xl px-3 -mx-3 transition-colors hover:bg-gray-50/30">
                             <div class="flex flex-col flex-1">
-                                <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
-                                    <span class="text-[0.95rem] sm:text-[1.05rem] md:text-[1.15rem] text-[#1d1d1f] font-normal tracking-wide break-words">${entry.description}</span>
-                                    ${entry.customTag ? `<span class="text-[0.6rem] sm:text-[0.65rem] md:text-[0.75rem] px-1 sm:px-1.5 md:px-2 py-0.5 rounded bg-blue-50 text-blue-600 font-bold border border-blue-100 uppercase tracking-tight">${entry.customTag}</span>` : ''}
-                                    ${entry.category ? `<span class="text-[0.6rem] sm:text-[0.65rem] md:text-[0.75rem] px-1 sm:px-1.5 md:px-2 py-0.5 rounded uppercase font-bold tracking-tighter ${entry.type === 'income' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">${entry.category.name}</span>` : ''}
+                                <div class="flex items-center flex-wrap gap-2 sm:gap-3">
+                                    <span class="text-base sm:text-lg md:text-xl text-[#1d1d1f] font-normal tracking-wide break-words">${entry.description}</span>
+                                    ${entry.customTag ? `<span class="text-xs sm:text-sm px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 font-bold border border-blue-100 uppercase tracking-tight">${entry.customTag}</span>` : ''}
+                                    ${entry.category ? `<span class="text-[0.65rem] sm:text-xs md:text-sm px-2 py-0.5 rounded-md uppercase font-bold tracking-tighter ${entry.type === 'income' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">${entry.category.name}</span>` : ''}
                                 </div>
-                                <span class="text-[0.6rem] sm:text-[0.65rem] md:text-[0.75rem] text-gray-400 mt-0.5 sm:mt-1 flex items-center gap-2">
+                                <span class="text-xs sm:text-sm md:text-base text-gray-400 mt-1 sm:mt-1.5 flex items-center gap-2">
                                     ${entry.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                 </span>
                             </div>
-                            <div class="flex items-center gap-1 sm:gap-2 pl-2 sm:pl-4">
-                                ${entry.amount !== null ? `<div class="text-[0.95rem] sm:text-[1.05rem] md:text-[1.15rem] font-medium tracking-wide ${entry.type === 'income' ? 'text-green-600' : 'text-[#1d1d1f]'} mr-1 sm:mr-2">${entry.type === 'income' ? '+' : ''}${entry.amount.toLocaleString()}</div>` : ''}
-                                <div class="flex items-center">
-                                    <button onclick="openEditModal('${entry.id}')" class="text-gray-400 hover:text-blue-500 hover:bg-blue-50 p-1.5 sm:p-2 rounded-lg transition-all duration-200" title="แก้ไข">
-                                        <i data-lucide="pencil" class="w-4 h-4 sm:w-[18px] sm:h-[18px] md:w-5 md:h-5"></i>
+                            <div class="flex items-center gap-2 sm:gap-3 pl-3 sm:pl-5">
+                                ${entry.amount !== null ? `<div class="text-base sm:text-lg md:text-xl font-medium tracking-wide ${entry.type === 'income' ? 'text-green-600' : 'text-[#1d1d1f]'} mr-2 sm:mr-3">${entry.type === 'income' ? '+' : ''}${entry.amount.toLocaleString()}</div>` : ''}
+                                <div class="flex items-center gap-1">
+                                    <button onclick="openEditModal('${entry.id}')" class="text-gray-400 hover:text-blue-500 hover:bg-blue-50 p-2 sm:p-2.5 rounded-xl transition-all duration-200" title="แก้ไข">
+                                        <i data-lucide="pencil" class="w-5 h-5 sm:w-6 sm:h-6"></i>
                                     </button>
-                                    <button onclick="deleteEntry('${entry.id}', event)" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-1.5 sm:p-2 rounded-lg transition-all duration-200" title="ลบ">
-                                        <i data-lucide="trash-2" class="w-4 h-4 sm:w-[18px] sm:h-[18px] md:w-5 md:h-5"></i>
+                                    <button onclick="deleteEntry('${entry.id}', event)" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 sm:p-2.5 rounded-xl transition-all duration-200" title="ลบ">
+                                        <i data-lucide="trash-2" class="w-5 h-5 sm:w-6 sm:h-6"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
                     `).join('') + `</div>`;
-                    
-                    // ปิดการเลื่อนจอลงมาสุด เพราะรายการใหม่อยู่ด้านบนแล้ว
                 }
             } else {
                 const dailyMap = new Map();
@@ -372,29 +449,29 @@
                 }).reverse();
 
                 if (summaryArray.length === 0) {
-                    mainContent.innerHTML = `<div class="mt-8 text-gray-400 text-xs sm:text-sm md:text-base font-light text-center">ยังไม่มีข้อมูลรายวัน</div>`;
+                    mainContent.innerHTML = `<div class="mt-10 text-gray-400 text-sm sm:text-base md:text-lg font-light text-center">ยังไม่มีข้อมูลรายวัน</div>`;
                 } else {
                     mainContent.innerHTML = `
-                    <div class="mt-1 sm:mt-2 md:mt-4">
-                        <div class="border border-gray-100 rounded-xl sm:rounded-2xl md:rounded-[1.5rem] overflow-hidden shadow-sm bg-white mb-6 sm:mb-8">
+                    <div class="mt-2 sm:mt-4 md:mt-6">
+                        <div class="border border-gray-100 rounded-2xl sm:rounded-[1.5rem] md:rounded-[2rem] overflow-hidden shadow-sm bg-white mb-8 sm:mb-10">
                             <table class="w-full text-left border-collapse">
-                                <thead class="bg-[#f5f5f7] border-b border-gray-100 text-gray-500 text-[0.75rem] sm:text-[0.85rem] md:text-[0.95rem]">
+                                <thead class="bg-[#f5f5f7] border-b border-gray-100 text-gray-500 text-xs sm:text-sm md:text-base">
                                     <tr>
-                                        <th class="py-2.5 sm:py-3 md:py-4 px-2 sm:px-4 md:px-6 font-medium">วันที่</th>
-                                        <th class="py-2.5 sm:py-3 md:py-4 px-1 sm:px-2 md:px-4 font-medium text-right text-green-600">รับ</th>
-                                        <th class="py-2.5 sm:py-3 md:py-4 px-1 sm:px-2 md:px-4 font-medium text-right text-red-500">จ่าย</th>
-                                        <th class="py-2.5 sm:py-3 md:py-4 px-2 sm:px-4 md:px-6 font-medium text-right text-blue-600">คงเหลือ</th>
+                                        <th class="py-3.5 sm:py-4 md:py-5 px-3 sm:px-5 md:px-8 font-medium">วันที่</th>
+                                        <th class="py-3.5 sm:py-4 md:py-5 px-2 sm:px-3 md:px-5 font-medium text-right text-green-600">รับ</th>
+                                        <th class="py-3.5 sm:py-4 md:py-5 px-2 sm:px-3 md:px-5 font-medium text-right text-red-500">จ่าย</th>
+                                        <th class="py-3.5 sm:py-4 md:py-5 px-3 sm:px-5 md:px-8 font-medium text-right text-blue-600">คงเหลือ</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-50">
                                     ${summaryArray.map(day => `
                                         <tr class="hover:bg-gray-50/50 transition-colors">
-                                            <td class="py-2.5 sm:py-3.5 md:py-4 px-2 sm:px-4 md:px-6 text-[0.8rem] sm:text-[0.95rem] md:text-[1.05rem] text-[#1d1d1f] whitespace-nowrap">
-                                                ${day.date}<span class="block text-[0.65rem] sm:text-[0.7rem] md:text-[0.8rem] text-gray-400 mt-0.5 sm:mt-1">${day.count} รายการ</span>
+                                            <td class="py-3.5 sm:py-4.5 md:py-6 px-3 sm:px-5 md:px-8 text-sm sm:text-base md:text-lg text-[#1d1d1f] whitespace-nowrap">
+                                                ${day.date}<span class="block text-xs sm:text-sm md:text-base text-gray-400 mt-1 sm:mt-1.5">${day.count} รายการ</span>
                                             </td>
-                                            <td class="py-2.5 sm:py-3.5 md:py-4 px-1 sm:px-2 md:px-4 text-[0.85rem] sm:text-[1rem] md:text-[1.1rem] font-medium text-green-600 text-right">${day.income > 0 ? `+${day.income.toLocaleString()}` : '-'}</td>
-                                            <td class="py-2.5 sm:py-3.5 md:py-4 px-1 sm:px-2 md:px-4 text-[0.85rem] sm:text-[1rem] md:text-[1.1rem] font-medium text-red-500 text-right">${day.expense > 0 ? `-${day.expense.toLocaleString()}` : '-'}</td>
-                                            <td class="py-2.5 sm:py-3.5 md:py-4 px-2 sm:px-4 md:px-6 text-[0.9rem] sm:text-[1.05rem] md:text-[1.15rem] font-semibold text-[#1d1d1f] text-right">${day.balance.toLocaleString()}</td>
+                                            <td class="py-3.5 sm:py-4.5 md:py-6 px-2 sm:px-3 md:px-5 text-sm sm:text-base md:text-lg font-medium text-green-600 text-right">${day.income > 0 ? `+${day.income.toLocaleString()}` : '-'}</td>
+                                            <td class="py-3.5 sm:py-4.5 md:py-6 px-2 sm:px-3 md:px-5 text-sm sm:text-base md:text-lg font-medium text-red-500 text-right">${day.expense > 0 ? `-${day.expense.toLocaleString()}` : '-'}</td>
+                                            <td class="py-3.5 sm:py-4.5 md:py-6 px-3 sm:px-5 md:px-8 text-base sm:text-lg md:text-xl font-semibold text-[#1d1d1f] text-right">${day.balance.toLocaleString()}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -520,8 +597,9 @@
             }
         };
 
-        const activeTabClass = "flex items-center justify-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm md:text-base rounded-md sm:rounded-lg md:rounded-xl transition-all bg-white shadow-sm font-medium text-black";
-        const inactiveTabClass = "flex items-center justify-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 text-xs sm:text-sm md:text-base rounded-md sm:rounded-lg md:rounded-xl transition-all text-gray-500 hover:text-gray-700";
+        // คลาสของแท็บที่ทำงานตามโครงสร้างใหม่
+        const activeTabClass = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:px-6 md:px-8 md:py-2.5 text-sm sm:text-base md:text-lg rounded-lg sm:rounded-xl transition-all bg-white shadow-sm font-medium text-black";
+        const inactiveTabClass = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:px-6 md:px-8 md:py-2.5 text-sm sm:text-base md:text-lg rounded-lg sm:rounded-xl transition-all text-gray-500 hover:text-gray-700";
 
         window.switchTab = (tab) => {
             activeTab = tab;
@@ -545,15 +623,15 @@
             const hasText = inputEl.value.trim().length > 0;
             if (hasText && !isSyncing) {
                 submitBtn.disabled = false;
-                submitBtn.className = "p-2 md:p-3 mb-0.5 mr-0.5 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 bg-black text-white active:scale-90";
+                submitBtn.className = "p-2.5 md:p-4 mb-0.5 mr-0.5 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 bg-black text-white active:scale-90";
             } else {
                 submitBtn.disabled = true;
-                submitBtn.className = "p-2 md:p-3 mb-0.5 mr-0.5 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 bg-gray-200 text-gray-400";
+                submitBtn.className = "p-2.5 md:p-4 mb-0.5 mr-0.5 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 bg-gray-200 text-gray-400";
             }
         };
         inputEl.addEventListener('input', function() {
             this.style.height = 'auto';
-            const maxHeight = window.innerWidth >= 768 ? 200 : 120;
+            const maxHeight = window.innerWidth >= 768 ? 240 : 140;
             this.style.height = Math.min(this.scrollHeight, maxHeight) + 'px';
             checkInput();
         });
@@ -567,9 +645,9 @@
         const toggleLoading = (loading) => {
             const wrapper = document.getElementById('submit-wrapper');
             if (loading) {
-                wrapper.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 sm:w-5 sm:h-5 animate-spin"></i>';
+                wrapper.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 animate-spin"></i>';
             } else {
-                wrapper.innerHTML = '<i data-lucide="arrow-up" class="w-4 h-4 sm:w-5 sm:h-5"></i>';
+                wrapper.innerHTML = '<i data-lucide="arrow-up" class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7"></i>';
             }
             lucide.createIcons();
             inputEl.disabled = loading;
