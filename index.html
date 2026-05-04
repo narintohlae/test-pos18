@@ -3,696 +3,403 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- ป้องกันการ Cache หน้าเว็บหลักเบื้องต้น -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Note Wallet</title>
-    <!-- โหลด Tailwind CSS -->
+    <title>โปรแกรมสรุปรายจ่าย</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- โหลดไอคอนจาก Lucide -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700;800&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* ซ่อน Scrollbar ให้ดูสะอาดตาแบบ Apple */
+        :root {
+            --app-bg: #f4f5f9;
+        }
+        /* บังคับความสูง 100dvh (พอดีจอมือถือเป๊ะๆ) และห้ามเลื่อนลง */
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            background-color: var(--app-bg); 
+            -webkit-tap-highlight-color: transparent;
+            height: 100dvh;
+            overflow: hidden;
+        }
+        h1, h2, h3, .font-heading {
+            font-family: 'Prompt', sans-serif;
+        }
+        
+        .spinner { 
+            border: 3px solid rgba(0,0,0,0.1); 
+            border-left-color: currentColor; 
+            border-radius: 50%; 
+            width: 18px; 
+            height: 18px; 
+            animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite; 
+            display: inline-block; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* ซ่อน Scrollbar แต่ยังเลื่อนได้ */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .toast-enter { animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes slideUp { 
+            from { transform: translate(-50%, 100%); opacity: 0; } 
+            to { transform: translate(-50%, 0); opacity: 1; } 
+        }
         
-        /* ป้องกันข้อความเด้งตอนกดบนมือถือ */
-        body { -webkit-tap-highlight-color: transparent; }
+        /* Modal Animation */
+        .modal-enter { animation: fadeIn 0.2s ease-out forwards; }
+        .modal-content-enter { animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
-<body class="bg-[#f5f5f7] text-[#1d1d1f] font-sans selection:bg-gray-200 p-0 sm:p-4 md:p-8 lg:p-10 flex justify-center items-center min-h-screen">
+<body class="text-slate-800 flex justify-center selection:bg-blue-200">
 
-    <!-- Toast Notification สำหรับอัปเดตแอป (GitHub Pages) -->
-    <div id="update-toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 translate-y-24 opacity-0 bg-[#1d1d1f]/95 backdrop-blur-md text-white px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-4 z-[200] transition-all duration-500 pointer-events-none w-[90%] max-w-sm">
-        <div class="flex-1 text-base font-medium flex items-center gap-2">
-            <i data-lucide="sparkles" class="w-5 h-5 text-yellow-400"></i> มีอัปเดตแอปเวอร์ชันใหม่
-        </div>
-        <button onclick="forceRefresh()" class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors pointer-events-auto shadow-sm active:scale-95">
-            รีเฟรชเลย
-        </button>
-        <button onclick="closeUpdateToast()" class="text-gray-400 hover:text-white p-1.5 pointer-events-auto transition-colors">
-            <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-    </div>
-
-    <div class="w-full h-[100dvh] max-w-xl md:max-w-3xl lg:max-w-4xl sm:h-[95vh] sm:rounded-[2.5rem] bg-white sm:shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden flex flex-col relative border border-gray-100 transition-all">
+    <!-- Main App Container (Full Height, Flex Column) -->
+    <div class="w-full max-w-2xl h-full flex flex-col relative bg-[#f4f5f9] shadow-2xl">
         
-        <!-- Modal แก้ไขรายการแบบเต็ม -->
-        <div id="edit-modal" class="hidden absolute inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
-            <div class="bg-white w-full max-w-sm md:max-w-md lg:max-w-lg rounded-3xl shadow-2xl p-6 md:p-10 transition-all transform scale-100 max-h-[90vh] overflow-y-auto no-scrollbar">
-                <div class="flex justify-between items-center mb-5 md:mb-8">
-                    <h3 class="font-semibold text-lg sm:text-xl md:text-2xl">แก้ไขรายการ</h3>
-                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-black focus:outline-none p-1">
-                        <i data-lucide="x" class="w-6 h-6 md:w-7 md:h-7"></i>
-                    </button>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4 mb-4 md:mb-5">
-                    <div class="col-span-2 sm:col-span-1">
-                        <label class="block text-sm md:text-base font-medium text-gray-500 mb-1.5 ml-1">ประเภท</label>
-                        <select id="edit-type-input" class="w-full bg-[#f5f5f7] px-4 py-3 sm:py-3.5 md:py-4 rounded-xl outline-none text-base sm:text-lg">
-                            <option value="expense">รายจ่าย</option>
-                            <option value="income">รายรับ</option>
-                        </select>
-                    </div>
-                    <div class="col-span-2 sm:col-span-1">
-                        <label class="block text-sm md:text-base font-medium text-gray-500 mb-1.5 ml-1">จำนวนเงิน (฿)</label>
-                        <input id="edit-amount-input" type="number" step="0.01" class="w-full bg-[#f5f5f7] px-4 py-3 sm:py-3.5 md:py-4 rounded-xl outline-none text-base sm:text-lg font-medium" />
-                    </div>
-                </div>
-
-                <div class="mb-4 md:mb-5">
-                    <label class="block text-sm md:text-base font-medium text-gray-500 mb-1.5 ml-1">ชื่อรายการ</label>
-                    <input id="edit-desc-input" type="text" class="w-full bg-[#f5f5f7] px-4 py-3 sm:py-3.5 md:py-4 rounded-xl outline-none text-base sm:text-lg" />
-                </div>
-
-                <div class="mb-4 md:mb-5">
-                    <label class="block text-sm md:text-base font-medium text-gray-500 mb-1.5 ml-1">แท็กพิเศษ</label>
-                    <input id="edit-tag-input" type="text" placeholder="เช่น เที่ยว, ของขวัญ" class="w-full bg-[#f5f5f7] px-4 py-3 sm:py-3.5 md:py-4 rounded-xl outline-none text-base sm:text-lg" />
-                </div>
-
-                <div class="mb-6 md:mb-8">
-                    <label class="block text-sm md:text-base font-medium text-gray-500 mb-1.5 ml-1">วันเวลา</label>
-                    <input id="edit-datetime-input" type="datetime-local" class="w-full bg-[#f5f5f7] px-4 py-3 sm:py-3.5 md:py-4 rounded-xl outline-none text-base sm:text-lg" />
-                </div>
-
-                <button onclick="saveEdit()" class="w-full bg-black text-white py-3.5 sm:py-4 md:py-5 rounded-xl font-medium active:scale-95 transition-all text-base sm:text-lg md:text-xl">
-                    บันทึกการแก้ไข
+        <!-- Header (Compact) -->
+        <header class="flex-none pt-8 pb-3 px-6 flex justify-between items-center bg-[#f4f5f9] z-10">
+            <div>
+                <p class="text-xs font-medium text-slate-500 mb-0.5">ยินดีต้อนรับ 👋</p>
+                <h1 class="text-2xl font-extrabold tracking-tight text-slate-900">ภาพรวมรายจ่าย</h1>
+            </div>
+            <div class="text-right">
+                <span id="lastUpdated" class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-200/60 px-3 py-1 rounded-full mb-1">รอการซิงค์</span>
+                <button onclick="toggleModal('rawModal')" class="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 justify-end w-full">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    ดูข้อมูลดิบ
                 </button>
             </div>
-        </div>
+        </header>
 
-        <!-- ========================================== -->
-        <!-- ส่วนบน (Top Section) ยอดเงินและช่องบันทึกข้อมูล -->
-        <!-- ========================================== -->
-        <div class="flex-none bg-white z-20 relative shadow-[0_10px_30px_-15px_rgba(0,0,0,0.04)] border-b border-gray-100">
+        <!-- Content Area (Takes remaining space) -->
+        <main class="flex-1 min-h-0 flex flex-col px-5 pb-5 gap-4">
             
-            <!-- ยอดเงินรวม -->
-            <header class="pt-8 sm:pt-10 md:pt-12 pb-5 sm:pb-6 px-5 sm:px-8 md:px-12 transition-all">
-                <div class="flex items-center justify-between mb-1 sm:mb-2 md:mb-3">
-                    <div class="flex items-center gap-2">
-                        <p class="text-xs sm:text-sm md:text-base font-medium tracking-wide text-gray-500 uppercase truncate">ยอดเงินคงเหลือ</p>
-                        <span id="cloud-wrapper"><i data-lucide="cloud-off" class="w-4 h-4 md:w-5 md:h-5 text-gray-300 animate-pulse"></i></span>
+            <!-- Hero Card (Grand Total) -->
+            <div class="flex-none bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl relative overflow-hidden">
+                <!-- Decorative Blur Orbs -->
+                <div class="absolute top-0 right-0 w-48 h-48 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40 translate-x-1/3 -translate-y-1/3"></div>
+                <div class="absolute bottom-0 left-0 w-32 h-32 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40 -translate-x-1/3 translate-y-1/3"></div>
+                
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/10">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/5 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span class="text-xs font-medium text-slate-200" id="totalItems">0 รายการ</span>
+                        </div>
                     </div>
                     
-                    <!-- Auth Section สำหรับแสดงปุ่มล็อคอิน/รูปโปรไฟล์ -->
-                    <div id="auth-section">
-                        <!-- จะถูกเติมด้วย JavaScript -->
+                    <p class="text-slate-300 font-medium text-xs mb-1">ยอดรวมทั้งหมด</p>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-4xl sm:text-5xl font-heading font-extrabold tracking-tight" id="totalExpense">0</span>
+                        <span class="text-lg font-medium text-slate-400">THB</span>
                     </div>
                 </div>
+            </div>
 
-                <h1 class="text-4xl sm:text-5xl md:text-6xl font-medium tracking-tight text-[#1d1d1f] leading-none mt-2 md:mt-3 truncate">
-                    <span id="balance-display">0</span>
-                    <span class="text-2xl sm:text-3xl md:text-4xl text-gray-400 font-normal ml-1 sm:ml-2 tracking-normal">฿</span>
-                </h1>
-                <div class="flex flex-wrap gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-5 md:mt-6">
-                    <div class="flex items-center gap-1.5 text-xs sm:text-sm md:text-base font-medium text-green-600 bg-green-50 px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl whitespace-nowrap">
-                        <i data-lucide="trending-up" class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5"></i> รับ <span id="income-display">0</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 text-xs sm:text-sm md:text-base font-medium text-red-500 bg-red-50 px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl whitespace-nowrap">
-                        <i data-lucide="trending-down" class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5"></i> จ่าย <span id="expense-display">0</span>
-                    </div>
+            <!-- Bento Box Actions (Compact) -->
+            <div class="flex-none grid grid-cols-2 gap-3">
+                <button onclick="fetchFromCloud()" id="btnSync" class="bg-blue-600 hover:bg-blue-700 active:scale-[0.97] transition-all duration-300 text-white py-4 px-3 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    <span class="font-heading font-semibold text-sm">ดึงข้อมูล</span>
+                </button>
+
+                <div class="relative active:scale-[0.97] transition-all duration-300">
+                    <input type="file" id="fileInput" accept=".txt" class="hidden" onchange="handleFileUpload(event)">
+                    <label for="fileInput" class="bg-white hover:bg-slate-50 text-slate-800 py-4 px-3 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center gap-3 cursor-pointer h-full">
+                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                        <span class="font-heading font-semibold text-sm">อัปโหลดไฟล์</span>
+                    </label>
                 </div>
-            </header>
+            </div>
 
-            <!-- ช่องบันทึก (อยู่ติดกับยอดเงินเพื่อความต่อเนื่อง) -->
-            <section class="px-5 sm:px-8 md:px-12 pb-6 sm:pb-8">
-                <div class="flex items-end gap-3 bg-[#f5f5f7] p-1.5 sm:p-2 md:p-2.5 rounded-[1.5rem] md:rounded-[2rem] border border-gray-200/50 focus-within:border-gray-300 focus-within:bg-white focus-within:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] transition-all duration-300">
-                    <textarea
-                        id="input-text"
-                        disabled
-                        placeholder="กำลังเชื่อมต่อ..."
-                        class="flex-1 bg-transparent px-4 py-2.5 sm:px-5 sm:py-3 md:px-6 md:py-4 text-base sm:text-lg md:text-xl outline-none font-normal resize-none min-h-[48px] sm:min-h-[56px] md:min-h-[64px] max-h-[140px] sm:max-h-[180px] md:max-h-[240px] overflow-y-auto leading-relaxed disabled:opacity-50 no-scrollbar"
-                        rows="1"
-                    ></textarea>
-                    <button
-                        id="submit-btn"
-                        disabled
-                        onclick="submitEntries()"
-                        class="p-2.5 md:p-4 mb-0.5 mr-0.5 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 bg-gray-200 text-gray-400"
-                    >
-                        <span id="submit-wrapper"><i data-lucide="arrow-up" class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7"></i></span>
-                    </button>
+            <!-- Daily Summary (Horizontal Slider for single page feel) -->
+            <section class="flex-1 flex flex-col min-h-0 mt-2">
+                <div class="flex justify-between items-end mb-2 px-1">
+                    <h2 class="text-base font-heading font-bold text-slate-900">สรุปรายวัน</h2>
+                    <span class="text-[10px] text-slate-400">กดเพื่อดูรายละเอียด</span>
+                </div>
+                
+                <!-- Horizontal Scroll Container -->
+                <div id="dailySummaryContainer" class="flex-1 overflow-x-auto no-scrollbar flex gap-3 snap-x snap-mandatory items-stretch pb-2">
+                    <!-- Cards will be injected here -->
                 </div>
             </section>
-
-        </div>
-
-        <!-- ========================================== -->
-        <!-- ส่วนควบคุมรายการ (Filter & Tabs Section) -->
-        <!-- ========================================== -->
-        <div class="flex-none bg-white border-b border-gray-100 px-5 sm:px-8 md:px-12 py-3 sm:py-4 z-10 flex flex-col gap-3 transition-all relative">
-            <div class="flex justify-between items-center gap-4">
-                <!-- กลุ่มปุ่ม Tabs (ปรับให้เต็มจอบนมือถือ) -->
-                <div class="flex bg-[#f5f5f7] p-1.5 rounded-xl sm:rounded-2xl border border-gray-200/50 w-full sm:w-max">
-                    <button id="tab-list" onclick="switchTab('list')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:px-6 md:px-8 md:py-2.5 text-sm sm:text-base md:text-lg rounded-lg sm:rounded-xl transition-all bg-white shadow-sm font-medium text-black">
-                        <i data-lucide="list" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"></i> รายการ
-                    </button>
-                    <button id="tab-daily" onclick="switchTab('daily')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:px-6 md:px-8 md:py-2.5 text-sm sm:text-base md:text-lg rounded-lg sm:rounded-xl transition-all text-gray-500 hover:text-gray-700">
-                        <i data-lucide="calendar-days" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"></i> รายวัน
-                    </button>
-                </div>
-            </div>
-            
-            <!-- สรุปหมวดหมู่แนวนอน (ซ่อนอัตโนมัติถ้าไม่มีข้อมูล) -->
-            <div id="category-container" class="flex gap-2.5 overflow-x-auto w-full no-scrollbar pb-1" style="display: none;">
-                <!-- เนื้อหาหมวดหมู่จะถูกแทรกที่นี่ -->
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- ส่วนเนื้อหาหลัก (Main Content - สไลด์เลื่อนได้) -->
-        <!-- ========================================== -->
-        <main id="main-content" class="flex-1 overflow-y-auto px-5 sm:px-8 md:px-12 py-5 md:py-8 pb-16 sm:pb-20 flex flex-col scroll-smooth relative z-0 bg-white">
-            <div class="flex-1 flex items-center justify-center">
-                <i data-lucide="loader-2" class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 animate-spin text-gray-300"></i>
-            </div>
         </main>
-
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, linkWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // *** เปลี่ยนตัวเลขเวอร์ชันนี้ทุกครั้งที่คุณอัปเดตโค้ดบน GitHub ***
-        const APP_VERSION = "1.0.4";
-
-        // คอนฟิกูเรชันจาก Firebase ของคุณ
-        const firebaseConfig = {
-            apiKey: "AIzaSyAgTWrI1G1t3GYVz4-SPM7btrsixSe0el8",
-            authDomain: "time-tracker-46283.firebaseapp.com",
-            projectId: "time-tracker-46283",
-            storageBucket: "time-tracker-46283.firebasestorage.app",
-            messagingSenderId: "882533547295",
-            appId: "1:882533547295:web:4b78bfc84322c58a50042a",
-            measurementId: "G-5DPBNCSWFW"
-        };
+    <!-- Modal: Daily Detail View -->
+    <div id="detailModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/40 backdrop-blur-sm">
+        <!-- ปรับให้มือถือเด้งจากด้านล่าง (Bottom Sheet) -->
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg h-[80vh] sm:h-auto sm:max-h-[85vh] flex flex-col overflow-hidden modal-content-enter mt-auto sm:mt-0">
+            <!-- Header -->
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white shrink-0 sticky top-0 z-10">
+                <div>
+                    <h3 id="detailModalTitle" class="font-heading font-bold text-slate-800 text-xl">บิลประจำวัน</h3>
+                    <p id="detailModalCount" class="text-xs text-slate-500 font-medium mt-0.5">0 รายการ</p>
+                </div>
+                <button onclick="toggleModal('detailModal')" class="bg-slate-100 hover:bg-slate-200 text-slate-500 p-2.5 rounded-full transition-colors active:scale-95">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
             
-        const appIdString = typeof __app_id !== 'undefined' ? __app_id : 'html-note-wallet';
+            <!-- List Items -->
+            <div class="p-5 overflow-y-auto bg-slate-50 flex-1 no-scrollbar">
+                <ul id="detailModalList" class="space-y-2">
+                    <!-- รายการจะมาโชว์ตรงนี้ -->
+                </ul>
+            </div>
 
-        let app, auth, db;
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-        } catch(e) {
-            console.error("Firebase Init Error", e);
-        }
-
-        let user = null;
-        let entries = [];
-        let activeTab = 'list';
-        let editingEntryId = null;
-        let isSyncing = false;
-
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    try {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } catch (tokenError) {
-                        console.warn("Token mismatch. Falling back to anonymous auth.");
-                        await signInAnonymously(auth);
-                    }
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Auth error:", error);
-            }
-        };
-        if(auth) initAuth();
-
-        // --- ระบบ Login ด้วย Google ---
-        window.loginWithGoogle = async () => {
-            try {
-                const provider = new GoogleAuthProvider();
-                
-                // หากผู้ใช้เคยจดบันทึกในฐานะผู้ใช้ทั่วไป (Anonymous) ระบบจะพยายามเชื่อมโยง (Link) บัญชีให้
-                if (auth.currentUser && auth.currentUser.isAnonymous) {
-                    await linkWithPopup(auth.currentUser, provider);
-                } else {
-                    await signInWithPopup(auth, provider);
-                }
-            } catch (error) {
-                if (error.code === 'auth/credential-already-in-use') {
-                    // กรณีที่อีเมล Google นี้เคยถูกใช้ล็อคอินแล้ว ให้ทำการบังคับล็อคอินตามปกติ (ข้อมูลที่จดแบบ Anonymous ปัจจุบันจะหายไป)
-                    const provider = new GoogleAuthProvider();
-                    await signInWithPopup(auth, provider);
-                } else {
-                    console.error("Google Login Error:", error);
-                    alert("เกิดข้อผิดพลาดในการล็อคอิน กรุณาตรวจสอบว่าเปิดใช้งาน Google Sign-In ใน Firebase แล้วหรือยัง");
-                }
-            }
-        };
-
-        window.logout = async () => {
-            try {
-                await signOut(auth);
-                window.location.reload(); // รีเฟรชหน้าเพื่อให้กลับเป็น Anonymous User อีกครั้ง
-            } catch (error) {
-                console.error("Logout Error:", error);
-            }
-        };
-        // -----------------------------
-
-        onAuthStateChanged(auth, (currentUser) => {
-            user = currentUser;
-            const input = document.getElementById('input-text');
-            const cloudWrapper = document.getElementById('cloud-wrapper');
-            const authSection = document.getElementById('auth-section');
-            
-            if (user) {
-                // จัดการ UI สำหรับล็อคอิน
-                if (user.isAnonymous) {
-                    authSection.innerHTML = `
-                        <button onclick="loginWithGoogle()" class="flex items-center gap-1.5 bg-[#f5f5f7] border border-gray-200 text-gray-700 hover:bg-white hover:shadow-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all active:scale-95">
-                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4 sm:w-5 sm:h-5" alt="Google">
-                            <span>ซิงค์ข้อมูล</span>
-                        </button>
-                    `;
-                } else {
-                    authSection.innerHTML = `
-                        <div class="flex items-center gap-2 sm:gap-3 bg-white border border-gray-100 pl-2 pr-3 sm:pr-4 py-1.5 rounded-full shadow-sm">
-                            <img src="${user.photoURL || 'https://via.placeholder.com/150'}" alt="Profile" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-gray-100">
-                            <div class="flex flex-col">
-                                <span class="text-[0.6rem] sm:text-[0.7rem] leading-none text-gray-400">ซิงค์แล้ว</span>
-                                <span class="text-xs sm:text-sm font-medium leading-none text-[#1d1d1f] max-w-[80px] sm:max-w-[120px] truncate">${user.displayName || 'User'}</span>
-                            </div>
-                            <button onclick="logout()" class="ml-1 sm:ml-2 text-gray-400 hover:text-red-500 transition-colors p-1" title="ออกจากระบบ">
-                                <i data-lucide="log-out" class="w-4 h-4 sm:w-4.5 sm:h-4.5"></i>
-                            </button>
-                        </div>
-                    `;
-                }
-
-                input.disabled = false;
-                input.placeholder = "จดบันทึก...";
-                if (cloudWrapper) {
-                    cloudWrapper.innerHTML = '<i data-lucide="cloud" class="w-4 h-4 md:w-5 md:h-5 text-blue-500"></i>';
-                }
-                lucide.createIcons();
-                fetchData();
-            }
-        });
-
-        const fetchData = () => {
-            if (!user) return;
-            const entriesCollection = collection(db, 'artifacts', appIdString, 'users', user.uid, 'entries');
-            
-            onSnapshot(entriesCollection, (snapshot) => {
-                entries = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
-                    timestamp: doc.data().timestamp?.toDate() || new Date()
-                })).sort((a, b) => b.timestamp - a.timestamp);
-                
-                renderUI();
-            }, (error) => {
-                console.error("Firestore error:", error);
-            });
-        };
-
-        const getCategory = (text, type) => {
-            const t = text.toLowerCase();
-            if (type === 'income') {
-                if (/เงินเดือน|โบนัส|ค่าจ้าง|ot/.test(t)) return { name: 'รายได้' };
-                if (/คืน|ได้|ถูกหวย|โชค/.test(t)) return { name: 'รับอื่นๆ' };
-                return { name: 'รายรับ' };
-            }
-            if (/ข้าว|น้ำ|ขนม|อาหาร|กาแฟ|ชา|กิน|ชาบู|หมูกระทะ|ลูกชิ้น|ไข่|เนื้อ|ผัก/.test(t)) return { name: 'อาหาร' };
-            if (/รถ|เดินทาง|bts|mrt|วิน|แท็กซี่|น้ำมัน|เรือ|เครื่องบิน/.test(t)) return { name: 'เดินทาง' };
-            if (/เสื้อ|กางเกง|รองเท้า|กระเป๋า|ช้อป|ซื้อ|shopee|lazada|ของใช้/.test(t)) return { name: 'ช้อปปิ้ง' };
-            if (/ไฟ|น้ำ|เน็ต|โทร|บิล|ค่าเช่า|ห้อง|หอ/.test(t)) return { name: 'บิล' };
-            if (/ยา|หมอ|โรงพยาบาล|คลินิก/.test(t)) return { name: 'สุขภาพ' };
-            return { name: 'อื่นๆ' };
-        };
-
-        const parseEntry = (text) => {
-            const cleanText = text.replace(/,/g, '');
-            const numberMatch = cleanText.match(/([+-]?\d+(?:\.\d+)?)/);
-            if (!numberMatch) return null;
-
-            let amountStr = numberMatch[0];
-            let amount = parseFloat(amountStr);
-            let type = 'expense';
-            const lowerText = text.toLowerCase();
-
-            if (amountStr.startsWith('+') || lowerText.includes('รับ') || lowerText.includes('ได้') || lowerText.includes('เงินเดือน')) {
-                type = 'income';
-                amount = Math.abs(amount);
-            } else {
-                type = 'expense';
-                amount = Math.abs(amount);
-            }
-
-            let description = text.replace(numberMatch[0], '').trim();
-            description = description.replace(/^[+-]\s*/, '').trim();
-            if (!description) description = type === 'income' ? 'รายรับ' : 'รายการไม่มีชื่อ';
-
-            const category = getCategory(description, type);
-            return { amount, description, category, type };
-        };
-
-        const renderUI = () => {
-            const totals = entries.reduce((acc, curr) => {
-                if (curr.amount) {
-                    if (curr.type === 'income') acc.income += curr.amount;
-                    else acc.expense += curr.amount;
-                }
-                return acc;
-            }, { income: 0, expense: 0 });
-
-            document.getElementById('balance-display').innerText = (totals.income - totals.expense).toLocaleString();
-            document.getElementById('income-display').innerText = totals.income.toLocaleString();
-            document.getElementById('expense-display').innerText = totals.expense.toLocaleString();
-
-            const categorySummary = entries.reduce((acc, curr) => {
-                if (curr.amount && curr.category) {
-                    const catName = curr.category.name;
-                    if (!acc[catName]) acc[catName] = { amount: 0, type: curr.type };
-                    acc[catName].amount += curr.amount;
-                }
-                return acc;
-            }, {});
-
-            const catContainer = document.getElementById('category-container');
-            if (Object.keys(categorySummary).length > 0) {
-                const sortedCats = Object.entries(categorySummary).sort((a, b) => b[1].amount - a[1].amount);
-                catContainer.innerHTML = sortedCats.map(([cat, data]) => `
-                    <div class="border rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shadow-sm ${data.type === 'income' ? 'bg-green-50/50 border-green-100 text-green-600' : 'bg-[#f5f5f7] border-gray-200/60 text-gray-600'}">
-                        <span class="text-xs sm:text-sm md:text-base font-medium">${cat}</span>
-                        <span class="text-xs sm:text-sm md:text-base font-semibold ml-1 ${data.type === 'income' ? 'text-green-600' : 'text-[#1d1d1f]'}">
-                            ${data.type === 'income' ? '+' : ''}${data.amount.toLocaleString()}฿
-                        </span>
+            <!-- Footer (Total for the day) -->
+            <div class="p-5 border-t border-slate-100 bg-white shrink-0">
+                <div class="flex justify-between items-center bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
+                    <span class="font-heading font-semibold text-blue-800">ยอดรวมวันนี้</span>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="detailModalTotal" class="text-2xl font-heading font-bold text-blue-700">0</span>
+                        <span class="text-xs font-bold text-blue-400">THB</span>
                     </div>
-                `).join('');
-                catContainer.style.display = 'flex';
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Raw Data View -->
+    <div id="rawModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden modal-content-enter">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white shrink-0">
+                <h3 class="font-heading font-bold text-slate-800 text-lg flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    ข้อมูลดิบในไฟล์
+                </h3>
+                <button onclick="toggleModal('rawModal')" class="bg-slate-100 hover:bg-slate-200 text-slate-500 p-2.5 rounded-full transition-colors active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto bg-slate-50 flex-1">
+                <div id="textContent" class="font-mono text-sm text-slate-600 whitespace-pre-wrap">รอการดึงข้อมูล...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Toast Notification -->
+    <div id="toast" class="fixed top-8 left-1/2 -translate-x-1/2 z-[60] hidden">
+        <div id="toastContent" class="bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl font-medium text-sm flex items-center gap-3 border border-slate-700/50 backdrop-blur-md">
+            <span id="toastIcon"></span>
+            <span id="toastMessage">แจ้งเตือน</span>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5wog2rJaNIqPplRKoIzvm-EWolvtSGkEZ8Owrav1sxlkqKdshENQUdPLoSGoH9M_Y/exec";
+
+        // ตัวแปรเก็บข้อมูลรายวันเพื่อใช้ตอนกดเปิด Modal
+        let globalDailyData = {};
+
+        // Modal Logic
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex', 'modal-enter');
             } else {
-                catContainer.style.display = 'none';
+                modal.classList.add('hidden');
+                modal.classList.remove('flex', 'modal-enter');
             }
-
-            const mainContent = document.getElementById('main-content');
-            if (activeTab === 'list') {
-                if (entries.length === 0) {
-                    mainContent.innerHTML = `<div class="mt-10 text-gray-400 text-sm sm:text-base md:text-lg font-light text-center">ยังไม่มีข้อมูล<br><span class="text-xs md:text-sm mt-3 block">พิมพ์รายการที่ช่องด้านบนเพื่อเริ่มต้น</span></div>`;
-                } else {
-                    mainContent.innerHTML = `<div class="flex flex-col gap-4 sm:gap-5 md:gap-6 mt-2 sm:mt-3 md:mt-4 fade-in">` + entries.map(entry => `
-                        <div class="flex justify-between items-center group border-b border-gray-50/80 pb-3 sm:pb-4 md:pb-5 select-none rounded-xl px-3 -mx-3 transition-colors hover:bg-gray-50/30">
-                            <div class="flex flex-col flex-1">
-                                <div class="flex items-center flex-wrap gap-2 sm:gap-3">
-                                    <span class="text-base sm:text-lg md:text-xl text-[#1d1d1f] font-normal tracking-wide break-words">${entry.description}</span>
-                                    ${entry.customTag ? `<span class="text-xs sm:text-sm px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 font-bold border border-blue-100 uppercase tracking-tight">${entry.customTag}</span>` : ''}
-                                    ${entry.category ? `<span class="text-[0.65rem] sm:text-xs md:text-sm px-2 py-0.5 rounded-md uppercase font-bold tracking-tighter ${entry.type === 'income' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">${entry.category.name}</span>` : ''}
-                                </div>
-                                <span class="text-xs sm:text-sm md:text-base text-gray-400 mt-1 sm:mt-1.5 flex items-center gap-2">
-                                    ${entry.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                </span>
-                            </div>
-                            <div class="flex items-center gap-2 sm:gap-3 pl-3 sm:pl-5">
-                                ${entry.amount !== null ? `<div class="text-base sm:text-lg md:text-xl font-medium tracking-wide ${entry.type === 'income' ? 'text-green-600' : 'text-[#1d1d1f]'} mr-2 sm:mr-3">${entry.type === 'income' ? '+' : ''}${entry.amount.toLocaleString()}</div>` : ''}
-                                <div class="flex items-center gap-1">
-                                    <button onclick="openEditModal('${entry.id}')" class="text-gray-400 hover:text-blue-500 hover:bg-blue-50 p-2 sm:p-2.5 rounded-xl transition-all duration-200" title="แก้ไข">
-                                        <i data-lucide="pencil" class="w-5 h-5 sm:w-6 sm:h-6"></i>
-                                    </button>
-                                    <button onclick="deleteEntry('${entry.id}', event)" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 sm:p-2.5 rounded-xl transition-all duration-200" title="ลบ">
-                                        <i data-lucide="trash-2" class="w-5 h-5 sm:w-6 sm:h-6"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('') + `</div>`;
-                }
-            } else {
-                const dailyMap = new Map();
-                entries.forEach(curr => {
-                    if (curr.amount) {
-                        const dateKey = curr.timestamp.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
-                        if (!dailyMap.has(dateKey)) dailyMap.set(dateKey, { income: 0, expense: 0, count: 0, rawDate: curr.timestamp });
-                        const existing = dailyMap.get(dateKey);
-                        if (curr.type === 'income') existing.income += curr.amount;
-                        else existing.expense += curr.amount;
-                        existing.count += 1;
-                    }
-                });
-
-                let summaryArray = Array.from(dailyMap.entries()).map(([date, data]) => ({ date, ...data })).sort((a, b) => a.rawDate - b.rawDate);
-                let runningBalance = 0;
-                summaryArray = summaryArray.map(day => {
-                    runningBalance += (day.income - day.expense);
-                    return { ...day, balance: runningBalance };
-                }).reverse();
-
-                if (summaryArray.length === 0) {
-                    mainContent.innerHTML = `<div class="mt-10 text-gray-400 text-sm sm:text-base md:text-lg font-light text-center">ยังไม่มีข้อมูลรายวัน</div>`;
-                } else {
-                    mainContent.innerHTML = `
-                    <div class="mt-2 sm:mt-4 md:mt-6">
-                        <div class="border border-gray-100 rounded-2xl sm:rounded-[1.5rem] md:rounded-[2rem] overflow-hidden shadow-sm bg-white mb-8 sm:mb-10">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-[#f5f5f7] border-b border-gray-100 text-gray-500 text-xs sm:text-sm md:text-base">
-                                    <tr>
-                                        <th class="py-3.5 sm:py-4 md:py-5 px-3 sm:px-5 md:px-8 font-medium">วันที่</th>
-                                        <th class="py-3.5 sm:py-4 md:py-5 px-2 sm:px-3 md:px-5 font-medium text-right text-green-600">รับ</th>
-                                        <th class="py-3.5 sm:py-4 md:py-5 px-2 sm:px-3 md:px-5 font-medium text-right text-red-500">จ่าย</th>
-                                        <th class="py-3.5 sm:py-4 md:py-5 px-3 sm:px-5 md:px-8 font-medium text-right text-blue-600">คงเหลือ</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-50">
-                                    ${summaryArray.map(day => `
-                                        <tr class="hover:bg-gray-50/50 transition-colors">
-                                            <td class="py-3.5 sm:py-4.5 md:py-6 px-3 sm:px-5 md:px-8 text-sm sm:text-base md:text-lg text-[#1d1d1f] whitespace-nowrap">
-                                                ${day.date}<span class="block text-xs sm:text-sm md:text-base text-gray-400 mt-1 sm:mt-1.5">${day.count} รายการ</span>
-                                            </td>
-                                            <td class="py-3.5 sm:py-4.5 md:py-6 px-2 sm:px-3 md:px-5 text-sm sm:text-base md:text-lg font-medium text-green-600 text-right">${day.income > 0 ? `+${day.income.toLocaleString()}` : '-'}</td>
-                                            <td class="py-3.5 sm:py-4.5 md:py-6 px-2 sm:px-3 md:px-5 text-sm sm:text-base md:text-lg font-medium text-red-500 text-right">${day.expense > 0 ? `-${day.expense.toLocaleString()}` : '-'}</td>
-                                            <td class="py-3.5 sm:py-4.5 md:py-6 px-3 sm:px-5 md:px-8 text-base sm:text-lg md:text-xl font-semibold text-[#1d1d1f] text-right">${day.balance.toLocaleString()}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>`;
-                }
-            }
-
-            lucide.createIcons();
-        };
-
-        window.submitEntries = async () => {
-            const input = document.getElementById('input-text');
-            const text = input.value.trim();
-            if (!text || !user) return;
-            
-            isSyncing = true;
-            toggleLoading(true);
-            
-            const lines = text.split('\n').filter(line => line.trim() !== '').reverse();
-            const entriesCollection = collection(db, 'artifacts', appIdString, 'users', user.uid, 'entries');
-
-            try {
-                for (const line of lines) {
-                    const parsedData = parseEntry(line);
-                    await addDoc(entriesCollection, {
-                        description: parsedData ? parsedData.description : line,
-                        amount: parsedData ? parsedData.amount : null,
-                        category: parsedData ? parsedData.category : null,
-                        type: parsedData ? parsedData.type : 'note',
-                        timestamp: new Date(),
-                        customTag: ''
-                    });
-                }
-                input.value = '';
-                input.style.height = 'auto';
-                checkInput();
-                
-                setTimeout(() => {
-                    const mainContentDiv = document.getElementById('main-content');
-                    if(mainContentDiv) mainContentDiv.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 100);
-            } catch (error) {
-                console.error("Submit error:", error);
-            } finally {
-                isSyncing = false;
-                toggleLoading(false);
-            }
-        };
-
-        window.deleteEntry = async (id, event) => {
-            event.stopPropagation();
-            if (!user) return;
-            try {
-                const docRef = doc(db, 'artifacts', appIdString, 'users', user.uid, 'entries', id);
-                await deleteDoc(docRef);
-            } catch (error) {
-                console.error("Delete error:", error);
-            }
-        };
-
-        // --- ระบบแก้ไข (Edit) ---
-        window.openEditModal = (id) => {
-            const entry = entries.find(e => e.id === id);
-            if (!entry) return;
-            
-            editingEntryId = id;
-            
-            // ดึงข้อมูลเดิมมาใส่ในฟอร์ม
-            document.getElementById('edit-type-input').value = entry.type || 'expense';
-            document.getElementById('edit-desc-input').value = entry.description || '';
-            document.getElementById('edit-amount-input').value = entry.amount || '';
-            document.getElementById('edit-tag-input').value = entry.customTag || '';
-            
-            if (entry.timestamp) {
-                const dateObj = new Date(entry.timestamp);
-                const tzOffset = dateObj.getTimezoneOffset() * 60000;
-                const localISOTime = (new Date(dateObj - tzOffset)).toISOString().slice(0, 16);
-                document.getElementById('edit-datetime-input').value = localISOTime;
-            }
-
-            document.getElementById('edit-modal').classList.remove('hidden');
-            setTimeout(() => document.getElementById('edit-amount-input').focus(), 100);
-        };
-
-        window.closeEditModal = () => {
-            document.getElementById('edit-modal').classList.add('hidden');
-            editingEntryId = null;
-        };
-
-        window.saveEdit = async () => {
-            if (!user || !editingEntryId) return;
-            
-            const newType = document.getElementById('edit-type-input').value;
-            const newDesc = document.getElementById('edit-desc-input').value.trim();
-            const newAmountStr = document.getElementById('edit-amount-input').value;
-            const newTag = document.getElementById('edit-tag-input').value.trim();
-            const newDateTimeStr = document.getElementById('edit-datetime-input').value;
-            
-            const newAmount = newAmountStr ? parseFloat(newAmountStr) : null;
-            const newCategory = getCategory(newDesc, newType); // คำนวณหมวดหมู่ใหม่
-            
-            closeEditModal();
-            
-            try {
-                const docRef = doc(db, 'artifacts', appIdString, 'users', user.uid, 'entries', editingEntryId);
-                const updateData = { 
-                    type: newType,
-                    description: newDesc || (newType === 'income' ? 'รายรับ' : 'รายการไม่มีชื่อ'),
-                    amount: newAmount,
-                    category: newCategory,
-                    customTag: newTag 
-                };
-                
-                if (newDateTimeStr) {
-                    updateData.timestamp = new Date(newDateTimeStr);
-                }
-                
-                await updateDoc(docRef, updateData);
-            } catch (e) {
-                console.error("Save edit error:", e);
-            }
-        };
-
-        // คลาสของแท็บที่ทำงานตามโครงสร้างใหม่
-        const activeTabClass = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:px-6 md:px-8 md:py-2.5 text-sm sm:text-base md:text-lg rounded-lg sm:rounded-xl transition-all bg-white shadow-sm font-medium text-black";
-        const inactiveTabClass = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:px-6 md:px-8 md:py-2.5 text-sm sm:text-base md:text-lg rounded-lg sm:rounded-xl transition-all text-gray-500 hover:text-gray-700";
-
-        window.switchTab = (tab) => {
-            activeTab = tab;
-            const btnList = document.getElementById('tab-list');
-            const btnDaily = document.getElementById('tab-daily');
-            
-            if(tab === 'list') {
-                btnList.className = activeTabClass;
-                btnDaily.className = inactiveTabClass;
-            } else {
-                btnDaily.className = activeTabClass;
-                btnList.className = inactiveTabClass;
-            }
-            renderUI();
-        };
-
-        const inputEl = document.getElementById('input-text');
-        const submitBtn = document.getElementById('submit-btn');
-        
-        window.checkInput = () => {
-            const hasText = inputEl.value.trim().length > 0;
-            if (hasText && !isSyncing) {
-                submitBtn.disabled = false;
-                submitBtn.className = "p-2.5 md:p-4 mb-0.5 mr-0.5 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 bg-black text-white active:scale-90";
-            } else {
-                submitBtn.disabled = true;
-                submitBtn.className = "p-2.5 md:p-4 mb-0.5 mr-0.5 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 bg-gray-200 text-gray-400";
-            }
-        };
-        inputEl.addEventListener('input', function() {
-            this.style.height = 'auto';
-            const maxHeight = window.innerWidth >= 768 ? 240 : 140;
-            this.style.height = Math.min(this.scrollHeight, maxHeight) + 'px';
-            checkInput();
-        });
-        inputEl.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                window.submitEntries();
-            }
-        });
-
-        const toggleLoading = (loading) => {
-            const wrapper = document.getElementById('submit-wrapper');
-            if (loading) {
-                wrapper.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 animate-spin"></i>';
-            } else {
-                wrapper.innerHTML = '<i data-lucide="arrow-up" class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7"></i>';
-            }
-            lucide.createIcons();
-            inputEl.disabled = loading;
         }
 
-        // --- ระบบแจ้งเตือนอัปเดตสำหรับ GitHub Pages ---
-        window.showUpdateToast = () => {
-            const toast = document.getElementById('update-toast');
-            toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
-        };
-
-        window.closeUpdateToast = () => {
-            const toast = document.getElementById('update-toast');
-            toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
-        };
-
-        window.forceRefresh = () => {
-            window.location.reload(true); 
-        };
-
-        const checkForUpdates = async () => {
+        async function fetchFromCloud() {
+            const btn = document.getElementById('btnSync');
+            const originalHTML = btn.innerHTML;
+            
             try {
-                const cacheBuster = new Date().getTime();
-                const response = await fetch(window.location.href.split('?')[0] + '?v=' + cacheBuster, {
-                    cache: 'no-store' 
-                });
-                const htmlText = await response.text();
+                btn.innerHTML = `
+                    <div class="spinner text-white"></div>
+                    <span class="font-heading font-semibold text-sm">กำลังดึง...</span>
+                `;
+                btn.style.pointerEvents = 'none';
+
+                const response = await fetch(SCRIPT_URL, { redirect: 'follow' });
+                if (!response.ok) throw new Error('Network response was not ok');
                 
-                const versionMatch = htmlText.match(/const\s+APP_VERSION\s*=\s*['"]([^'"]+)['"]/);
-                
-                if (versionMatch && versionMatch[1]) {
-                    const serverVersion = versionMatch[1];
-                    if (serverVersion !== APP_VERSION) {
-                        showUpdateToast();
-                    }
-                }
-            } catch (err) {
-                console.log("Update check failed (might be offline)", err);
+                const data = await response.json();
+                processTextAndCalculate(data.content, data.updateTime);
+                showToast('อัปเดตข้อมูลล่าสุดแล้ว', 'success');
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showToast('ไม่สามารถดึงข้อมูลได้', 'error');
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.style.pointerEvents = 'auto';
             }
-        };
+        }
 
-        setTimeout(checkForUpdates, 2000);
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        lucide.createIcons();
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const now = new Date().toLocaleTimeString("th-TH", { hour: '2-digit', minute: '2-digit' });
+                processTextAndCalculate(text, `วันนี้ ${now}`);
+                showToast('อ่านไฟล์สำเร็จ', 'success');
+            };
+            reader.readAsText(file, 'UTF-8');
+            event.target.value = '';
+        }
 
+        function processTextAndCalculate(text, updateTime) {
+            document.getElementById('textContent').textContent = text;
+            document.getElementById('lastUpdated').textContent = updateTime;
+
+            const lines = text.split(/\r\n|\n|\r/);
+            let totalExpense = 0;
+            let totalItems = 0;
+            globalDailyData = {}; // รีเซ็ตข้อมูลใหม่
+            let currentDate = "รายการทั่วไป";
+
+            const dateRegex = /^\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}$/;
+
+            lines.forEach(line => {
+                const trimmedLine = line.trim();
+                if (trimmedLine === "") return;
+
+                if (dateRegex.test(trimmedLine)) {
+                    currentDate = trimmedLine;
+                    if (!globalDailyData[currentDate]) globalDailyData[currentDate] = { total: 0, items: [] };
+                    return;
+                }
+
+                // พยายามแยก "ชื่อรายการ" และ "ราคา" ออกจากกัน
+                // ค้นหาตัวเลขที่อยู่ท้ายสุดของบรรทัด
+                const match = trimmedLine.match(/(.*?)(\d+(?:\.\d+)?)$/);
+                if (match) {
+                    const itemName = match[1].trim() || 'ไม่ระบุชื่อรายการ';
+                    const amount = parseFloat(match[2]);
+                    
+                    totalExpense += amount;
+                    totalItems++;
+
+                    if (!globalDailyData[currentDate]) globalDailyData[currentDate] = { total: 0, items: [] };
+                    
+                    // บันทึกยอดรวมของวัน
+                    globalDailyData[currentDate].total += amount;
+                    // บันทึกรายการย่อย
+                    globalDailyData[currentDate].items.push({ name: itemName, amount: amount });
+                }
+            });
+
+            document.getElementById('totalExpense').textContent = totalExpense.toLocaleString('th-TH');
+            document.getElementById('totalItems').textContent = totalItems.toLocaleString('th-TH') + ' รายการ';
+
+            renderDailySummary();
+        }
+
+        function renderDailySummary() {
+            const container = document.getElementById('dailySummaryContainer');
+            container.innerHTML = ''; 
+            
+            let hasData = false;
+            
+            for (const [date, data] of Object.entries(globalDailyData)) {
+                if (data.total > 0) {
+                    hasData = true;
+                    const isGeneral = date === "รายการทั่วไป";
+                    
+                    // เพิ่ม cursor-pointer, hover, และ onclick ให้คลิกได้
+                    const html = `
+                        <div onclick="openDailyDetails('${date}')" class="cursor-pointer hover:bg-slate-50 active:scale-[0.98] transition-all duration-200 min-w-[200px] sm:min-w-[240px] bg-white p-5 rounded-[1.5rem] border border-slate-100 shadow-[0_2px_10px_rgb(0,0,0,0.03)] flex flex-col justify-between snap-center shrink-0 h-full relative group">
+                            <div class="absolute top-4 right-4 text-slate-300 group-hover:text-blue-500 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </div>
+                            <div class="flex items-center gap-3 mb-4 pr-6">
+                                <div class="w-10 h-10 rounded-xl flex items-center justify-center ${isGeneral ? 'bg-slate-100 text-slate-500' : 'bg-blue-50 text-blue-600'}">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        ${isGeneral 
+                                            ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>'
+                                            : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>'
+                                        }
+                                    </svg>
+                                </div>
+                                <h3 class="font-heading font-semibold text-slate-800 text-base truncate">${date}</h3>
+                            </div>
+                            <div>
+                                <p class="text-[11px] text-slate-400 font-medium mb-1">${data.items.length} รายการ</p>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-2xl font-heading font-bold text-slate-900">${data.total.toLocaleString('th-TH')}</span>
+                                    <span class="text-xs font-bold text-slate-400">THB</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', html);
+                }
+            }
+
+            if (!hasData) {
+                container.innerHTML = `
+                    <div class="min-w-full sm:min-w-[280px] bg-white rounded-3xl border border-dashed border-slate-200 flex flex-col items-center justify-center p-6 text-slate-400 snap-center shrink-0 h-full">
+                        <svg class="w-8 h-8 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        <p class="text-sm font-medium">ไม่พบรายการค่าใช้จ่าย</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ฟังก์ชันเปิด Modal และวาดรายการของวันนั้นๆ
+        function openDailyDetails(date) {
+            const data = globalDailyData[date];
+            if (!data) return;
+
+            document.getElementById('detailModalTitle').textContent = date;
+            document.getElementById('detailModalCount').textContent = `${data.items.length} รายการ`;
+            document.getElementById('detailModalTotal').textContent = data.total.toLocaleString('th-TH');
+
+            const listContainer = document.getElementById('detailModalList');
+            listContainer.innerHTML = '';
+
+            data.items.forEach(item => {
+                const li = document.createElement('li');
+                li.className = "bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center";
+                li.innerHTML = `
+                    <span class="text-slate-700 font-medium text-sm flex-1 pr-4">${item.name}</span>
+                    <span class="font-heading font-bold text-slate-900">${item.amount.toLocaleString('th-TH')}</span>
+                `;
+                listContainer.appendChild(li);
+            });
+
+            toggleModal('detailModal');
+        }
+
+        let toastTimeout;
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toastMessage');
+            const iconEl = document.getElementById('toastIcon');
+
+            msgEl.textContent = message;
+            
+            if (type === 'success') {
+                iconEl.innerHTML = '<svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            } else {
+                iconEl.innerHTML = '<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            }
+
+            toast.classList.remove('hidden');
+            toast.classList.add('toast-enter');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('hidden');
+                toast.classList.remove('toast-enter');
+            }, 3000);
+        }
+
+        window.onload = fetchFromCloud;
     </script>
 </body>
 </html>
