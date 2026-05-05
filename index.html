@@ -69,7 +69,7 @@
         </header>
 
         <!-- ============================================== -->
-        <!-- TAB 1: ระบบรายจ่าย (แบบตาราง) -->
+        <!-- TAB 1: ระบบรายจ่าย (แบบตาราง - ไม่มีจำนวน) -->
         <!-- ============================================== -->
         <main id="tabExpense" class="tab-content active flex-1 px-5 md:px-8 pb-5 md:pb-8 gap-4 min-h-0">
             <!-- Hero Card: รายจ่าย -->
@@ -107,9 +107,8 @@
                         <thead class="bg-slate-100/80 text-slate-500 text-[11px] md:text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md">
                             <tr>
                                 <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200">วันที่ / รายการ</th>
-                                <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200 text-center">จำนวน</th>
                                 <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200 text-right">ยอดรวม (฿)</th>
-                                <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200 text-center"></th>
+                                <th class="px-2 py-3 md:px-4 font-semibold border-b border-slate-200 text-center w-10"></th>
                             </tr>
                         </thead>
                         <tbody id="expTableBody" class="text-sm md:text-base text-slate-700 divide-y divide-slate-100">
@@ -262,7 +261,7 @@
             }
         }
 
-        // ================= EXPENSE LOGIC (แสดงผลแบบ Table) =================
+        // ================= EXPENSE LOGIC (แสดงผลแบบ Table - ซ่อนจำนวน) =================
         let expData = { allTime: { total: 0, count: 0 }, periods: [], groupedData: {} };
         let expPeriodIndex = 0;
 
@@ -340,7 +339,7 @@
                 document.getElementById('expHeroLabel').textContent = "รวมทั้งหมด";
                 document.getElementById('expTotalValue').textContent = "0";
                 document.getElementById('expTotalItems').textContent = "0";
-                tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-slate-400">ยังไม่มีข้อมูลรายจ่ายในระบบ</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="px-4 py-8 text-center text-slate-400">ยังไม่มีข้อมูลรายจ่ายในระบบ</td></tr>`;
                 return;
             }
 
@@ -355,11 +354,11 @@
             let rowsToRender = [];
             if (isAllTime) {
                 for (let k of expData.periods.filter(k => k !== "all")) {
-                    rowsToRender.push({ title: expData.groupedData[k].label, total: expData.groupedData[k].total, count: expData.groupedData[k].count, args: null });
+                    rowsToRender.push({ title: expData.groupedData[k].label, total: expData.groupedData[k].total, args: null });
                 }
             } else {
                 for (const [date, data] of Object.entries(expData.groupedData[pKey].days)) {
-                    if (data.total > 0) rowsToRender.push({ title: date, total: data.total, count: data.items.length, args: `openExpDetails('${pKey}', '${date}')` });
+                    if (data.total > 0) rowsToRender.push({ title: date, total: data.total, args: `openExpDetails('${pKey}', '${date}')` });
                 }
             }
 
@@ -372,13 +371,10 @@
                         <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 whitespace-nowrap">
                             <span class="font-heading font-medium text-slate-800">${row.title}</span>
                         </td>
-                        <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 text-center whitespace-nowrap">
-                            <span class="inline-block bg-slate-100 text-slate-600 text-[10px] md:text-xs font-semibold px-2.5 py-0.5 rounded-full">${row.count}</span>
-                        </td>
                         <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 text-right whitespace-nowrap">
                             <span class="font-heading font-bold text-red-500">${row.total.toLocaleString('th-TH')}</span>
                         </td>
-                        <td class="px-2 md:px-4 py-3.5 border-b border-slate-100 text-center whitespace-nowrap">
+                        <td class="px-2 md:px-4 py-3.5 border-b border-slate-100 text-center whitespace-nowrap w-10">
                             ${btnIcon}
                         </td>
                     </tr>
