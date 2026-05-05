@@ -19,12 +19,12 @@
             justify-content: center;
         }
         
-        h1, h2, h3, .font-heading { font-family: 'Prompt', sans-serif; }
+        h1, h2, h3, th, .font-heading { font-family: 'Prompt', sans-serif; }
         
         .spinner-small { border: 2px solid rgba(59, 130, 246, 0.2); border-left-color: #3b82f6; border-radius: 50%; width: 14px; height: 14px; animation: spin 0.8s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -32,8 +32,8 @@
 
         .toast-enter { animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes slideUp { from { transform: translate(-50%, 100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
-        .fade-in { animation: fadeIn 0.2s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         /* ซ่อน Tab ที่ไม่ได้เลือก */
         .tab-content { display: none; }
@@ -42,9 +42,9 @@
 </head>
 <body class="text-slate-800 selection:bg-blue-200">
 
-    <div class="w-full h-full md:h-[95dvh] md:max-w-3xl md:rounded-[2.5rem] md:border border-white/50 flex flex-col relative bg-[#f4f5f9] md:shadow-2xl overflow-hidden pb-16 md:pb-0">
+    <div class="w-full h-full md:h-[95dvh] md:max-w-4xl md:rounded-[2.5rem] md:border border-white/50 flex flex-col relative bg-[#f4f5f9] md:shadow-2xl overflow-hidden pb-16 md:pb-0">
         
-        <!-- Header กลาง -->
+        <!-- Header -->
         <header class="flex-none pt-8 md:pt-6 pb-3 px-6 md:px-8 flex justify-between items-center bg-[#f4f5f9] z-10 shrink-0">
             <div>
                 <p class="text-xs md:text-sm font-medium text-slate-500 mb-0.5">ยินดีต้อนรับ 👋</p>
@@ -58,7 +58,7 @@
             </div>
             <div class="text-right flex flex-col items-end">
                 <span id="lastUpdated" class="text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-200/60 px-3 py-1 rounded-full mb-1.5">รอการซิงค์</span>
-                <!-- ปุ่มที่เปลี่ยนไปตามแท็บ -->
+                <!-- ปุ่มที่สลับตามแท็บ -->
                 <button id="headerBtnExpense" onclick="toggleModal('rawModal')" class="text-[11px] md:text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg flex items-center gap-1.5 active:scale-95 transition-colors duration-200">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                     แก้ไขข้อมูล
@@ -74,11 +74,9 @@
         <!-- TAB 1: ระบบรายจ่าย (หน้าเดิมของคุณ) -->
         <!-- ============================================== -->
         <main id="tabExpense" class="tab-content active flex-1 px-5 md:px-8 pb-5 md:pb-8 gap-4 min-h-0">
-            <!-- Hero Card: รายจ่าย -->
             <div class="flex-none bg-slate-900 rounded-[2rem] p-6 md:p-8 text-white shadow-xl relative overflow-hidden shrink-0">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-red-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40 translate-x-1/3 -translate-y-1/3"></div>
                 <div class="absolute bottom-0 left-0 w-48 h-48 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40 -translate-x-1/3 translate-y-1/3"></div>
-                
                 <div class="relative z-10 flex flex-col justify-between h-full">
                     <div class="flex justify-between items-start mb-4 md:mb-6">
                         <div class="bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/10 flex items-center gap-2">
@@ -89,7 +87,6 @@
                             <span class="text-[11px] md:text-sm font-medium text-slate-200" id="expTotalItems">0 รายการ</span>
                         </div>
                     </div>
-                    
                     <div class="flex items-baseline gap-2">
                         <span class="text-5xl md:text-6xl font-heading font-extrabold tracking-tight text-white" id="expTotalValue">0</span>
                         <span class="text-lg md:text-2xl font-medium text-slate-400">THB</span>
@@ -97,45 +94,32 @@
                 </div>
             </div>
 
-            <!-- Month Selector & List -->
-            <section class="flex-1 flex flex-col min-h-0 bg-white rounded-3xl border border-slate-100 shadow-[0_2px_15px_rgb(0,0,0,0.02)] overflow-hidden">
+            <section class="flex-1 flex flex-col min-h-0 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                 <div class="flex justify-between items-center p-3 border-b border-slate-50 bg-white z-10">
-                    <button onclick="expChangePeriod(-1)" class="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors active:scale-90">
-                        <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
-                    </button>
+                    <button onclick="expChangePeriod(-1)" class="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg></button>
                     <h2 id="expCurrentPeriodLabel" class="text-sm md:text-base font-heading font-bold text-slate-800">เดือนนี้</h2>
-                    <button onclick="expChangePeriod(1)" class="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors active:scale-90">
-                        <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-                    </button>
+                    <button onclick="expChangePeriod(1)" class="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg></button>
                 </div>
-
                 <div id="expListContainer" class="flex-1 overflow-y-auto custom-scroll p-3 md:p-4 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 content-start bg-slate-50/50">
-                    <div class="col-span-full flex flex-col items-center justify-center h-full min-h-[150px] text-slate-400 opacity-50">
-                        <svg class="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                        <p class="text-xs md:text-sm font-medium">รอการวิเคราะห์ข้อมูล...</p>
-                    </div>
+                    <!-- รายการจะถูกสร้างที่นี่ -->
                 </div>
             </section>
         </main>
 
-
         <!-- ============================================== -->
-        <!-- TAB 2: ระบบยอดขาย & กำไร (ดึงจาก Firestore) -->
+        <!-- TAB 2: ระบบยอดขาย & กำไร (แบบตาราง) -->
         <!-- ============================================== -->
         <main id="tabSales" class="tab-content flex-1 px-5 md:px-8 pb-5 md:pb-8 gap-4 min-h-0">
-            <!-- Hero Card: ยอดขาย -->
+            <!-- Hero Card: สรุปยอดขาย -->
             <div class="flex-none bg-slate-900 rounded-[2rem] p-6 md:p-8 text-white shadow-xl relative overflow-hidden shrink-0">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 translate-x-1/3 -translate-y-1/3"></div>
                 <div class="absolute bottom-0 left-0 w-48 h-48 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -translate-x-1/3 translate-y-1/3"></div>
                 
                 <div class="relative z-10 flex flex-col justify-between h-full">
-                    <div class="flex justify-between items-start mb-4 md:mb-6">
+                    <div class="flex justify-between items-start mb-4">
                         <div class="bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/10 flex items-center gap-2">
                             <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span class="text-xs md:text-sm font-heading font-medium text-white">ยอดขายรวมทั้งหมด</span>
-                        </div>
-                        <div class="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/5 flex items-center gap-1.5">
-                            <span class="text-[11px] md:text-sm font-medium text-slate-200" id="salTotalBills">0 บิล</span>
+                            <span class="text-xs md:text-sm font-heading font-medium text-white">ยอดขายรวมสะสม</span>
                         </div>
                     </div>
                     
@@ -144,29 +128,45 @@
                         <span class="text-lg md:text-2xl font-medium text-slate-400">THB</span>
                     </div>
                     
-                    <div class="flex items-center gap-2 mt-3">
-                        <span class="text-xs text-emerald-400 font-medium bg-emerald-500/20 px-2.5 py-1 rounded-md">กำไร POS ทั้งหมด</span>
-                        <span class="text-xl md:text-2xl font-heading font-bold text-emerald-300" id="salTotalProfit">0</span>
-                        <span class="text-xs font-medium text-slate-400">THB</span>
+                    <div class="flex flex-wrap items-center gap-3 mt-4">
+                        <div class="flex items-center gap-2 bg-emerald-500/20 px-3 py-1.5 rounded-lg border border-emerald-500/30">
+                            <span class="text-[11px] md:text-xs text-emerald-300 font-medium">กำไรสุทธิ:</span>
+                            <span class="text-sm md:text-base font-heading font-bold text-emerald-400" id="salTotalProfit">0</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+                            <span class="text-[11px] md:text-xs text-slate-300 font-medium">จำนวนบิล:</span>
+                            <span class="text-sm md:text-base font-heading font-bold text-white" id="salTotalBills">0</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- List: ประวัติย้อนหลัง -->
-            <section class="flex-1 flex flex-col min-h-0 bg-white rounded-3xl border border-slate-100 shadow-[0_2px_15px_rgb(0,0,0,0.02)] overflow-hidden">
-                <div class="flex justify-between items-center p-4 border-b border-slate-50 bg-white z-10">
-                    <h2 class="text-sm md:text-base font-heading font-bold text-slate-800">ประวัติยอดขายย้อนหลัง</h2>
+            <!-- Table Section -->
+            <section class="flex-1 flex flex-col min-h-0 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-white z-10">
+                    <h2 class="text-sm md:text-base font-heading font-bold text-slate-800">ตารางประวัติยอดขายย้อนหลัง</h2>
                 </div>
 
-                <div id="salListContainer" class="flex-1 overflow-y-auto custom-scroll p-3 md:p-4 grid grid-cols-1 gap-3 content-start bg-slate-50/50">
-                    <!-- รายการยอดขายจาก Firestore จะมาโชว์ที่นี่ -->
+                <div class="flex-1 overflow-x-auto overflow-y-auto custom-scroll bg-slate-50/30">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-100/80 text-slate-500 text-[11px] md:text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md">
+                            <tr>
+                                <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200">วันที่</th>
+                                <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200 text-center">จำนวนบิล</th>
+                                <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200 text-right">ยอดขาย (฿)</th>
+                                <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200 text-right">กำไร (฿)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salTableBody" class="text-sm md:text-base text-slate-700 divide-y divide-slate-100">
+                            <!-- ข้อมูลจะถูกวาดเป็นตารางที่นี่ -->
+                        </tbody>
+                    </table>
                 </div>
             </section>
         </main>
 
-
         <!-- ============================================== -->
-        <!-- Bottom Navigation (เมนูบาร์ด้านล่าง) -->
+        <!-- Bottom Navigation -->
         <!-- ============================================== -->
         <nav class="absolute bottom-0 left-0 w-full bg-white border-t border-slate-200/60 pb-safe md:relative md:rounded-b-[2.5rem] md:border-none z-40">
             <div class="flex justify-around items-center h-16 md:h-20 px-6">
@@ -176,7 +176,7 @@
                     <span class="text-[10px] md:text-xs font-bold">บันทึกรายจ่าย</span>
                 </button>
                 
-                <div class="w-px h-8 bg-slate-200"></div> <!-- เส้นคั่น -->
+                <div class="w-px h-8 bg-slate-200"></div>
 
                 <!-- ปุ่มแท็บยอดขาย -->
                 <button onclick="switchTab('sales')" id="navSales" class="nav-btn flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-emerald-500 transition-colors">
@@ -187,32 +187,25 @@
         </nav>
     </div>
 
-    <!-- Modals สำหรับรายจ่าย (คงไว้เหมือนเดิม) -->
-    <!-- Modal: Daily Details -->
+    <!-- Modals สำหรับรายจ่าย -->
     <div id="detailModal" class="fixed inset-0 z-50 hidden items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/50 backdrop-blur-sm">
+        <!-- โครงสร้าง Modal เดิม... -->
         <div class="bg-white rounded-t-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-xl h-[85vh] md:h-auto md:max-h-[85vh] flex flex-col overflow-hidden mt-auto md:mt-0">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
-                <div>
-                    <h3 id="detailModalTitle" class="font-heading font-bold text-slate-800 text-lg">บิลประจำวัน</h3>
-                    <p id="detailModalCount" class="text-xs text-slate-500 font-medium">0 รายการ</p>
-                </div>
-                <button onclick="toggleModal('detailModal')" class="bg-slate-100 p-2.5 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                <div><h3 id="detailModalTitle" class="font-heading font-bold text-slate-800 text-lg">บิลประจำวัน</h3><p id="detailModalCount" class="text-xs text-slate-500 font-medium">0 รายการ</p></div>
+                <button onclick="toggleModal('detailModal')" class="bg-slate-100 p-2.5 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
             <div class="p-5 overflow-y-auto bg-slate-50 flex-1"><ul id="detailModalList" class="space-y-3"></ul></div>
             <div class="p-5 border-t border-slate-100 bg-white">
-                <div class="flex justify-between items-center bg-red-50 p-4 rounded-2xl border border-red-100">
-                    <span class="font-heading font-semibold text-red-800">ยอดรวม</span>
-                    <div class="flex items-baseline gap-1"><span id="detailModalTotal" class="text-3xl font-heading font-bold text-red-600">0</span><span class="text-xs font-bold text-red-400">THB</span></div>
-                </div>
+                <div class="flex justify-between items-center bg-red-50 p-4 rounded-2xl border border-red-100"><span class="font-heading font-semibold text-red-800">ยอดรวม</span><div class="flex items-baseline gap-1"><span id="detailModalTotal" class="text-3xl font-heading font-bold text-red-600">0</span><span class="text-xs font-bold text-red-400">THB</span></div></div>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Raw Data View -->
     <div id="rawModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
         <div class="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-2xl h-[85vh] md:h-[80vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
-                <h3 class="font-heading font-bold text-slate-800 flex items-center gap-2"><svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>แก้ไขรายจ่าย</h3>
+                <h3 class="font-heading font-bold text-slate-800 flex items-center gap-2"><svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>แก้ไขรายจ่าย</h3>
                 <button onclick="toggleModal('rawModal')" class="bg-slate-100 p-2 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
             <div class="p-5 overflow-y-auto bg-slate-50 flex-1 relative"><textarea id="textContent" class="w-full h-full bg-transparent font-mono text-sm text-slate-700 resize-none outline-none leading-relaxed" spellcheck="false" placeholder="พิมพ์รายจ่าย..."></textarea></div>
@@ -237,109 +230,80 @@
         const CACHE_KEY = "expense_app_cache_v2"; 
         const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
 
-        // ================= LOGIC จัดการ UI (Tabs) =================
+        // ================= TAB LOGIC =================
         function switchTab(tabName) {
-            // สลับการซ่อน/โชว์เนื้อหาหลัก
             document.getElementById('tabExpense').classList.toggle('active', tabName === 'expense');
             document.getElementById('tabSales').classList.toggle('active', tabName === 'sales');
             
-            // เปลี่ยนสีปุ่มเมนูด้านล่าง
             const btnExp = document.getElementById('navExpense');
             const btnSal = document.getElementById('navSales');
             
             if (tabName === 'expense') {
                 btnExp.className = "nav-btn active flex flex-col items-center justify-center w-full h-full text-blue-600 transition-colors";
                 btnSal.className = "nav-btn flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-emerald-500 transition-colors";
-                
                 document.getElementById('mainTitle').textContent = "สรุปรายจ่าย";
                 document.getElementById('headerBtnExpense').classList.remove('hidden');
                 document.getElementById('headerBtnSales').classList.add('hidden');
             } else {
                 btnSal.className = "nav-btn active flex flex-col items-center justify-center w-full h-full text-emerald-600 transition-colors";
                 btnExp.className = "nav-btn flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-blue-500 transition-colors";
-                
-                document.getElementById('mainTitle').textContent = "ยอดขาย/กำไร";
+                document.getElementById('mainTitle').textContent = "ยอดขายและกำไร";
                 document.getElementById('headerBtnExpense').classList.add('hidden');
                 document.getElementById('headerBtnSales').classList.remove('hidden');
                 
-                // โหลดข้อมูลยอดขายถ้าเข้าหน้านี้ครั้งแรก
-                if(document.getElementById('salListContainer').innerHTML.trim() === "") {
-                    fetchSalesData();
-                }
+                if(document.getElementById('salTableBody').innerHTML.trim() === "") fetchSalesData();
             }
         }
 
-        // ================= LOGIC ระบบรายจ่าย (EXPENSE) =================
+        // ================= EXPENSE LOGIC (เหมือนเดิม 100%) =================
         let expData = { allTime: { total: 0, count: 0 }, periods: [], groupedData: {} };
         let expPeriodIndex = 0;
 
         window.onload = () => {
             const cachedData = localStorage.getItem(CACHE_KEY);
-            if (cachedData) {
-                const data = JSON.parse(cachedData);
-                processExpenseData(data.content, "รอซิงค์ล่าสุด..."); 
-            }
-            fetchExpenseData(); // โหลดรายจ่ายอัตโนมัติตอนเปิดแอป
+            if (cachedData) processExpenseData(JSON.parse(cachedData).content, "รอซิงค์...");
+            fetchExpenseData(); 
         };
 
         async function fetchExpenseData() {
             showSync(true);
             try {
-                const response = await fetch(EXPENSE_SCRIPT_URL, { redirect: 'follow' });
-                if (!response.ok) throw new Error('Network error');
-                const data = await response.json();
+                const res = await fetch(EXPENSE_SCRIPT_URL, { redirect: 'follow' });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
                 localStorage.setItem(CACHE_KEY, JSON.stringify(data));
                 processExpenseData(data.content, data.updateTime);
-            } catch (e) {
-                showToast('ดึงรายจ่ายไม่สำเร็จ', 'error');
-            } finally {
-                showSync(false);
-            }
+            } catch (e) { showToast('โหลดรายจ่ายไม่สำเร็จ', 'error'); } 
+            finally { showSync(false); }
         }
 
         function processExpenseData(text, updateTime) {
             document.getElementById('textContent').value = text;
             document.getElementById('lastUpdated').textContent = updateTime;
-
             expData = { allTime: { total: 0, count: 0 }, periods: [], groupedData: {} };
             const lines = text.split(/\r\n|\n|\r/);
             const dateRegex = /^\s*(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})\s*$/;
             
-            let currentRawDate = "รายการอื่นๆ";
-            let currentPeriodKey = "uncategorized";
-            expData.groupedData[currentPeriodKey] = { label: "รายการทั่วไป (ไม่ระบุวันที่)", total: 0, count: 0, days: {} };
+            let currentRawDate = "รายการอื่นๆ", currentPeriodKey = "uncategorized";
+            expData.groupedData[currentPeriodKey] = { label: "รายการทั่วไป", total: 0, count: 0, days: {} };
 
             lines.forEach(line => {
-                const trimmedLine = line.trim();
-                if (trimmedLine === "") return;
-
+                const trimmedLine = line.trim(); if (!trimmedLine) return;
                 const dateMatch = trimmedLine.match(dateRegex);
                 if (dateMatch) {
                     currentRawDate = trimmedLine;
-                    let m = parseInt(dateMatch[2], 10);
-                    let y = parseInt(dateMatch[3], 10);
+                    let m = parseInt(dateMatch[2], 10), y = parseInt(dateMatch[3], 10);
                     if (y < 100) y += 2500;
                     currentPeriodKey = `${y}-${m.toString().padStart(2, '0')}`;
-                    
-                    if (!expData.groupedData[currentPeriodKey]) {
-                        expData.groupedData[currentPeriodKey] = { label: `${thaiMonths[m-1]} ${y}`, total: 0, count: 0, days: {} };
-                    }
-                    if (!expData.groupedData[currentPeriodKey].days[currentRawDate]) {
-                        expData.groupedData[currentPeriodKey].days[currentRawDate] = { total: 0, items: [] };
-                    }
+                    if (!expData.groupedData[currentPeriodKey]) expData.groupedData[currentPeriodKey] = { label: `${thaiMonths[m-1]} ${y}`, total: 0, count: 0, days: {} };
+                    if (!expData.groupedData[currentPeriodKey].days[currentRawDate]) expData.groupedData[currentPeriodKey].days[currentRawDate] = { total: 0, items: [] };
                     return;
                 }
-
                 const itemMatch = trimmedLine.match(/(.*?)(\d+(?:\.\d+)?)$/);
                 if (itemMatch) {
-                    const itemName = itemMatch[1].trim() || 'รายการ';
-                    const amount = parseFloat(itemMatch[2]);
-                    
-                    expData.allTime.total += amount;
-                    expData.allTime.count++;
-                    expData.groupedData[currentPeriodKey].total += amount;
-                    expData.groupedData[currentPeriodKey].count++;
-                    
+                    const itemName = itemMatch[1].trim() || 'รายการ', amount = parseFloat(itemMatch[2]);
+                    expData.allTime.total += amount; expData.allTime.count++;
+                    expData.groupedData[currentPeriodKey].total += amount; expData.groupedData[currentPeriodKey].count++;
                     if (!expData.groupedData[currentPeriodKey].days[currentRawDate]) expData.groupedData[currentPeriodKey].days[currentRawDate] = { total: 0, items: [] };
                     expData.groupedData[currentPeriodKey].days[currentRawDate].total += amount;
                     expData.groupedData[currentPeriodKey].days[currentRawDate].items.push({ name: itemName, amount: amount });
@@ -350,7 +314,6 @@
             expData.periods = Object.keys(expData.groupedData).sort().reverse();
             if (expData.periods.length > 1) expData.periods.push("all");
             if (expPeriodIndex >= expData.periods.length) expPeriodIndex = 0; 
-            
             renderExpenseTab();
         }
 
@@ -364,59 +327,36 @@
 
         function renderExpenseTab() {
             if (expData.periods.length === 0) return;
-            
-            const pKey = expData.periods[expPeriodIndex];
-            const isAllTime = pKey === "all";
-            
-            const displayTotal = isAllTime ? expData.allTime.total : expData.groupedData[pKey].total;
-            const displayCount = isAllTime ? expData.allTime.count : expData.groupedData[pKey].count;
-            
+            const pKey = expData.periods[expPeriodIndex]; const isAllTime = pKey === "all";
             document.getElementById('expHeroLabel').textContent = isAllTime ? "รวมทุกเวลา" : `รวม ${expData.groupedData[pKey].label}`;
-            document.getElementById('expTotalValue').textContent = displayTotal.toLocaleString('th-TH');
-            document.getElementById('expTotalItems').textContent = `${displayCount.toLocaleString('th-TH')} รายการ`;
+            document.getElementById('expTotalValue').textContent = (isAllTime ? expData.allTime.total : expData.groupedData[pKey].total).toLocaleString('th-TH');
+            document.getElementById('expTotalItems').textContent = `${(isAllTime ? expData.allTime.count : expData.groupedData[pKey].count).toLocaleString('th-TH')} รายการ`;
             document.getElementById('expCurrentPeriodLabel').textContent = isAllTime ? "ภาพรวมทั้งหมด" : expData.groupedData[pKey].label;
 
-            const container = document.getElementById('expListContainer');
-            container.innerHTML = '';
-            
+            const container = document.getElementById('expListContainer'); container.innerHTML = '';
             let daysToRender = [];
             if (isAllTime) {
-                for (let k of expData.periods.filter(k => k !== "all")) {
-                    daysToRender.push({ title: expData.groupedData[k].label, subtitle: "สรุปรายเดือน", total: expData.groupedData[k].total, count: expData.groupedData[k].count, args: null });
-                }
+                for (let k of expData.periods.filter(k => k !== "all")) daysToRender.push({ title: expData.groupedData[k].label, total: expData.groupedData[k].total, count: expData.groupedData[k].count });
             } else {
                 for (const [date, data] of Object.entries(expData.groupedData[pKey].days)) {
-                    if (data.total > 0) daysToRender.push({ title: date, subtitle: "บิลรายวัน", total: data.total, count: data.items.length, args: `openExpDetails('${pKey}', '${date}')` });
+                    if (data.total > 0) daysToRender.push({ title: date, total: data.total, count: data.items.length, args: `openExpDetails('${pKey}', '${date}')` });
                 }
             }
 
             daysToRender.forEach((d, i) => {
                 const clickAttr = d.args ? `onclick="${d.args}" class="cursor-pointer hover:border-blue-300 hover:shadow-md active:scale-[0.98] transition-all bg-white border border-slate-100 rounded-2xl p-4 flex items-center justify-between shadow-sm group"` : `class="bg-white border border-slate-100 rounded-2xl p-4 flex items-center justify-between shadow-sm"`;
-                
-                container.insertAdjacentHTML('beforeend', `
-                    <div ${clickAttr} style="animation: fadeIn 0.2s ease-out ${i*0.05}s both;">
-                        <div>
-                            <h3 class="font-heading font-semibold text-slate-800">${d.title}</h3>
-                            <p class="text-xs text-slate-400 font-medium">${d.count} รายการ</p>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-lg font-heading font-bold text-red-500">${d.total.toLocaleString('th-TH')}</div>
-                        </div>
-                    </div>
-                `);
+                container.insertAdjacentHTML('beforeend', `<div ${clickAttr} style="animation: fadeIn 0.2s ease-out ${i*0.05}s both;"><div><h3 class="font-heading font-semibold text-slate-800">${d.title}</h3><p class="text-xs text-slate-400 font-medium">${d.count} รายการ</p></div><div class="text-right"><div class="text-lg font-heading font-bold text-red-500">${d.total.toLocaleString('th-TH')}</div></div></div>`);
             });
         }
 
         async function saveExpenseData() {
             const newText = document.getElementById('textContent').value;
             const nowTime = `แก้ไขเมื่อ ${new Date().toLocaleTimeString("th-TH")}`;
-            processExpenseData(newText, nowTime);
-            localStorage.setItem(CACHE_KEY, JSON.stringify({ content: newText, updateTime: nowTime }));
-            
+            processExpenseData(newText, nowTime); localStorage.setItem(CACHE_KEY, JSON.stringify({ content: newText, updateTime: nowTime }));
             try {
                 const formData = new URLSearchParams(); formData.append('textData', newText);
                 await fetch(EXPENSE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData });
-                showToast('บันทึกรายจ่ายสำเร็จ', 'success');
+                showToast('บันทึกสำเร็จ', 'success');
             } catch (error) { showToast('บันทึกไม่สำเร็จ', 'error'); }
             toggleModal('rawModal');
         }
@@ -426,43 +366,35 @@
             document.getElementById('detailModalTitle').textContent = dateKey;
             document.getElementById('detailModalCount').textContent = `${data.items.length} รายการ`;
             document.getElementById('detailModalTotal').textContent = data.total.toLocaleString('th-TH');
-
             const list = document.getElementById('detailModalList'); list.innerHTML = '';
-            data.items.forEach(item => {
-                list.insertAdjacentHTML('beforeend', `<li class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center"><span class="text-slate-700 text-sm font-medium">${item.name}</span><span class="font-heading font-bold text-slate-900">${item.amount.toLocaleString('th-TH')}</span></li>`);
-            });
+            data.items.forEach(item => list.insertAdjacentHTML('beforeend', `<li class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center"><span class="text-slate-700 text-sm font-medium">${item.name}</span><span class="font-heading font-bold text-slate-900">${item.amount.toLocaleString('th-TH')}</span></li>`));
             toggleModal('detailModal');
         }
 
-
-        // ================= LOGIC ระบบยอดขาย (SALES - FIRESTORE) =================
+        // ================= SALES LOGIC (แสดงผลแบบ Table) =================
         async function fetchSalesData() {
             showSync(true);
-            const container = document.getElementById('salListContainer');
+            const tbody = document.getElementById('salTableBody');
             try {
                 const url = `https://firestore.googleapis.com/v1/projects/${SALES_PROJECT_ID}/databases/(default)/documents:runQuery`;
                 const payload = { "structuredQuery": { "from": [{"collectionId": "daily_summaries"}], "orderBy": [{"field": {"fieldPath": "date"}, "direction": "DESCENDING"}] } };
-
                 const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) throw new Error('ไม่สามารถดึงข้อมูลได้');
-                
+                if (!response.ok) throw new Error();
                 const data = await response.json();
-                renderSalesTab(data);
+                renderSalesTable(data);
                 document.getElementById('lastUpdated').textContent = `โหลดล่าสุด: ${new Date().toLocaleTimeString('th-TH')}`;
             } catch (e) {
-                container.innerHTML = `<div class="p-4 text-red-500 font-medium">เกิดข้อผิดพลาดในการโหลดยอดขาย</div>`;
-                showToast('ดึงยอดขายไม่สำเร็จ', 'error');
-            } finally {
-                showSync(false);
-            }
+                tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-red-500 font-medium">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`;
+                showToast('ดึงข้อมูลยอดขายล้มเหลว', 'error');
+            } finally { showSync(false); }
         }
 
-        function renderSalesTab(data) {
-            const container = document.getElementById('salListContainer');
-            container.innerHTML = '';
+        function renderSalesTable(data) {
+            const tbody = document.getElementById('salTableBody');
+            tbody.innerHTML = '';
             
             if (!data || data.length === 0 || !data[0].document) {
-                container.innerHTML = `<div class="text-center p-8 text-slate-400">ยังไม่มีข้อมูลยอดขายในระบบ</div>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-slate-400">ยังไม่มีข้อมูลในระบบ</td></tr>`;
                 return;
             }
 
@@ -475,29 +407,33 @@
                 const sales = Number(fields.total_sales?.doubleValue || fields.total_sales?.integerValue || 0);
                 const profit = Number(fields.total_profit?.doubleValue || fields.total_profit?.integerValue || 0);
                 const bills = Number(fields.total_bills?.integerValue || 0);
-                
                 allSales += sales; allProfit += profit; allBills += bills;
 
                 const dateObj = new Date(fields.date.stringValue);
-                const displayDate = `${dateObj.getDate()} ${thaiMonths[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+                const thMonthsShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                const displayDate = `${dateObj.getDate().toString().padStart(2, '0')} ${thMonthsShort[dateObj.getMonth()]} ${(dateObj.getFullYear() + 543).toString().substring(2)}`; // แสดงรูปแบบ: 05 พ.ค. 69
 
-                container.insertAdjacentHTML('beforeend', `
-                    <div class="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col shadow-sm fade-in" style="animation-delay: ${index * 0.05}s;">
-                        <div class="flex justify-between items-center mb-2">
-                            <h3 class="font-heading font-semibold text-slate-800">${displayDate}</h3>
-                            <span class="text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">${bills} บิล</span>
-                        </div>
-                        <div class="flex justify-between items-end">
-                            <div><p class="text-[10px] text-slate-400">ยอดขาย</p><div class="text-lg font-heading font-bold text-slate-900">${sales.toLocaleString('th-TH')}</div></div>
-                            <div class="text-right"><p class="text-[10px] text-emerald-500/80">กำไรสุทธิ</p><div class="text-base font-heading font-bold text-emerald-500">+${profit.toLocaleString('th-TH')}</div></div>
-                        </div>
-                    </div>
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-blue-50/50 transition-colors group fade-in" style="animation-delay: ${index * 0.03}s;">
+                        <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 whitespace-nowrap">
+                            <span class="font-heading font-medium text-slate-800">${displayDate}</span>
+                        </td>
+                        <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 text-center whitespace-nowrap">
+                            <span class="inline-block bg-slate-100 text-slate-600 text-[10px] md:text-xs font-semibold px-2.5 py-0.5 rounded-full">${bills} บิล</span>
+                        </td>
+                        <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 text-right whitespace-nowrap">
+                            <span class="font-heading font-bold text-slate-900">${sales.toLocaleString('th-TH')}</span>
+                        </td>
+                        <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 text-right whitespace-nowrap">
+                            <span class="font-heading font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-md inline-block">+${profit.toLocaleString('th-TH')}</span>
+                        </td>
+                    </tr>
                 `);
             });
 
             document.getElementById('salTotalValue').textContent = allSales.toLocaleString('th-TH');
             document.getElementById('salTotalProfit').textContent = allProfit.toLocaleString('th-TH');
-            document.getElementById('salTotalBills').textContent = `${allBills.toLocaleString('th-TH')} บิล`;
+            document.getElementById('salTotalBills').textContent = `${allBills.toLocaleString('th-TH')}`;
         }
 
         // ================= UTILS =================
