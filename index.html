@@ -158,6 +158,7 @@
             <section class="flex-1 flex flex-col min-h-0 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                 <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-white z-10">
                     <h2 class="text-sm md:text-base font-heading font-bold text-slate-800">ตารางประวัติยอดขาย</h2>
+                    <!-- เปลี่ยนปุ่มให้เป็นตัวเล็กๆ สำหรับ Force Refresh -->
                     <button onclick="fetchSalesData()" class="p-2 text-slate-400 hover:text-emerald-600 bg-slate-50 hover:bg-emerald-50 rounded-lg transition-colors"><svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
                 </div>
                 <div class="flex-1 overflow-x-auto overflow-y-auto custom-scroll bg-slate-50/30">
@@ -278,6 +279,7 @@
         const EXPENSE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5wog2rJaNIqPplRKoIzvm-EWolvtSGkEZ8Owrav1sxlkqKdshENQUdPLoSGoH9M_Y/exec";
         const SALES_PROJECT_ID = "time-tracker-46283"; 
         const CACHE_KEY = "expense_app_cache_v2"; 
+        const SALES_CACHE_KEY = "sales_app_cache_v1"; 
         const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
 
         // ================= TAB LOGIC =================
@@ -305,15 +307,21 @@
             }
         }
 
+        // ================= WINDOW ONLOAD =================
+        window.onload = () => {
+            const cachedExp = localStorage.getItem(CACHE_KEY);
+            if (cachedExp) processExpenseData(JSON.parse(cachedExp).content, "รอซิงค์...");
+            
+            const cachedSales = localStorage.getItem(SALES_CACHE_KEY);
+            if (cachedSales) renderSalesTable(JSON.parse(cachedSales));
+
+            fetchExpenseData(); 
+            fetchSalesData(); 
+        };
+
         // ================= EXPENSE LOGIC =================
         let expData = { allTime: { total: 0, count: 0 }, periods: [], groupedData: {} };
         let expPeriodIndex = 0;
-
-        window.onload = () => {
-            const cachedData = localStorage.getItem(CACHE_KEY);
-            if (cachedData) processExpenseData(JSON.parse(cachedData).content, "รอซิงค์...");
-            fetchExpenseData(); 
-        };
 
         async function fetchExpenseData() {
             showSync(true);
@@ -397,6 +405,7 @@
 
             let rowsToRender = [];
             if (isAllTime) {
+                // โหมดรวมทุกเวลา ไม่ต้องจัดเรียงใหม่เพราะจัดมาแล้วตามเดือน
                 for (let k of expData.periods.filter(k => k !== "all")) {
                     rowsToRender.push({ title: expData.groupedData[k].label, total: expData.groupedData[k].total, args: null });
                 }
@@ -404,6 +413,13 @@
                 for (const [date, data] of Object.entries(expData.groupedData[pKey].days)) {
                     if (data.total > 0) rowsToRender.push({ title: date, total: data.total, args: `openExpDetails('${pKey}', '${date}')` });
                 }
+                
+                // 🌟 เพิ่มคำสั่งจัดเรียงข้อมูลรายจ่ายให้เรียงจาก วันที่ 1 ไป 31
+                rowsToRender.sort((a, b) => {
+                    const dayA = parseInt(a.title.match(/\d+/)?.[0] || 0);
+                    const dayB = parseInt(b.title.match(/\d+/)?.[0] || 0);
+                    return dayA - dayB; // เรียงจากน้อยไปมาก
+                });
             }
 
             rowsToRender.forEach((row, i) => {
@@ -448,20 +464,28 @@
             toggleModal('detailModal');
         }
 
-        // ================= SALES LOGIC (เพิ่ม/แก้ไข Firestore) =================
+        // ================= SALES LOGIC =================
         async function fetchSalesData() {
             showSync(true);
             const tbody = document.getElementById('salTableBody');
             try {
                 const url = `https://firestore.googleapis.com/v1/projects/${SALES_PROJECT_ID}/databases/(default)/documents:runQuery`;
-                const payload = { "structuredQuery": { "from": [{"collectionId": "daily_summaries"}], "orderBy": [{"field": {"fieldPath": "date"}, "direction": "DESCENDING"}] } };
+                
+                // 🌟 เปลี่ยน direction เป็น ASCENDING เพื่อให้ดึงข้อมูลจาก วันที่ 1 ไป 31
+                const payload = { "structuredQuery": { "from": [{"collectionId": "daily_summaries"}], "orderBy": [{"field": {"fieldPath": "date"}, "direction": "ASCENDING"}] } };
+                
                 const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                
                 if (!response.ok) throw new Error();
                 const data = await response.json();
+                
+                localStorage.setItem(SALES_CACHE_KEY, JSON.stringify(data));
                 renderSalesTable(data);
                 document.getElementById('lastUpdated').textContent = `อัปเดต: ${new Date().toLocaleTimeString('th-TH')}`;
             } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-red-500 font-medium">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`;
+                if(tbody.innerHTML.trim() === "") {
+                    tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-red-500 font-medium">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`;
+                }
                 showToast('ดึงข้อมูลยอดขายล้มเหลว', 'error');
             } finally { showSync(false); }
         }
@@ -491,7 +515,6 @@
                 const thMonthsShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
                 const displayDate = `${dateObj.getDate().toString().padStart(2, '0')} ${thMonthsShort[dateObj.getMonth()]} ${(dateObj.getFullYear() + 543).toString().substring(2)}`;
 
-                // คลิกที่ตารางจะเปิดฟอร์มแก้ไขทันที
                 const clickAction = `openSalesEditModal('${dateRaw}', ${bills}, ${sales}, ${profit})`;
 
                 tbody.insertAdjacentHTML('beforeend', `
@@ -520,9 +543,7 @@
             document.getElementById('salTotalBills').textContent = `${allBills.toLocaleString('th-TH')}`;
         }
 
-        // ฟังก์ชันเปิด Modal พร้อมดึงข้อมูลเก่ามาใส่ในฟอร์ม (ถ้ามี)
         function openSalesEditModal(dateStr = '', bills = '', sales = '', profit = '') {
-            // ถ้าไม่ใส่วันที่มา ให้ใช้วันนี้เป็นค่าเริ่มต้น
             if (!dateStr) {
                 const now = new Date();
                 const dd = String(now.getDate()).padStart(2, '0');
@@ -530,29 +551,22 @@
                 const yyyy = now.getFullYear();
                 dateStr = `${yyyy}-${mm}-${dd}`;
             }
-
             document.getElementById('saleEditDate').value = dateStr;
             document.getElementById('saleEditBills').value = bills;
             document.getElementById('saleEditTotal').value = sales;
             document.getElementById('saleEditProfit').value = profit;
-
             toggleModal('salesEditModal');
         }
 
-        // ฟังก์ชันยิง API บันทึกลง Firestore (ใช้ PATCH method)
         async function saveSalesDataToFirestore() {
             const dateStr = document.getElementById('saleEditDate').value;
             const bills = Number(document.getElementById('saleEditBills').value) || 0;
             const sales = Number(document.getElementById('saleEditTotal').value) || 0;
             const profit = Number(document.getElementById('saleEditProfit').value) || 0;
 
-            if (!dateStr) {
-                showToast('กรุณาระบุวันที่', 'error');
-                return;
-            }
+            if (!dateStr) { showToast('กรุณาระบุวันที่', 'error'); return; }
 
             const url = `https://firestore.googleapis.com/v1/projects/${SALES_PROJECT_ID}/databases/(default)/documents/daily_summaries/${dateStr}`;
-            
             const payload = {
                 name: `projects/${SALES_PROJECT_ID}/databases/(default)/documents/daily_summaries/${dateStr}`,
                 fields: {
@@ -566,21 +580,12 @@
 
             try {
                 showSync(true);
-                const response = await fetch(url, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) throw new Error('Failed to save to Firestore');
-                
+                const response = await fetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error();
                 showToast('บันทึกยอดขายสำเร็จ!', 'success');
                 toggleModal('salesEditModal');
-                
-                // โหลดตารางใหม่ทันทีหลังบันทึกเสร็จ
                 fetchSalesData(); 
             } catch (error) {
-                console.error(error);
                 showToast('บันทึกไม่สำเร็จ ลองอีกครั้ง', 'error');
                 showSync(false);
             }
