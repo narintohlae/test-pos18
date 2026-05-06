@@ -57,19 +57,22 @@
             </div>
             <div class="text-right flex flex-col items-end">
                 <span id="lastUpdated" class="text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-200/60 px-3 py-1 rounded-full mb-1.5">รอการซิงค์</span>
+                
+                <!-- ปุ่มสลับตามแท็บ -->
                 <button id="headerBtnExpense" onclick="toggleModal('rawModal')" class="text-[11px] md:text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg flex items-center gap-1.5 active:scale-95 transition-colors duration-200">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                     แก้ไขข้อมูล
                 </button>
-                <button id="headerBtnSales" onclick="fetchSalesData()" class="hidden text-[11px] md:text-xs font-semibold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg flex items-center gap-1.5 active:scale-95 transition-colors duration-200">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    รีเฟรชข้อมูล
+                
+                <button id="headerBtnSales" onclick="openSalesEditModal()" class="hidden text-[11px] md:text-xs font-semibold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg flex items-center gap-1.5 active:scale-95 transition-colors duration-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    เพิ่มยอดขาย
                 </button>
             </div>
         </header>
 
         <!-- ============================================== -->
-        <!-- TAB 1: ระบบรายจ่าย (แบบตาราง - ไม่มีจำนวน) -->
+        <!-- TAB 1: ระบบรายจ่าย -->
         <!-- ============================================== -->
         <main id="tabExpense" class="tab-content active flex-1 px-5 md:px-8 pb-5 md:pb-8 gap-4 min-h-0">
             <!-- Hero Card: รายจ่าย -->
@@ -120,7 +123,7 @@
         </main>
 
         <!-- ============================================== -->
-        <!-- TAB 2: ระบบยอดขาย & กำไร (แบบตาราง) -->
+        <!-- TAB 2: ระบบยอดขาย & กำไร -->
         <!-- ============================================== -->
         <main id="tabSales" class="tab-content flex-1 px-5 md:px-8 pb-5 md:pb-8 gap-4 min-h-0">
             <!-- Hero Card: สรุปยอดขาย -->
@@ -154,16 +157,18 @@
             <!-- Table Section: ยอดขาย -->
             <section class="flex-1 flex flex-col min-h-0 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                 <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-white z-10">
-                    <h2 class="text-sm md:text-base font-heading font-bold text-slate-800">ตารางประวัติยอดขายย้อนหลัง</h2>
+                    <h2 class="text-sm md:text-base font-heading font-bold text-slate-800">ตารางประวัติยอดขาย</h2>
+                    <button onclick="fetchSalesData()" class="p-2 text-slate-400 hover:text-emerald-600 bg-slate-50 hover:bg-emerald-50 rounded-lg transition-colors"><svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
                 </div>
                 <div class="flex-1 overflow-x-auto overflow-y-auto custom-scroll bg-slate-50/30">
                     <table class="w-full text-left border-collapse">
                         <thead class="bg-slate-100/80 text-slate-500 text-[11px] md:text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md">
                             <tr>
                                 <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200">วันที่</th>
-                                <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200 text-center">จำนวนบิล</th>
+                                <th class="px-3 py-3 md:px-4 font-semibold border-b border-slate-200 text-center">บิล</th>
                                 <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200 text-right">ยอดขาย (฿)</th>
                                 <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200 text-right">กำไร (฿)</th>
+                                <th class="px-2 py-3 border-b border-slate-200 w-8"></th>
                             </tr>
                         </thead>
                         <tbody id="salTableBody" class="text-sm md:text-base text-slate-700 divide-y divide-slate-100">
@@ -194,7 +199,11 @@
         </nav>
     </div>
 
-    <!-- Modals สำหรับรายจ่าย -->
+    <!-- ============================================== -->
+    <!-- MODALS -->
+    <!-- ============================================== -->
+    
+    <!-- Modal: แสดงรายละเอียดรายจ่าย -->
     <div id="detailModal" class="fixed inset-0 z-50 hidden items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/50 backdrop-blur-sm">
         <div class="bg-white rounded-t-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-xl h-[85vh] md:h-auto md:max-h-[85vh] flex flex-col overflow-hidden mt-auto md:mt-0">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
@@ -208,6 +217,7 @@
         </div>
     </div>
 
+    <!-- Modal: แก้ไขข้อความรายจ่าย (Raw Text) -->
     <div id="rawModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
         <div class="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-2xl h-[85vh] md:h-[80vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
@@ -218,6 +228,40 @@
             <div class="p-5 border-t border-slate-100 bg-white flex gap-3">
                 <button onclick="toggleModal('rawModal')" class="flex-1 bg-slate-100 py-3.5 rounded-xl font-semibold text-slate-700">ยกเลิก</button>
                 <button onclick="saveExpenseData()" class="flex-[2] bg-blue-600 text-white py-3.5 rounded-xl font-semibold">บันทึกระบบ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: เพิ่ม/แก้ไขยอดขายและกำไร -->
+    <div id="salesEditModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-md flex flex-col overflow-hidden">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
+                <h3 class="font-heading font-bold text-slate-800 flex items-center gap-2"><svg class="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>จัดการยอดขาย/กำไร</h3>
+                <button onclick="toggleModal('salesEditModal')" class="bg-slate-100 p-2 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div class="p-6 bg-slate-50 flex-1 space-y-4">
+                <div>
+                    <label class="block text-[11px] md:text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">วันที่บันทึก (YYYY-MM-DD)</label>
+                    <input type="date" id="saleEditDate" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-[11px] md:text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">จำนวนบิลรวม</label>
+                        <input type="number" id="saleEditBills" placeholder="0" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] md:text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">ยอดขายรวม (฿)</label>
+                        <input type="number" id="saleEditTotal" placeholder="0" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] md:text-xs font-bold text-emerald-600 mb-1.5 uppercase tracking-wider">กำไรสุทธิ (฿)</label>
+                        <input type="number" id="saleEditProfit" placeholder="0" class="w-full bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-emerald-800 font-bold outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow">
+                    </div>
+                </div>
+            </div>
+            <div class="p-5 border-t border-slate-100 bg-white flex gap-3">
+                <button onclick="toggleModal('salesEditModal')" class="flex-1 bg-slate-100 py-3.5 rounded-xl font-semibold text-slate-700">ยกเลิก</button>
+                <button onclick="saveSalesDataToFirestore()" class="flex-[2] bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 rounded-xl font-semibold transition-colors">บันทึกลงระบบ</button>
             </div>
         </div>
     </div>
@@ -261,7 +305,7 @@
             }
         }
 
-        // ================= EXPENSE LOGIC (แสดงผลแบบ Table - ซ่อนจำนวน) =================
+        // ================= EXPENSE LOGIC =================
         let expData = { allTime: { total: 0, count: 0 }, periods: [], groupedData: {} };
         let expPeriodIndex = 0;
 
@@ -404,7 +448,7 @@
             toggleModal('detailModal');
         }
 
-        // ================= SALES LOGIC (เหมือนเดิม 100%) =================
+        // ================= SALES LOGIC (เพิ่ม/แก้ไข Firestore) =================
         async function fetchSalesData() {
             showSync(true);
             const tbody = document.getElementById('salTableBody');
@@ -415,9 +459,9 @@
                 if (!response.ok) throw new Error();
                 const data = await response.json();
                 renderSalesTable(data);
-                document.getElementById('lastUpdated').textContent = `โหลดล่าสุด: ${new Date().toLocaleTimeString('th-TH')}`;
+                document.getElementById('lastUpdated').textContent = `อัปเดต: ${new Date().toLocaleTimeString('th-TH')}`;
             } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-red-500 font-medium">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-red-500 font-medium">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`;
                 showToast('ดึงข้อมูลยอดขายล้มเหลว', 'error');
             } finally { showSync(false); }
         }
@@ -427,7 +471,7 @@
             tbody.innerHTML = '';
             
             if (!data || data.length === 0 || !data[0].document) {
-                tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-slate-400">ยังไม่มีข้อมูลในระบบ</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">ยังไม่มีข้อมูลในระบบ</td></tr>`;
                 return;
             }
 
@@ -437,28 +481,35 @@
                 if(!item.document) return;
                 const fields = item.document.fields;
                 
+                const dateRaw = fields.date?.stringValue || '';
                 const sales = Number(fields.total_sales?.doubleValue || fields.total_sales?.integerValue || 0);
                 const profit = Number(fields.total_profit?.doubleValue || fields.total_profit?.integerValue || 0);
                 const bills = Number(fields.total_bills?.integerValue || 0);
                 allSales += sales; allProfit += profit; allBills += bills;
 
-                const dateObj = new Date(fields.date.stringValue);
+                const dateObj = new Date(dateRaw);
                 const thMonthsShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
                 const displayDate = `${dateObj.getDate().toString().padStart(2, '0')} ${thMonthsShort[dateObj.getMonth()]} ${(dateObj.getFullYear() + 543).toString().substring(2)}`;
 
+                // คลิกที่ตารางจะเปิดฟอร์มแก้ไขทันที
+                const clickAction = `openSalesEditModal('${dateRaw}', ${bills}, ${sales}, ${profit})`;
+
                 tbody.insertAdjacentHTML('beforeend', `
-                    <tr class="hover:bg-blue-50/50 transition-colors group fade-in" style="animation-delay: ${index * 0.03}s;">
+                    <tr onclick="${clickAction}" class="hover:bg-emerald-50/50 cursor-pointer transition-colors group fade-in" style="animation-delay: ${index * 0.03}s;">
                         <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 whitespace-nowrap">
                             <span class="font-heading font-medium text-slate-800">${displayDate}</span>
                         </td>
-                        <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 text-center whitespace-nowrap">
-                            <span class="inline-block bg-slate-100 text-slate-600 text-[10px] md:text-xs font-semibold px-2.5 py-0.5 rounded-full">${bills} บิล</span>
+                        <td class="px-3 md:px-4 py-3.5 border-b border-slate-100 text-center whitespace-nowrap">
+                            <span class="inline-block bg-slate-100 text-slate-600 text-[10px] md:text-xs font-semibold px-2.5 py-0.5 rounded-full">${bills}</span>
                         </td>
                         <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 text-right whitespace-nowrap">
                             <span class="font-heading font-bold text-slate-900">${sales.toLocaleString('th-TH')}</span>
                         </td>
                         <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 text-right whitespace-nowrap">
                             <span class="font-heading font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-md inline-block">+${profit.toLocaleString('th-TH')}</span>
+                        </td>
+                        <td class="px-2 py-3.5 border-b border-slate-100 text-center whitespace-nowrap">
+                            <svg class="w-4 h-4 md:w-5 md:h-5 text-slate-300 group-hover:text-emerald-500 mx-auto transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                         </td>
                     </tr>
                 `);
@@ -467,6 +518,72 @@
             document.getElementById('salTotalValue').textContent = allSales.toLocaleString('th-TH');
             document.getElementById('salTotalProfit').textContent = allProfit.toLocaleString('th-TH');
             document.getElementById('salTotalBills').textContent = `${allBills.toLocaleString('th-TH')}`;
+        }
+
+        // ฟังก์ชันเปิด Modal พร้อมดึงข้อมูลเก่ามาใส่ในฟอร์ม (ถ้ามี)
+        function openSalesEditModal(dateStr = '', bills = '', sales = '', profit = '') {
+            // ถ้าไม่ใส่วันที่มา ให้ใช้วันนี้เป็นค่าเริ่มต้น
+            if (!dateStr) {
+                const now = new Date();
+                const dd = String(now.getDate()).padStart(2, '0');
+                const mm = String(now.getMonth() + 1).padStart(2, '0'); 
+                const yyyy = now.getFullYear();
+                dateStr = `${yyyy}-${mm}-${dd}`;
+            }
+
+            document.getElementById('saleEditDate').value = dateStr;
+            document.getElementById('saleEditBills').value = bills;
+            document.getElementById('saleEditTotal').value = sales;
+            document.getElementById('saleEditProfit').value = profit;
+
+            toggleModal('salesEditModal');
+        }
+
+        // ฟังก์ชันยิง API บันทึกลง Firestore (ใช้ PATCH method)
+        async function saveSalesDataToFirestore() {
+            const dateStr = document.getElementById('saleEditDate').value;
+            const bills = Number(document.getElementById('saleEditBills').value) || 0;
+            const sales = Number(document.getElementById('saleEditTotal').value) || 0;
+            const profit = Number(document.getElementById('saleEditProfit').value) || 0;
+
+            if (!dateStr) {
+                showToast('กรุณาระบุวันที่', 'error');
+                return;
+            }
+
+            const url = `https://firestore.googleapis.com/v1/projects/${SALES_PROJECT_ID}/databases/(default)/documents/daily_summaries/${dateStr}`;
+            
+            const payload = {
+                name: `projects/${SALES_PROJECT_ID}/databases/(default)/documents/daily_summaries/${dateStr}`,
+                fields: {
+                    date: { stringValue: dateStr },
+                    total_sales: { doubleValue: sales },
+                    total_profit: { doubleValue: profit },
+                    total_bills: { integerValue: bills },
+                    last_updated: { timestampValue: new Date().toISOString() }
+                }
+            };
+
+            try {
+                showSync(true);
+                const response = await fetch(url, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error('Failed to save to Firestore');
+                
+                showToast('บันทึกยอดขายสำเร็จ!', 'success');
+                toggleModal('salesEditModal');
+                
+                // โหลดตารางใหม่ทันทีหลังบันทึกเสร็จ
+                fetchSalesData(); 
+            } catch (error) {
+                console.error(error);
+                showToast('บันทึกไม่สำเร็จ ลองอีกครั้ง', 'error');
+                showSync(false);
+            }
         }
 
         // ================= UTILS =================
