@@ -35,13 +35,14 @@
         .fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
+        /* แก้ไข CSS ให้รองรับ Flex แบบ Row (ซ้ายขวา) ใน iPad */
         .tab-content { display: none; }
-        .tab-content.active { display: flex; flex-direction: column; }
+        .tab-content.active { display: flex; }
     </style>
 </head>
 <body class="text-slate-800 selection:bg-blue-200">
 
-    <div class="w-full h-full md:h-[95dvh] md:max-w-4xl md:rounded-[2.5rem] md:border border-white/50 flex flex-col relative bg-[#f4f5f9] md:shadow-2xl overflow-hidden pb-16 md:pb-0">
+    <div class="w-full h-full md:h-[95dvh] md:max-w-5xl md:rounded-[2.5rem] md:border border-white/50 flex flex-col relative bg-[#f4f5f9] md:shadow-2xl overflow-hidden pb-16 md:pb-0">
         
         <header class="flex-none pt-8 md:pt-6 pb-3 px-6 md:px-8 flex justify-between items-center bg-[#f4f5f9] z-10 shrink-0">
             <div>
@@ -76,37 +77,41 @@
             </div>
         </header>
 
-        <main id="tabExpense" class="tab-content active flex-1 px-5 md:px-8 pb-5 md:pb-8 gap-4 min-h-0">
-            <div class="flex-none bg-slate-900 rounded-[2rem] p-6 md:p-8 text-white shadow-xl relative overflow-hidden shrink-0">
+        <main id="tabExpense" class="tab-content active flex-1 flex-col md:flex-row px-5 md:px-8 pb-5 md:pb-8 gap-4 md:gap-6 min-h-0">
+            <div class="flex-none md:w-[300px] lg:w-[340px] bg-slate-900 rounded-[2rem] p-6 md:p-8 text-white shadow-xl relative overflow-hidden shrink-0 flex flex-col justify-between">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-red-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40 translate-x-1/3 -translate-y-1/3"></div>
                 <div class="absolute bottom-0 left-0 w-48 h-48 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40 -translate-x-1/3 translate-y-1/3"></div>
-                <div class="relative z-10 flex flex-col justify-between h-full">
-                    <div class="flex justify-between items-start mb-4 md:mb-6">
+                
+                <div class="relative z-10 flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-4 md:mb-8">
                         <div class="bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/10 flex items-center gap-2">
                             <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span class="text-xs md:text-sm font-heading font-medium text-white" id="expHeroLabel">รวมทั้งหมด</span>
                         </div>
                     </div>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-5xl md:text-6xl font-heading font-extrabold tracking-tight text-white" id="expTotalValue">0</span>
-                        <span class="text-lg md:text-2xl font-medium text-slate-400">THB</span>
-                    </div>
                     
-                    <div class="flex flex-wrap items-center gap-2 mt-4">
-                        <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
-                            <span class="text-[11px] md:text-xs text-slate-300 font-medium">รวมรายการทั้งหมด:</span>
-                            <span class="text-sm md:text-base font-heading font-bold text-white" id="expTotalItems">0</span>
+                    <div class="mt-auto">
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-5xl md:text-5xl lg:text-6xl font-heading font-extrabold tracking-tight text-white" id="expTotalValue">0</span>
+                            <span class="text-lg md:text-xl font-medium text-slate-400">THB</span>
                         </div>
-                        <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
-                            <span class="text-[11px] md:text-xs text-slate-300 font-medium">เฉลี่ยต่อวัน:</span>
-                            <span class="text-sm md:text-base font-heading font-bold text-white" id="expAvgValue">0 ฿</span>
+                        
+                        <div class="flex flex-wrap md:flex-col items-center md:items-stretch gap-2 md:gap-3 mt-4">
+                            <div class="flex items-center justify-between gap-2 bg-white/10 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border border-white/10 md:w-full">
+                                <span class="text-[11px] md:text-xs text-slate-300 font-medium">รวมรายการทั้งหมด:</span>
+                                <span class="text-sm md:text-base font-heading font-bold text-white" id="expTotalItems">0</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 bg-white/10 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border border-white/10 md:w-full">
+                                <span class="text-[11px] md:text-xs text-slate-300 font-medium">เฉลี่ยต่อวัน:</span>
+                                <span class="text-sm md:text-base font-heading font-bold text-white" id="expAvgValue">0 ฿</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <section class="flex-1 flex flex-col min-h-0 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-                <div class="flex justify-between items-center p-3 border-b border-slate-50 bg-white z-10">
+            <section class="flex-1 flex flex-col min-w-0 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden h-full">
+                <div class="flex justify-between items-center p-3 border-b border-slate-50 bg-white z-10 shrink-0">
                     <button onclick="expChangePeriod(-1)" class="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg></button>
                     <h2 id="expCurrentPeriodLabel" class="text-sm md:text-base font-heading font-bold text-slate-800">เดือนนี้</h2>
                     <button onclick="expChangePeriod(1)" class="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg></button>
@@ -128,45 +133,49 @@
             </section>
         </main>
 
-        <main id="tabSales" class="tab-content flex-1 px-5 md:px-8 pb-5 md:pb-8 gap-4 min-h-0">
-            <div class="flex-none bg-slate-900 rounded-[2rem] p-6 md:p-8 text-white shadow-xl relative overflow-hidden shrink-0">
+        <main id="tabSales" class="tab-content flex-1 flex-col md:flex-row px-5 md:px-8 pb-5 md:pb-8 gap-4 md:gap-6 min-h-0">
+            <div class="flex-none md:w-[300px] lg:w-[340px] bg-slate-900 rounded-[2rem] p-6 md:p-8 text-white shadow-xl relative overflow-hidden shrink-0 flex flex-col justify-between">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 translate-x-1/3 -translate-y-1/3"></div>
                 <div class="absolute bottom-0 left-0 w-48 h-48 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -translate-x-1/3 translate-y-1/3"></div>
-                <div class="relative z-10 flex flex-col justify-between h-full">
-                    <div class="flex justify-between items-start mb-4">
+                
+                <div class="relative z-10 flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-4 md:mb-8">
                         <div class="bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/10 flex items-center gap-2">
                             <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span class="text-xs md:text-sm font-heading font-medium text-white">ยอดขายรวมสะสม</span>
                         </div>
                     </div>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-5xl md:text-6xl font-heading font-extrabold tracking-tight text-white" id="salTotalValue">0</span>
-                        <span class="text-lg md:text-2xl font-medium text-slate-400">THB</span>
-                    </div>
                     
-                    <div class="flex flex-wrap items-center gap-2 mt-4">
-                        <div class="flex items-center gap-2 bg-emerald-500/20 px-3 py-1.5 rounded-lg border border-emerald-500/30">
-                            <span class="text-[11px] md:text-xs text-emerald-300 font-medium">กำไรสุทธิ:</span>
-                            <span class="text-sm md:text-base font-heading font-bold text-emerald-400" id="salTotalProfit">0</span>
+                    <div class="mt-auto">
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-5xl md:text-5xl lg:text-6xl font-heading font-extrabold tracking-tight text-white" id="salTotalValue">0</span>
+                            <span class="text-lg md:text-xl font-medium text-slate-400">THB</span>
                         </div>
-                        <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
-                            <span class="text-[11px] md:text-xs text-slate-300 font-medium">จำนวนบิล:</span>
-                            <span class="text-sm md:text-base font-heading font-bold text-white" id="salTotalBills">0</span>
-                        </div>
-                        <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
-                            <span class="text-[11px] md:text-xs text-slate-300 font-medium">ยอดขายเฉลี่ย:</span>
-                            <span class="text-sm md:text-base font-heading font-bold text-white" id="salAvgValue">0 ฿/วัน</span>
-                        </div>
-                        <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
-                            <span class="text-[11px] md:text-xs text-slate-300 font-medium">บิลเฉลี่ย:</span>
-                            <span class="text-sm md:text-base font-heading font-bold text-white" id="salAvgBills">0 บิล/วัน</span>
+                        
+                        <div class="flex flex-wrap md:flex-col items-center md:items-stretch gap-2 md:gap-3 mt-4 w-full">
+                            <div class="flex items-center justify-between gap-2 bg-emerald-500/20 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border border-emerald-500/30 md:w-full">
+                                <span class="text-[11px] md:text-xs text-emerald-300 font-medium">กำไรสุทธิ:</span>
+                                <span class="text-sm md:text-base font-heading font-bold text-emerald-400" id="salTotalProfit">0</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 bg-white/10 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border border-white/10 md:w-full">
+                                <span class="text-[11px] md:text-xs text-slate-300 font-medium">จำนวนบิล:</span>
+                                <span class="text-sm md:text-base font-heading font-bold text-white" id="salTotalBills">0</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 bg-white/10 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border border-white/10 md:w-full">
+                                <span class="text-[11px] md:text-xs text-slate-300 font-medium">ยอดขายเฉลี่ย:</span>
+                                <span class="text-sm md:text-base font-heading font-bold text-white" id="salAvgValue">0 ฿/วัน</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 bg-white/10 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border border-white/10 md:w-full">
+                                <span class="text-[11px] md:text-xs text-slate-300 font-medium">บิลเฉลี่ย:</span>
+                                <span class="text-sm md:text-base font-heading font-bold text-white" id="salAvgBills">0 บิล/วัน</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <section class="flex-1 flex flex-col min-h-0 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-                <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-white z-10">
+            <section class="flex-1 flex flex-col min-w-0 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden h-full">
+                <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-white z-10 shrink-0">
                     <h2 class="text-sm md:text-base font-heading font-bold text-slate-800">ตารางประวัติยอดขาย</h2>
                     <button onclick="fetchSalesData()" class="p-2 text-slate-400 hover:text-emerald-600 bg-slate-50 hover:bg-emerald-50 rounded-lg transition-colors"><svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
                 </div>
@@ -255,7 +264,7 @@
     <div id="rawModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
         <div class="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-2xl h-[85vh] md:h-[80vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
-                <h3 class="font-heading font-bold text-slate-800 flex items-center gap-2"><svg class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>แก้ไขแบบข้อความ</h3>
+                <h3 class="font-heading font-bold text-slate-800 flex items-center gap-2"><svg class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>แก้ไขแบบข้อความดิบ</h3>
                 <button onclick="toggleModal('rawModal')" class="bg-slate-100 p-2 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
             <div class="p-5 overflow-y-auto bg-slate-50 flex-1 relative custom-scroll"><textarea id="textContent" class="w-full h-full bg-transparent font-mono text-sm md:text-base text-slate-700 resize-none outline-none leading-relaxed" spellcheck="false" placeholder="พิมพ์รายจ่าย..."></textarea></div>
@@ -308,7 +317,7 @@
     <script>
         // ================= CONFIG =================
         const EXPENSE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5wog2rJaNIqPplRKoIzvm-EWolvtSGkEZ8Owrav1sxlkqKdshENQUdPLoSGoH9M_Y/exec";
-        const SALES_PROJECT_ID = "pos18-bcdff"; 
+        const SALES_PROJECT_ID = "time-tracker-46283"; 
         const CACHE_KEY = "expense_app_cache_v2"; 
         const SALES_CACHE_KEY = "sales_app_cache_v1"; 
         const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
@@ -377,30 +386,28 @@
             const lines = text.split(/\r\n|\n|\r/);
             const dateRegex = /^\s*(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})\s*$/;
             
-            let currentRawDate = "รายการอื่นๆ";
-            let currentStandardDate = "รายการอื่นๆ";
-            let currentPeriodKey = "uncategorized";
-            
+            let currentRawDate = "รายการอื่นๆ", currentPeriodKey = "uncategorized";
             expData.groupedData[currentPeriodKey] = { label: "รายการทั่วไป", total: 0, count: 0, days: {} };
 
             lines.forEach((line, idx) => {
                 const trimmedLine = line.trim(); if (!trimmedLine) return;
                 const dateMatch = trimmedLine.match(dateRegex);
                 if (dateMatch) {
-                    currentRawDate = trimmedLine;
                     let d = parseInt(dateMatch[1], 10), m = parseInt(dateMatch[2], 10), y = parseInt(dateMatch[3], 10);
                     
-                    // แปลงปีให้เป็น พ.ศ. เสมอเพื่อการจัดกลุ่ม
                     if (y < 100) y += 2500;       
                     else if (y < 2400) y += 543;  
                     
                     currentPeriodKey = `${y}-${m.toString().padStart(2, '0')}`;
-                    currentStandardDate = `${d}-${m}-${y.toString().slice(-2)}`; 
-
-                    if (!expData.groupedData[currentPeriodKey]) expData.groupedData[currentPeriodKey] = { label: `${thaiMonths[m-1]} ${y}`, total: 0, count: 0, days: {} };
-                    if (!expData.groupedData[currentPeriodKey].days[currentStandardDate]) expData.groupedData[currentPeriodKey].days[currentStandardDate] = { total: 0, items: [] };
                     
-                    expData.allTime.uniqueDays.add(currentStandardDate);
+                    // จัดรูปแบบให้เป็นแบบเดียวกันเสมอ เพื่อการยุบรวมที่สมบูรณ์แบบ
+                    let shortYear = y.toString().slice(-2);
+                    currentRawDate = `${d}-${m}-${shortYear}`;
+                    
+                    if (!expData.groupedData[currentPeriodKey]) expData.groupedData[currentPeriodKey] = { label: `${thaiMonths[m-1]} ${y}`, total: 0, count: 0, days: {} };
+                    if (!expData.groupedData[currentPeriodKey].days[currentRawDate]) expData.groupedData[currentPeriodKey].days[currentRawDate] = { total: 0, items: [] };
+                    
+                    expData.allTime.uniqueDays.add(currentRawDate);
                     return;
                 }
                 const itemMatch = trimmedLine.match(/(.*?)(\d+(?:\.\d+)?)$/);
@@ -408,13 +415,12 @@
                     const itemName = itemMatch[1].trim() || 'รายการ', amount = parseFloat(itemMatch[2]);
                     expData.allTime.total += amount; expData.allTime.count++;
                     expData.groupedData[currentPeriodKey].total += amount; expData.groupedData[currentPeriodKey].count++;
+                    if (!expData.groupedData[currentPeriodKey].days[currentRawDate]) expData.groupedData[currentPeriodKey].days[currentRawDate] = { total: 0, items: [] };
                     
-                    if (!expData.groupedData[currentPeriodKey].days[currentStandardDate]) expData.groupedData[currentPeriodKey].days[currentStandardDate] = { total: 0, items: [] };
-                    
-                    if (currentStandardDate !== "รายการอื่นๆ") expData.allTime.uniqueDays.add(currentStandardDate);
+                    if (currentRawDate !== "รายการอื่นๆ") expData.allTime.uniqueDays.add(currentRawDate);
 
-                    expData.groupedData[currentPeriodKey].days[currentStandardDate].total += amount;
-                    expData.groupedData[currentPeriodKey].days[currentStandardDate].items.push({ name: itemName, amount: amount, lineIndex: idx });
+                    expData.groupedData[currentPeriodKey].days[currentRawDate].total += amount;
+                    expData.groupedData[currentPeriodKey].days[currentRawDate].items.push({ name: itemName, amount: amount, lineIndex: idx });
                 }
             });
 
@@ -594,10 +600,8 @@
             let lines = document.getElementById('textContent').value.split(/\r\n|\n|\r/);
 
             if (lineIndex >= 0) {
-                // แก้ไขข้อมูลเก่า
                 lines[lineIndex] = `${name} ${amount}`;
             } else {
-                // แทรกข้อมูลใหม่ (โดยค้นหาตำแหน่งวันที่ที่มีอยู่แล้ว)
                 let targetD, targetM, targetY;
                 const rawDateLocked = document.getElementById('editItemDateRaw').value;
 
@@ -607,6 +611,7 @@
                         targetD = parseInt(match[1], 10);
                         targetM = parseInt(match[2], 10);
                         targetY = parseInt(match[3], 10);
+                        if (targetY < 100) targetY += 2500; else if (targetY < 2400) targetY += 543;
                     }
                 } else {
                     const isoDate = document.getElementById('editItemDate').value;
@@ -618,16 +623,12 @@
                     if (targetY < 2400) targetY += 543; 
                 }
                 
-                let checkTargetY = targetY;
-                if (checkTargetY < 100) checkTargetY += 2500; else if (checkTargetY < 2400) checkTargetY += 543;
-                
-                let shortYear = checkTargetY.toString().slice(-2);
+                let shortYear = targetY.toString().slice(-2);
                 let fallbackDateStr = `${targetD}-${targetM}-${shortYear}`;
 
                 let insertIndex = -1;
                 let insideTargetBlock = false;
 
-                // สแกนบรรทัดเพื่อหาช่องแทรก
                 for(let i = 0; i < lines.length; i++) {
                     let line = lines[i].trim();
                     if(!line) continue;
@@ -639,7 +640,7 @@
                         let y = parseInt(dateMatch[3], 10);
                         if(y < 100) y += 2500; else if(y < 2400) y += 543;
 
-                        if (d === targetD && m === targetM && y === checkTargetY) {
+                        if (d === targetD && m === targetM && y === targetY) {
                             insideTargetBlock = true;
                             insertIndex = i; 
                         } else {
@@ -651,10 +652,8 @@
                 }
 
                 if (insideTargetBlock && insertIndex !== -1) {
-                    // แทรกต่อท้ายกลุ่มวันที่เดิม
                     lines.splice(insertIndex + 1, 0, `${name} ${amount}`);
                 } else {
-                    // ถ้าไม่เคยมีวันนี้มาก่อน ให้สร้างใหม่ข้างล่าง
                     if (lines.length > 0 && lines[lines.length - 1].trim() !== "") {
                         lines.push("");
                     }
