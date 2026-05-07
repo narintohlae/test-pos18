@@ -762,9 +762,20 @@
             // 🌟 เรียงข้อมูลให้เรียบร้อยและไม่ใส่ "all"
             salData.periods = Object.keys(salData.groupedData).sort(); 
 
+// หางวดเดือนปัจจุบันตามปฏิทิน (เช่น "2569-05")
+            const now = new Date();
+            let currentY = now.getFullYear();
+            if (currentY < 2400) currentY += 543;
+            const currentM = String(now.getMonth() + 1).padStart(2, '0');
+            const currentPeriod = `${currentY}-${currentM}`;
+
             if (oldPeriodKey && salData.periods.includes(oldPeriodKey)) {
                 salPeriodIndex = salData.periods.indexOf(oldPeriodKey);
+            } else if (salData.periods.includes(currentPeriod)) {
+                // ถ้ามีข้อมูลของเดือนปัจจุบัน ให้เลือกเดือนปัจจุบันก่อน
+                salPeriodIndex = salData.periods.indexOf(currentPeriod);
             } else {
+                // ถ้ายังไม่มีข้อมูลเดือนปัจจุบัน ให้เลือกเดือนล่าสุดที่มีไปก่อน
                 salPeriodIndex = salData.periods.length > 0 ? salData.periods.length - 1 : 0;
             }
 
