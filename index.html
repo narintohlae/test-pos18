@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ระบบจัดการธุรกิจอัจฉริยะ</title>
+    <title>Business Dashboard Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700;800&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        :root { --app-bg: #f4f5f9; }
+        :root { --app-bg: #f8fafc; }
         body { 
             font-family: 'Sarabun', sans-serif; 
             background-color: #e2e8f0; 
@@ -19,57 +19,66 @@
             justify-content: center;
         }
         
-        h1, h2, h3, th, .font-heading { font-family: 'Prompt', sans-serif; }
+        h1, h2, h3, th, .font-heading, .number-font { font-family: 'Prompt', sans-serif; }
         
         .spinner-small { border: 2px solid rgba(59, 130, 246, 0.2); border-left-color: #3b82f6; border-radius: 50%; width: 14px; height: 14px; animation: spin 0.8s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
+        
         .toast-enter { animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes slideUp { from { transform: translate(-50%, 100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
         .fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* แก้ไข CSS ให้รองรับ Flex แบบ Row (ซ้ายขวา) ใน iPad */
         .tab-content { display: none; }
         .tab-content.active { display: flex; }
+        
+        tr.table-row-hover:hover td { background-color: #f8fafc; }
     </style>
 </head>
 <body class="text-slate-800 selection:bg-blue-200">
 
-    <div class="w-full h-full md:h-[95dvh] md:max-w-5xl md:rounded-[2.5rem] md:border border-white/50 flex flex-col relative bg-[#f4f5f9] md:shadow-2xl overflow-hidden pb-16 md:pb-0">
+    <div class="w-full h-full md:h-[94vh] md:w-[96vw] md:max-w-6xl md:rounded-[2rem] flex flex-col relative bg-slate-50 md:shadow-2xl overflow-hidden pb-16 md:pb-0 border border-slate-200/50">
         
-        <header class="flex-none pt-8 md:pt-6 pb-3 px-6 md:px-8 flex justify-between items-center bg-[#f4f5f9] z-10 shrink-0">
-            <div>
-                <p class="text-xs md:text-sm font-medium text-slate-500 mb-0.5">ยินดีต้อนรับ 👋</p>
-                <div class="flex items-center gap-2">
-                    <h1 id="mainTitle" class="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">สรุปรายจ่าย</h1>
-                    <div id="bgSyncIndicator" class="hidden flex items-center justify-center bg-blue-50 px-2.5 py-1 md:py-1.5 rounded-full gap-1.5 transition-opacity">
-                        <div class="spinner-small"></div>
-                        <span class="text-[10px] md:text-xs font-bold text-blue-600 tracking-wide">กำลังซิงค์...</span>
+        <header class="flex-none pt-8 md:pt-5 pb-4 px-6 md:px-8 flex justify-between items-center bg-white border-b border-slate-100 z-10 shrink-0">
+            <div class="flex items-center gap-4">
+                <div>
+                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Business Dashboard</p>
+                    <div class="flex items-center gap-3">
+                        <h1 id="mainTitle" class="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">สรุปรายจ่าย</h1>
+                        <div id="bgSyncIndicator" class="hidden flex items-center justify-center bg-blue-50/50 px-2 py-1 rounded-full gap-1.5">
+                            <div class="spinner-small"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="text-right flex flex-col items-end">
-                <span id="lastUpdated" class="text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-200/60 px-3 py-1 rounded-full mb-1.5">รอการซิงค์</span>
+
+            <div class="hidden md:flex bg-slate-100 p-1.5 rounded-xl">
+                <button onclick="switchTab('expense')" id="desktopNavExpense" class="px-6 py-2 rounded-lg bg-white shadow-sm text-slate-800 text-sm font-bold transition-all">รายจ่าย</button>
+                <button onclick="switchTab('sales')" id="desktopNavSales" class="px-6 py-2 rounded-lg text-slate-500 hover:text-slate-700 text-sm font-bold transition-all">ยอดขาย / กำไร</button>
+            </div>
+
+            <div class="text-right flex flex-col items-end justify-center">
+                <span id="lastUpdated" class="text-[10px] md:text-xs font-medium text-slate-400 mb-2 flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    รอการซิงค์
+                </span>
                 
                 <div id="headerGroupExpense" class="flex items-center gap-2">
-                    <button onclick="toggleModal('rawModal')" class="p-2 text-slate-400 hover:text-blue-600 bg-white hover:bg-blue-50 rounded-lg transition-colors border border-slate-200" title="แก้ไขแบบข้อความดิบ">
-                        <svg class="w-4 h-4 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    <button onclick="toggleModal('rawModal')" class="p-2 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors border border-slate-200/60 shadow-sm" title="แก้ไขแบบข้อความดิบ">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
                     </button>
-                    <button onclick="openAddNewExpense()" class="text-[11px] md:text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg flex items-center gap-1.5 active:scale-95 transition-colors duration-200 shadow-md shadow-blue-500/30">
+                    <button onclick="openAddNewExpense()" class="text-[11px] md:text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 active:scale-95 transition-all shadow-md">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         เพิ่มรายจ่าย
                     </button>
                 </div>
                 
                 <div id="headerGroupSales" class="hidden flex items-center gap-2">
-                    <button onclick="openSalesEditModal()" class="text-[11px] md:text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-600 px-3 py-2 rounded-lg flex items-center gap-1.5 active:scale-95 transition-colors duration-200 shadow-md shadow-emerald-500/30">
+                    <button onclick="openSalesEditModal()" class="text-[11px] md:text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 rounded-xl flex items-center gap-2 active:scale-95 transition-all shadow-md shadow-emerald-600/20">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         เพิ่มยอดขาย
                     </button>
@@ -77,233 +86,232 @@
             </div>
         </header>
 
-        <main id="tabExpense" class="tab-content active flex-1 flex-col md:flex-row px-5 md:px-8 pb-5 md:pb-8 gap-4 md:gap-6 min-h-0">
-            <div class="flex-none md:w-[300px] lg:w-[340px] bg-slate-900 rounded-[2rem] p-6 md:p-8 text-white shadow-xl relative overflow-hidden shrink-0 flex flex-col justify-between">
-                <div class="absolute top-0 right-0 w-64 h-64 bg-red-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40 translate-x-1/3 -translate-y-1/3"></div>
-                <div class="absolute bottom-0 left-0 w-48 h-48 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40 -translate-x-1/3 translate-y-1/3"></div>
+        <main id="tabExpense" class="tab-content active flex-1 flex-col md:flex-row p-4 md:p-6 gap-4 md:gap-6 min-h-0">
+            <div class="flex-none md:w-[300px] lg:w-[340px] bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden shrink-0 flex flex-col justify-between border border-slate-700/50">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-red-500/20 rounded-full mix-blend-overlay filter blur-3xl translate-x-1/3 -translate-y-1/3"></div>
                 
                 <div class="relative z-10 flex flex-col h-full">
-                    <div class="flex justify-between items-start mb-4 md:mb-8">
-                        <div class="bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/10 flex items-center gap-2">
+                    <div class="flex items-center gap-2 mb-6">
+                        <div class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center border border-red-500/30">
                             <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span class="text-xs md:text-sm font-heading font-medium text-white" id="expHeroLabel">รวมทั้งหมด</span>
                         </div>
+                        <span class="text-xs md:text-sm font-heading font-medium text-slate-200" id="expHeroLabel">รวมทั้งหมด</span>
                     </div>
                     
                     <div class="mt-auto">
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-1 font-semibold">ยอดรวมรายจ่าย</p>
                         <div class="flex items-baseline gap-2">
-                            <span class="text-5xl md:text-5xl lg:text-6xl font-heading font-extrabold tracking-tight text-white" id="expTotalValue">0</span>
-                            <span class="text-lg md:text-xl font-medium text-slate-400">THB</span>
+                            <span class="text-5xl md:text-5xl lg:text-6xl number-font font-extrabold tracking-tight text-white" id="expTotalValue">0</span>
+                            <span class="text-sm font-medium text-slate-400">THB</span>
                         </div>
                         
-                        <div class="flex flex-wrap md:flex-col items-center md:items-stretch gap-2 md:gap-3 mt-4">
-                            <div class="flex items-center justify-between gap-2 bg-white/10 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border border-white/10 md:w-full">
-                                <span class="text-[11px] md:text-xs text-slate-300 font-medium">รวมรายการทั้งหมด:</span>
-                                <span class="text-sm md:text-base font-heading font-bold text-white" id="expTotalItems">0</span>
+                        <div class="grid grid-cols-2 gap-3 mt-6">
+                            <div class="bg-slate-800/50 p-3 rounded-2xl border border-slate-700/50">
+                                <p class="text-[10px] text-slate-400 font-medium mb-1">รวมรายการ</p>
+                                <p class="text-base number-font font-bold text-white" id="expTotalItems">0</p>
                             </div>
-                            <div class="flex items-center justify-between gap-2 bg-white/10 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border border-white/10 md:w-full">
-                                <span class="text-[11px] md:text-xs text-slate-300 font-medium">เฉลี่ยต่อวัน:</span>
-                                <span class="text-sm md:text-base font-heading font-bold text-white" id="expAvgValue">0 ฿</span>
+                            <div class="bg-slate-800/50 p-3 rounded-2xl border border-slate-700/50">
+                                <p class="text-[10px] text-slate-400 font-medium mb-1">เฉลี่ยต่อวัน</p>
+                                <p class="text-base number-font font-bold text-white" id="expAvgValue">0 ฿</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <section class="flex-1 flex flex-col min-w-0 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden h-full">
-                <div class="flex justify-between items-center p-3 border-b border-slate-50 bg-white z-10 shrink-0">
-                    <button onclick="expChangePeriod(-1)" class="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg></button>
+            <section class="flex-1 flex flex-col min-w-0 bg-white rounded-3xl border border-slate-200/60 shadow-sm overflow-hidden h-full">
+                <div class="flex justify-between items-center p-3 md:p-4 border-b border-slate-100 bg-white z-10 shrink-0">
+                    <button onclick="expChangePeriod(-1)" class="p-2.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
                     <h2 id="expCurrentPeriodLabel" class="text-sm md:text-base font-heading font-bold text-slate-800">เดือนนี้</h2>
-                    <button onclick="expChangePeriod(1)" class="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg></button>
+                    <button onclick="expChangePeriod(1)" class="p-2.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
                 </div>
                 
-                <div class="flex-1 overflow-x-auto overflow-y-auto custom-scroll bg-slate-50/30">
+                <div class="flex-1 overflow-x-auto overflow-y-auto custom-scroll">
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-slate-100/80 text-slate-500 text-[11px] md:text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md">
+                        <thead class="bg-slate-50/80 text-slate-400 text-[10px] md:text-[11px] uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md">
                             <tr>
-                                <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200">วันที่ / รายการ</th>
-                                <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200 text-right">ยอดรวม (฿)</th>
-                                <th class="px-2 py-3 md:px-4 font-semibold border-b border-slate-200 text-center w-10"></th>
+                                <th class="px-5 py-4 font-bold border-b border-slate-100">วันที่ / รายการ</th>
+                                <th class="px-5 py-4 font-bold border-b border-slate-100 text-right">ยอดรวม (฿)</th>
+                                <th class="px-3 py-4 font-bold border-b border-slate-100 text-center w-12"></th>
                             </tr>
                         </thead>
-                        <tbody id="expTableBody" class="text-sm md:text-base text-slate-700 divide-y divide-slate-100">
+                        <tbody id="expTableBody" class="text-sm md:text-base text-slate-700 divide-y divide-slate-50">
                             </tbody>
                     </table>
                 </div>
             </section>
         </main>
 
-        <main id="tabSales" class="tab-content flex-1 flex-col md:flex-row px-5 md:px-8 pb-5 md:pb-8 gap-4 md:gap-6 min-h-0">
-            <div class="flex-none md:w-[300px] lg:w-[340px] bg-slate-900 rounded-[2rem] p-6 md:p-8 text-white shadow-xl relative overflow-hidden shrink-0 flex flex-col justify-between">
-                <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 translate-x-1/3 -translate-y-1/3"></div>
-                <div class="absolute bottom-0 left-0 w-48 h-48 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -translate-x-1/3 translate-y-1/3"></div>
+        <main id="tabSales" class="tab-content flex-1 flex-col md:flex-row p-4 md:p-6 gap-4 md:gap-6 min-h-0 bg-slate-50/50">
+            <div class="flex-none md:w-[300px] lg:w-[340px] bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden shrink-0 flex flex-col justify-between border border-slate-700/50">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full mix-blend-overlay filter blur-3xl translate-x-1/3 -translate-y-1/3"></div>
                 
                 <div class="relative z-10 flex flex-col h-full">
-                    <div class="flex justify-between items-start mb-4 md:mb-8">
-                        <div class="bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/10 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span class="text-xs md:text-sm font-heading font-medium text-white">ยอดขายรวมสะสม</span>
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+                                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <span class="text-xs md:text-sm font-heading font-medium text-slate-200">ยอดขายรวมสะสม</span>
                         </div>
+                        <span class="text-[10px] md:text-xs font-medium bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700" id="salTotalBills">0 บิล</span>
                     </div>
                     
                     <div class="mt-auto">
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-5xl md:text-5xl lg:text-6xl font-heading font-extrabold tracking-tight text-white" id="salTotalValue">0</span>
-                            <span class="text-lg md:text-xl font-medium text-slate-400">THB</span>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-1 font-semibold">ยอดขายสุทธิ</p>
+                        <div class="flex items-baseline gap-2 mb-5">
+                            <span class="text-5xl md:text-5xl lg:text-6xl number-font font-extrabold tracking-tight text-white" id="salTotalValue">0</span>
+                            <span class="text-sm font-medium text-slate-400">THB</span>
                         </div>
                         
-                        <div class="flex flex-wrap md:flex-col items-center md:items-stretch gap-2 md:gap-3 mt-4 w-full">
-                            <div class="flex items-center justify-between gap-2 bg-emerald-500/20 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border border-emerald-500/30 md:w-full">
-                                <span class="text-[11px] md:text-xs text-emerald-300 font-medium">กำไรสุทธิ:</span>
-                                <span class="text-sm md:text-base font-heading font-bold text-emerald-400" id="salTotalProfit">0</span>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-emerald-900/40 p-3 rounded-2xl border border-emerald-500/20">
+                                <p class="text-[10px] text-emerald-400/80 font-medium mb-1">กำไรสุทธิรวม</p>
+                                <p class="text-base md:text-lg number-font font-bold text-emerald-400" id="salTotalProfit">0</p>
                             </div>
-                            <div class="flex items-center justify-between gap-2 bg-white/10 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border border-white/10 md:w-full">
-                                <span class="text-[11px] md:text-xs text-slate-300 font-medium">จำนวนบิล:</span>
-                                <span class="text-sm md:text-base font-heading font-bold text-white" id="salTotalBills">0</span>
+                            <div class="bg-slate-800/50 p-3 rounded-2xl border border-slate-700/50">
+                                <p class="text-[10px] text-slate-400 font-medium mb-1">กำไรเฉลี่ย / วัน</p>
+                                <p class="text-base md:text-lg number-font font-bold text-white" id="salAvgProfit">0</p>
                             </div>
-                            <div class="flex items-center justify-between gap-2 bg-white/10 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border border-white/10 md:w-full">
-                                <span class="text-[11px] md:text-xs text-slate-300 font-medium">ยอดขายเฉลี่ย:</span>
-                                <span class="text-sm md:text-base font-heading font-bold text-white" id="salAvgValue">0 ฿/วัน</span>
+                            <div class="bg-slate-800/50 p-3 rounded-2xl border border-slate-700/50">
+                                <p class="text-[10px] text-slate-400 font-medium mb-1">ยอดขายเฉลี่ย</p>
+                                <p class="text-base number-font font-bold text-white" id="salAvgValue">0</p>
                             </div>
-                            <div class="flex items-center justify-between gap-2 bg-white/10 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border border-white/10 md:w-full">
-                                <span class="text-[11px] md:text-xs text-slate-300 font-medium">บิลเฉลี่ย:</span>
-                                <span class="text-sm md:text-base font-heading font-bold text-white" id="salAvgBills">0 บิล/วัน</span>
+                            <div class="bg-slate-800/50 p-3 rounded-2xl border border-slate-700/50">
+                                <p class="text-[10px] text-slate-400 font-medium mb-1">บิลเฉลี่ย / วัน</p>
+                                <p class="text-base number-font font-bold text-white" id="salAvgBills">0</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <section class="flex-1 flex flex-col min-w-0 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden h-full">
-                <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-white z-10 shrink-0">
-                    <h2 class="text-sm md:text-base font-heading font-bold text-slate-800">ตารางประวัติยอดขาย</h2>
-                    <button onclick="fetchSalesData()" class="p-2 text-slate-400 hover:text-emerald-600 bg-slate-50 hover:bg-emerald-50 rounded-lg transition-colors"><svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
+            <section class="flex-1 flex flex-col min-w-0 bg-white rounded-3xl border border-slate-200/60 shadow-sm overflow-hidden h-full">
+                <div class="flex justify-between items-center p-3 md:p-4 border-b border-slate-100 bg-white z-10 shrink-0">
+                    <h2 class="text-sm md:text-base font-heading font-bold text-slate-800 ml-2">ประวัติยอดขายรายวัน</h2>
+                    <button onclick="fetchSalesData()" class="p-2.5 text-slate-400 hover:text-emerald-600 bg-slate-50 hover:bg-emerald-50 rounded-xl transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
                 </div>
-                <div class="flex-1 overflow-x-auto overflow-y-auto custom-scroll bg-slate-50/30">
+                <div class="flex-1 overflow-x-auto overflow-y-auto custom-scroll">
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-slate-100/80 text-slate-500 text-[11px] md:text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md">
+                        <thead class="bg-slate-50/80 text-slate-400 text-[10px] md:text-[11px] uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md">
                             <tr>
-                                <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200">วันที่</th>
-                                <th class="px-3 py-3 md:px-4 font-semibold border-b border-slate-200 text-center">บิล</th>
-                                <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200 text-right">ยอดขาย (฿)</th>
-                                <th class="px-4 py-3 md:px-6 font-semibold border-b border-slate-200 text-right">กำไร (฿)</th>
-                                <th class="px-2 py-3 border-b border-slate-200 w-8"></th>
+                                <th class="px-5 py-4 font-bold border-b border-slate-100">วันที่</th>
+                                <th class="px-3 py-4 font-bold border-b border-slate-100 text-center">บิล</th>
+                                <th class="px-5 py-4 font-bold border-b border-slate-100 text-right">ยอดขาย (฿)</th>
+                                <th class="px-5 py-4 font-bold border-b border-slate-100 text-right">กำไร (฿)</th>
+                                <th class="px-3 py-4 border-b border-slate-100 w-8"></th>
                             </tr>
                         </thead>
-                        <tbody id="salTableBody" class="text-sm md:text-base text-slate-700 divide-y divide-slate-100">
+                        <tbody id="salTableBody" class="text-sm md:text-base text-slate-700 divide-y divide-slate-50">
                             </tbody>
                     </table>
                 </div>
             </section>
         </main>
 
-        <nav class="absolute bottom-0 left-0 w-full bg-white border-t border-slate-200/60 pb-safe md:relative md:rounded-b-[2.5rem] md:border-none z-40">
-            <div class="flex justify-around items-center h-16 md:h-20 px-6">
-                <button onclick="switchTab('expense')" id="navExpense" class="nav-btn active flex flex-col items-center justify-center w-full h-full text-blue-600 transition-colors">
-                    <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"></path></svg>
-                    <span class="text-[10px] md:text-xs font-bold">บันทึกรายจ่าย</span>
+        <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 pb-[env(safe-area-inset-bottom)] z-40">
+            <div class="flex justify-around items-center h-16 px-2">
+                <button onclick="switchTab('expense')" id="navExpenseMob" class="flex-1 flex flex-col items-center justify-center gap-1 h-full text-slate-800 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"></path></svg>
+                    <span class="text-[10px] font-bold">รายจ่าย</span>
                 </button>
-                <div class="w-px h-8 bg-slate-200"></div>
-                <button onclick="switchTab('sales')" id="navSales" class="nav-btn flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-emerald-500 transition-colors">
-                    <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span class="text-[10px] md:text-xs font-bold">ยอดขาย/กำไร</span>
+                <button onclick="switchTab('sales')" id="navSalesMob" class="flex-1 flex flex-col items-center justify-center gap-1 h-full text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="text-[10px] font-bold">ยอดขาย</span>
                 </button>
             </div>
         </nav>
     </div>
 
-    <div id="detailModal" class="fixed inset-0 z-50 hidden items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div id="detailModal" class="fixed inset-0 z-50 hidden items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm">
         <div class="bg-white rounded-t-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-xl h-[85vh] md:h-auto md:max-h-[85vh] flex flex-col overflow-hidden mt-auto md:mt-0">
-            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
-                <div><h3 id="detailModalTitle" class="font-heading font-bold text-slate-800 text-lg">บิลประจำวัน</h3><p id="detailModalCount" class="text-xs text-slate-500 font-medium">0 รายการ</p></div>
-                <button onclick="toggleModal('detailModal')" class="bg-slate-100 p-2.5 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <div class="flex justify-between items-center p-6 border-b border-slate-100 bg-white">
+                <div><h3 id="detailModalTitle" class="font-heading font-bold text-slate-800 text-lg">บิลประจำวัน</h3><p id="detailModalCount" class="text-xs text-slate-500 font-medium mt-0.5">0 รายการ</p></div>
+                <button onclick="toggleModal('detailModal')" class="bg-slate-50 p-2.5 rounded-full hover:bg-slate-100 transition-colors"><svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
-            <div class="p-5 overflow-y-auto bg-slate-50 flex-1 custom-scroll">
+            <div class="p-4 md:p-6 overflow-y-auto bg-slate-50/50 flex-1 custom-scroll">
                 <ul id="detailModalList" class="space-y-3"></ul>
             </div>
-            <div class="p-5 border-t border-slate-100 bg-white">
-                <div class="flex justify-between items-center bg-red-50 p-4 rounded-2xl border border-red-100"><span class="font-heading font-semibold text-red-800">ยอดรวม</span><div class="flex items-baseline gap-1"><span id="detailModalTotal" class="text-3xl font-heading font-bold text-red-600">0</span><span class="text-xs font-bold text-red-400">THB</span></div></div>
+            <div class="p-6 border-t border-slate-100 bg-white">
+                <div class="flex justify-between items-center bg-slate-900 p-5 rounded-2xl shadow-md"><span class="font-heading font-semibold text-slate-300">ยอดรวมทั้งหมด</span><div class="flex items-baseline gap-1.5"><span id="detailModalTotal" class="text-3xl font-heading font-bold text-white">0</span><span class="text-xs font-medium text-slate-400">THB</span></div></div>
             </div>
         </div>
     </div>
 
-    <div id="expItemEditModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div id="expItemEditModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
         <div class="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-sm flex flex-col overflow-hidden">
-            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
-                <h3 id="expItemEditModalTitle" class="font-heading font-bold text-slate-800 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                    จัดการรายจ่าย
-                </h3>
-                <button onclick="toggleModal('expItemEditModal')" class="bg-slate-100 p-2 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <div class="flex justify-between items-center p-6 border-b border-slate-100 bg-white">
+                <h3 id="expItemEditModalTitle" class="font-heading font-bold text-slate-800 text-lg">จัดการรายจ่าย</h3>
+                <button onclick="toggleModal('expItemEditModal')" class="bg-slate-50 p-2.5 rounded-full hover:bg-slate-100 transition-colors"><svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
-            <div class="p-6 bg-slate-50 flex-1 space-y-4">
+            <div class="p-6 bg-slate-50/50 flex-1 space-y-4">
                 <input type="hidden" id="editItemLineIndex">
                 <input type="hidden" id="editItemDateRaw">
                 
                 <div id="editItemDateWrapper">
-                    <label class="block text-[11px] md:text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">วันที่ (YYYY-MM-DD)</label>
-                    <input type="date" id="editItemDate" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+                    <label class="block text-[10px] md:text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">วันที่ (YYYY-MM-DD)</label>
+                    <input type="date" id="editItemDate" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-slate-900 transition-shadow">
                 </div>
                 
                 <div>
-                    <label class="block text-[11px] md:text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">ชื่อรายการ</label>
-                    <input type="text" id="editItemName" placeholder="เช่น ค่าข้าว" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+                    <label class="block text-[10px] md:text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">ชื่อรายการ</label>
+                    <input type="text" id="editItemName" placeholder="เช่น ค่าข้าว" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-slate-900 transition-shadow">
                 </div>
                 <div>
-                    <label class="block text-[11px] md:text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">จำนวนเงิน (฿)</label>
-                    <input type="number" id="editItemAmount" placeholder="0" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+                    <label class="block text-[10px] md:text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">จำนวนเงิน (฿)</label>
+                    <input type="number" id="editItemAmount" placeholder="0" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-slate-900 transition-shadow">
                 </div>
             </div>
             <div class="p-5 border-t border-slate-100 bg-white flex gap-3">
-                <button onclick="toggleModal('expItemEditModal')" class="flex-1 bg-slate-100 py-3.5 rounded-xl font-semibold text-slate-700">ยกเลิก</button>
-                <button onclick="saveExpItemAction()" class="flex-[2] bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-semibold transition-colors">บันทึกลงระบบ</button>
+                <button onclick="toggleModal('expItemEditModal')" class="flex-1 bg-slate-50 hover:bg-slate-100 py-3.5 rounded-xl font-bold text-slate-600 transition-colors">ยกเลิก</button>
+                <button onclick="saveExpItemAction()" class="flex-[2] bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl font-bold transition-colors shadow-md">บันทึกลงระบบ</button>
             </div>
         </div>
     </div>
 
-    <div id="rawModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div id="rawModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
         <div class="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-2xl h-[85vh] md:h-[80vh] flex flex-col overflow-hidden">
-            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
-                <h3 class="font-heading font-bold text-slate-800 flex items-center gap-2"><svg class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>แก้ไขแบบข้อความดิบ</h3>
-                <button onclick="toggleModal('rawModal')" class="bg-slate-100 p-2 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <div class="flex justify-between items-center p-6 border-b border-slate-100 bg-white">
+                <h3 class="font-heading font-bold text-slate-800 text-lg">แก้ไขแบบข้อความดิบ</h3>
+                <button onclick="toggleModal('rawModal')" class="bg-slate-50 p-2.5 rounded-full hover:bg-slate-100 transition-colors"><svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
-            <div class="p-5 overflow-y-auto bg-slate-50 flex-1 relative custom-scroll"><textarea id="textContent" class="w-full h-full bg-transparent font-mono text-sm md:text-base text-slate-700 resize-none outline-none leading-relaxed" spellcheck="false" placeholder="พิมพ์รายจ่าย..."></textarea></div>
+            <div class="p-6 overflow-y-auto bg-slate-50/50 flex-1 relative custom-scroll"><textarea id="textContent" class="w-full h-full bg-white border border-slate-200 rounded-xl p-4 font-mono text-sm md:text-base text-slate-700 resize-none outline-none focus:ring-2 focus:ring-slate-900 transition-shadow leading-relaxed" spellcheck="false" placeholder="พิมพ์รายจ่าย..."></textarea></div>
             <div class="p-5 border-t border-slate-100 bg-white flex gap-3">
-                <button onclick="toggleModal('rawModal')" class="flex-1 bg-slate-100 py-3.5 rounded-xl font-semibold text-slate-700">ยกเลิก</button>
-                <button onclick="saveExpenseData()" class="flex-[2] bg-blue-600 text-white py-3.5 rounded-xl font-semibold">บันทึกระบบ</button>
+                <button onclick="toggleModal('rawModal')" class="flex-1 bg-slate-50 hover:bg-slate-100 py-3.5 rounded-xl font-bold text-slate-600 transition-colors">ยกเลิก</button>
+                <button onclick="saveExpenseData()" class="flex-[2] bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl font-bold shadow-md transition-colors">บันทึกระบบ</button>
             </div>
         </div>
     </div>
 
-    <div id="salesEditModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div id="salesEditModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
         <div class="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-md flex flex-col overflow-hidden">
-            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
-                <h3 class="font-heading font-bold text-slate-800 flex items-center gap-2"><svg class="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>จัดการยอดขาย/กำไร</h3>
-                <button onclick="toggleModal('salesEditModal')" class="bg-slate-100 p-2 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <div class="flex justify-between items-center p-6 border-b border-slate-100 bg-white">
+                <h3 class="font-heading font-bold text-slate-800 text-lg">จัดการยอดขาย/กำไร</h3>
+                <button onclick="toggleModal('salesEditModal')" class="bg-slate-50 p-2.5 rounded-full hover:bg-slate-100 transition-colors"><svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
-            <div class="p-6 bg-slate-50 flex-1 space-y-4">
+            <div class="p-6 bg-slate-50/50 flex-1 space-y-4">
                 <div>
-                    <label class="block text-[11px] md:text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">วันที่บันทึก (YYYY-MM-DD)</label>
-                    <input type="date" id="saleEditDate" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow">
+                    <label class="block text-[10px] md:text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">วันที่บันทึก (YYYY-MM-DD)</label>
+                    <input type="date" id="saleEditDate" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-2">
-                        <label class="block text-[11px] md:text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">จำนวนบิลรวม</label>
+                        <label class="block text-[10px] md:text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">จำนวนบิลรวม</label>
                         <input type="number" id="saleEditBills" placeholder="0" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow">
                     </div>
                     <div>
-                        <label class="block text-[11px] md:text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">ยอดขายรวม (฿)</label>
+                        <label class="block text-[10px] md:text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">ยอดขายรวม (฿)</label>
                         <input type="number" id="saleEditTotal" placeholder="0" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow">
                     </div>
                     <div>
-                        <label class="block text-[11px] md:text-xs font-bold text-emerald-600 mb-1.5 uppercase tracking-wider">กำไรสุทธิ (฿)</label>
+                        <label class="block text-[10px] md:text-[11px] font-bold text-emerald-600 mb-1.5 uppercase tracking-wider">กำไรสุทธิ (฿)</label>
                         <input type="number" id="saleEditProfit" placeholder="0" class="w-full bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-emerald-800 font-bold outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow">
                     </div>
                 </div>
             </div>
             <div class="p-5 border-t border-slate-100 bg-white flex gap-3">
-                <button onclick="toggleModal('salesEditModal')" class="flex-1 bg-slate-100 py-3.5 rounded-xl font-semibold text-slate-700">ยกเลิก</button>
-                <button onclick="saveSalesDataToFirestore()" class="flex-[2] bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 rounded-xl font-semibold transition-colors">บันทึกลงระบบ</button>
+                <button onclick="toggleModal('salesEditModal')" class="flex-1 bg-slate-50 hover:bg-slate-100 py-3.5 rounded-xl font-bold text-slate-600 transition-colors">ยกเลิก</button>
+                <button onclick="saveSalesDataToFirestore()" class="flex-[2] bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-xl font-bold transition-colors shadow-md shadow-emerald-600/20">บันทึกลงระบบ</button>
             </div>
         </div>
     </div>
@@ -327,19 +335,34 @@
             document.getElementById('tabExpense').classList.toggle('active', tabName === 'expense');
             document.getElementById('tabSales').classList.toggle('active', tabName === 'sales');
             
-            const btnExp = document.getElementById('navExpense');
-            const btnSal = document.getElementById('navSales');
+            // Mobile
+            const btnExpMob = document.getElementById('navExpenseMob');
+            const btnSalMob = document.getElementById('navSalesMob');
+            const mobActive = "flex-1 flex flex-col items-center justify-center gap-1 h-full text-slate-800 transition-colors";
+            const mobInactive = "flex-1 flex flex-col items-center justify-center gap-1 h-full text-slate-400 hover:text-slate-600 transition-colors";
             
+            // Desktop
+            const btnExpDesk = document.getElementById('desktopNavExpense');
+            const btnSalDesk = document.getElementById('desktopNavSales');
+            const deskActive = "px-6 py-2 rounded-lg bg-white shadow-sm text-slate-800 text-sm font-bold transition-all";
+            const deskInactive = "px-6 py-2 rounded-lg text-slate-500 hover:text-slate-700 text-sm font-bold transition-all";
+
             if (tabName === 'expense') {
-                btnExp.className = "nav-btn active flex flex-col items-center justify-center w-full h-full text-blue-600 transition-colors";
-                btnSal.className = "nav-btn flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-emerald-500 transition-colors";
+                if(btnExpMob) btnExpMob.className = mobActive;
+                if(btnSalMob) btnSalMob.className = mobInactive;
+                if(btnExpDesk) btnExpDesk.className = deskActive;
+                if(btnSalDesk) btnSalDesk.className = deskInactive;
+
                 document.getElementById('mainTitle').textContent = "สรุปรายจ่าย";
                 document.getElementById('headerGroupExpense').classList.remove('hidden');
                 document.getElementById('headerGroupSales').classList.add('hidden');
             } else {
-                btnSal.className = "nav-btn active flex flex-col items-center justify-center w-full h-full text-emerald-600 transition-colors";
-                btnExp.className = "nav-btn flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-blue-500 transition-colors";
-                document.getElementById('mainTitle').textContent = "ยอดขายและกำไร";
+                if(btnSalMob) btnSalMob.className = mobActive;
+                if(btnExpMob) btnExpMob.className = mobInactive;
+                if(btnSalDesk) btnSalDesk.className = deskActive;
+                if(btnExpDesk) btnExpDesk.className = deskInactive;
+
+                document.getElementById('mainTitle').textContent = "ยอดขาย / กำไร";
                 document.getElementById('headerGroupExpense').classList.add('hidden');
                 document.getElementById('headerGroupSales').classList.remove('hidden');
                 
@@ -381,7 +404,8 @@
             const oldPeriodKey = expData.periods && expData.periods.length > 0 ? expData.periods[expPeriodIndex] : null;
 
             document.getElementById('textContent').value = text;
-            document.getElementById('lastUpdated').textContent = updateTime;
+            document.getElementById('lastUpdated').innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> อัปเดตล่าสุด: ${updateTime.replace('อัปเดต: ', '')}`;
+            
             expData = { allTime: { total: 0, count: 0, uniqueDays: new Set() }, periods: [], groupedData: {} };
             const lines = text.split(/\r\n|\n|\r/);
             const dateRegex = /^\s*(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})\s*$/;
@@ -394,13 +418,9 @@
                 const dateMatch = trimmedLine.match(dateRegex);
                 if (dateMatch) {
                     let d = parseInt(dateMatch[1], 10), m = parseInt(dateMatch[2], 10), y = parseInt(dateMatch[3], 10);
-                    
-                    if (y < 100) y += 2500;       
-                    else if (y < 2400) y += 543;  
+                    if (y < 100) y += 2500; else if (y < 2400) y += 543;  
                     
                     currentPeriodKey = `${y}-${m.toString().padStart(2, '0')}`;
-                    
-                    // จัดรูปแบบให้เป็นแบบเดียวกันเสมอ เพื่อการยุบรวมที่สมบูรณ์แบบ
                     let shortYear = y.toString().slice(-2);
                     currentRawDate = `${d}-${m}-${shortYear}`;
                     
@@ -418,7 +438,6 @@
                     if (!expData.groupedData[currentPeriodKey].days[currentRawDate]) expData.groupedData[currentPeriodKey].days[currentRawDate] = { total: 0, items: [] };
                     
                     if (currentRawDate !== "รายการอื่นๆ") expData.allTime.uniqueDays.add(currentRawDate);
-
                     expData.groupedData[currentPeriodKey].days[currentRawDate].total += amount;
                     expData.groupedData[currentPeriodKey].days[currentRawDate].items.push({ name: itemName, amount: amount, lineIndex: idx });
                 }
@@ -431,9 +450,7 @@
             if (oldPeriodKey) {
                 let newIdx = expData.periods.indexOf(oldPeriodKey);
                 expPeriodIndex = newIdx !== -1 ? newIdx : 0;
-            } else {
-                expPeriodIndex = 0;
-            }
+            } else { expPeriodIndex = 0; }
             
             renderExpenseTab();
         }
@@ -449,21 +466,16 @@
         function renderExpenseTab() {
             const tbody = document.getElementById('expTableBody');
             tbody.innerHTML = '';
-
             const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
 
             if (expData.periods.length === 0) {
-                setVal('expHeroLabel', "รวมทั้งหมด");
-                setVal('expTotalValue', "0");
-                setVal('expTotalItems', "0");
-                setVal('expAvgValue', "0 ฿");
-                tbody.innerHTML = `<tr><td colspan="3" class="px-4 py-8 text-center text-slate-400">ยังไม่มีข้อมูลรายจ่ายในระบบ</td></tr>`;
+                setVal('expHeroLabel', "รวมทั้งหมด"); setVal('expTotalValue', "0"); setVal('expTotalItems', "0"); setVal('expAvgValue', "0 ฿");
+                tbody.innerHTML = `<tr><td colspan="3" class="px-5 py-8 text-center text-slate-400 text-sm">ยังไม่มีข้อมูลรายจ่ายในระบบ</td></tr>`;
                 return;
             }
 
             const pKey = expData.periods[expPeriodIndex]; 
             const isAllTime = pKey === "all";
-            
             const displayTotal = isAllTime ? expData.allTime.total : expData.groupedData[pKey].total;
             const displayCount = isAllTime ? expData.allTime.count : expData.groupedData[pKey].count;
             const daysCount = isAllTime ? expData.allTime.uniqueDays.size : Object.keys(expData.groupedData[pKey].days).length;
@@ -477,9 +489,7 @@
 
             let rowsToRender = [];
             if (isAllTime) {
-                for (let k of expData.periods.filter(k => k !== "all")) {
-                    rowsToRender.push({ title: expData.groupedData[k].label, total: expData.groupedData[k].total, args: null });
-                }
+                for (let k of expData.periods.filter(k => k !== "all")) rowsToRender.push({ title: expData.groupedData[k].label, total: expData.groupedData[k].total, args: null });
             } else {
                 for (const [date, data] of Object.entries(expData.groupedData[pKey].days)) {
                     if (data.items.length > 0) rowsToRender.push({ title: date, total: data.total, args: `openExpDetails('${pKey}', '${date}')` });
@@ -492,18 +502,18 @@
             }
 
             rowsToRender.forEach((row, i) => {
-                const clickAttr = row.args ? `onclick="${row.args}" class="hover:bg-blue-50/50 cursor-pointer transition-colors group fade-in"` : `class="hover:bg-slate-50/50 transition-colors group fade-in"`;
-                const btnIcon = row.args ? `<svg class="w-4 h-4 md:w-5 md:h-5 text-slate-300 group-hover:text-blue-500 mx-auto transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>` : '';
+                const clickAttr = row.args ? `onclick="${row.args}" class="table-row-hover cursor-pointer transition-colors fade-in"` : `class="table-row-hover transition-colors fade-in"`;
+                const btnIcon = row.args ? `<svg class="w-4 h-4 text-slate-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>` : '';
                 
                 tbody.insertAdjacentHTML('beforeend', `
-                    <tr ${clickAttr} style="animation-delay: ${i * 0.03}s;">
-                        <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 whitespace-nowrap">
+                    <tr ${clickAttr} style="animation-delay: ${i * 0.02}s;">
+                        <td class="px-5 py-4 border-b border-slate-50 whitespace-nowrap">
                             <span class="font-heading font-medium text-slate-800">${row.title}</span>
                         </td>
-                        <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 text-right whitespace-nowrap">
-                            <span class="font-heading font-bold text-red-500">${row.total.toLocaleString('th-TH')}</span>
+                        <td class="px-5 py-4 border-b border-slate-50 text-right whitespace-nowrap">
+                            <span class="number-font font-bold text-red-500">${row.total.toLocaleString('th-TH')}</span>
                         </td>
-                        <td class="px-2 md:px-4 py-3.5 border-b border-slate-100 text-center whitespace-nowrap w-10">
+                        <td class="px-3 py-4 border-b border-slate-50 text-center whitespace-nowrap w-12">
                             ${btnIcon}
                         </td>
                     </tr>
@@ -512,9 +522,7 @@
         }
 
         function openExpDetails(pKey, dateKey) {
-            currentExpPKey = pKey;
-            currentExpDateKey = dateKey;
-
+            currentExpPKey = pKey; currentExpDateKey = dateKey;
             const data = expData.groupedData[pKey]?.days[dateKey];
             if(!data) return;
 
@@ -522,25 +530,17 @@
             document.getElementById('detailModalCount').textContent = `${data.items.length} รายการ`;
             document.getElementById('detailModalTotal').textContent = data.total.toLocaleString('th-TH');
             
-            const list = document.getElementById('detailModalList'); 
-            list.innerHTML = '';
+            const list = document.getElementById('detailModalList'); list.innerHTML = '';
             
             data.items.forEach(item => {
                 list.insertAdjacentHTML('beforeend', `
-                    <li class="bg-white p-3.5 md:p-4 rounded-2xl border border-slate-100 flex justify-between items-center group shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex-1 pr-2">
-                            <span class="text-slate-700 text-xs md:text-sm font-medium leading-snug">${item.name}</span>
-                        </div>
-                        <div class="flex items-center gap-2 md:gap-4 shrink-0">
-                            <span class="font-heading font-bold text-slate-900 text-sm md:text-base">${item.amount.toLocaleString('th-TH')}</span>
-                            
+                    <li class="bg-white p-4 rounded-2xl border border-slate-200/60 flex justify-between items-center group shadow-sm hover:border-slate-300 transition-colors">
+                        <div class="flex-1 pr-2"><span class="text-slate-700 text-sm font-medium leading-snug">${item.name}</span></div>
+                        <div class="flex items-center gap-3 shrink-0">
+                            <span class="number-font font-bold text-slate-900 text-base">${item.amount.toLocaleString('th-TH')}</span>
                             <div class="flex gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="openEditSingleExpItem(${item.lineIndex}, '${item.name}', ${item.amount})" class="p-1.5 md:p-2 text-slate-400 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 rounded-lg transition-colors" title="แก้ไข">
-                                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                </button>
-                                <button onclick="deleteSingleExpItem(${item.lineIndex})" class="p-1.5 md:p-2 text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-lg transition-colors" title="ลบ">
-                                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
+                                <button onclick="openEditSingleExpItem(${item.lineIndex}, '${item.name}', ${item.amount})" class="p-2 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-200 rounded-lg transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                                <button onclick="deleteSingleExpItem(${item.lineIndex})" class="p-2 text-slate-400 hover:text-red-600 bg-slate-50 hover:bg-red-50 rounded-lg transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                             </div>
                         </div>
                     </li>
@@ -548,14 +548,12 @@
             });
 
             list.insertAdjacentHTML('beforeend', `
-                <button onclick="openAddExpToSpecificDay('${dateKey}')" class="w-full mt-2 py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-semibold text-xs md:text-sm hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 active:scale-[0.98]">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    เพิ่มรายการใหม่ลงในวันนี้
+                <button onclick="openAddExpToSpecificDay('${dateKey}')" class="w-full mt-3 py-3.5 border border-dashed border-slate-300 rounded-2xl text-slate-500 font-bold text-sm hover:text-slate-900 hover:border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> เพิ่มรายการใหม่ลงในวันนี้
                 </button>
             `);
 
-            document.getElementById('detailModal').classList.remove('hidden');
-            document.getElementById('detailModal').classList.add('flex', 'fade-in');
+            document.getElementById('detailModal').classList.remove('hidden'); document.getElementById('detailModal').classList.add('flex', 'fade-in');
         }
 
         function openAddNewExpense() {
@@ -563,9 +561,8 @@
             document.getElementById('editItemDateRaw').value = ""; 
             document.getElementById('editItemDateWrapper').classList.remove('hidden'); 
             document.getElementById('editItemDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('editItemName').value = "";
-            document.getElementById('editItemAmount').value = "";
-            document.getElementById('expItemEditModalTitle').innerHTML = `<svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4v16m8-8H4"></path></svg>เพิ่มรายจ่ายใหม่`;
+            document.getElementById('editItemName').value = ""; document.getElementById('editItemAmount').value = "";
+            document.getElementById('expItemEditModalTitle').textContent = `เพิ่มรายจ่ายใหม่`;
             toggleModal('expItemEditModal');
         }
 
@@ -573,18 +570,16 @@
             document.getElementById('editItemLineIndex').value = -1;
             document.getElementById('editItemDateRaw').value = dateRaw; 
             document.getElementById('editItemDateWrapper').classList.add('hidden'); 
-            document.getElementById('editItemName').value = "";
-            document.getElementById('editItemAmount').value = "";
-            document.getElementById('expItemEditModalTitle').innerHTML = `<svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4v16m8-8H4"></path></svg>เพิ่มรายการลงในวันนี้`;
+            document.getElementById('editItemName').value = ""; document.getElementById('editItemAmount').value = "";
+            document.getElementById('expItemEditModalTitle').textContent = `เพิ่มรายการลงในวันนี้`;
             toggleModal('expItemEditModal');
         }
 
         function openEditSingleExpItem(lineIndex, name, amount) {
             document.getElementById('editItemLineIndex').value = lineIndex;
             document.getElementById('editItemDateWrapper').classList.add('hidden'); 
-            document.getElementById('editItemName').value = name;
-            document.getElementById('editItemAmount').value = amount;
-            document.getElementById('expItemEditModalTitle').innerHTML = `<svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>แก้ไขรายการ`;
+            document.getElementById('editItemName').value = name; document.getElementById('editItemAmount').value = amount;
+            document.getElementById('expItemEditModalTitle').textContent = `แก้ไขรายการ`;
             toggleModal('expItemEditModal');
         }
 
@@ -592,13 +587,9 @@
             const lineIndex = parseInt(document.getElementById('editItemLineIndex').value);
             const name = document.getElementById('editItemName').value.trim();
             const amount = document.getElementById('editItemAmount').value.trim();
-            
-            if (!name || !amount) {
-                showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error'); return;
-            }
+            if (!name || !amount) { showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error'); return; }
 
             let lines = document.getElementById('textContent').value.split(/\r\n|\n|\r/);
-
             if (lineIndex >= 0) {
                 lines[lineIndex] = `${name} ${amount}`;
             } else {
@@ -607,64 +598,38 @@
 
                 if (rawDateLocked) {
                     const match = rawDateLocked.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
-                    if (match) {
-                        targetD = parseInt(match[1], 10);
-                        targetM = parseInt(match[2], 10);
-                        targetY = parseInt(match[3], 10);
-                        if (targetY < 100) targetY += 2500; else if (targetY < 2400) targetY += 543;
-                    }
+                    if (match) { targetD = parseInt(match[1], 10); targetM = parseInt(match[2], 10); targetY = parseInt(match[3], 10); if (targetY < 100) targetY += 2500; else if (targetY < 2400) targetY += 543; }
                 } else {
                     const isoDate = document.getElementById('editItemDate').value;
                     if (!isoDate) { showToast('กรุณาเลือกวันที่', 'error'); return; }
                     const [yStr, mStr, dStr] = isoDate.split('-');
-                    targetD = parseInt(dStr, 10);
-                    targetM = parseInt(mStr, 10);
-                    targetY = parseInt(yStr, 10);
-                    if (targetY < 2400) targetY += 543; 
+                    targetD = parseInt(dStr, 10); targetM = parseInt(mStr, 10); targetY = parseInt(yStr, 10); if (targetY < 2400) targetY += 543; 
                 }
                 
                 let shortYear = targetY.toString().slice(-2);
                 let fallbackDateStr = `${targetD}-${targetM}-${shortYear}`;
-
-                let insertIndex = -1;
-                let insideTargetBlock = false;
+                let insertIndex = -1; let insideTargetBlock = false;
 
                 for(let i = 0; i < lines.length; i++) {
-                    let line = lines[i].trim();
-                    if(!line) continue;
-                    
+                    let line = lines[i].trim(); if(!line) continue;
                     const dateMatch = line.match(/^\s*(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})\s*$/);
                     if (dateMatch) {
-                        let d = parseInt(dateMatch[1], 10);
-                        let m = parseInt(dateMatch[2], 10);
-                        let y = parseInt(dateMatch[3], 10);
+                        let d = parseInt(dateMatch[1], 10), m = parseInt(dateMatch[2], 10), y = parseInt(dateMatch[3], 10);
                         if(y < 100) y += 2500; else if(y < 2400) y += 543;
-
-                        if (d === targetD && m === targetM && y === targetY) {
-                            insideTargetBlock = true;
-                            insertIndex = i; 
-                        } else {
-                            if (insideTargetBlock) break; 
-                        }
-                    } else {
-                        if (insideTargetBlock) insertIndex = i;
-                    }
+                        if (d === targetD && m === targetM && y === targetY) { insideTargetBlock = true; insertIndex = i; } 
+                        else { if (insideTargetBlock) break; }
+                    } else { if (insideTargetBlock) insertIndex = i; }
                 }
 
-                if (insideTargetBlock && insertIndex !== -1) {
-                    lines.splice(insertIndex + 1, 0, `${name} ${amount}`);
-                } else {
-                    if (lines.length > 0 && lines[lines.length - 1].trim() !== "") {
-                        lines.push("");
-                    }
-                    lines.push(fallbackDateStr);
-                    lines.push(`${name} ${amount}`);
+                if (insideTargetBlock && insertIndex !== -1) { lines.splice(insertIndex + 1, 0, `${name} ${amount}`); } 
+                else {
+                    if (lines.length > 0 && lines[lines.length - 1].trim() !== "") lines.push("");
+                    lines.push(fallbackDateStr); lines.push(`${name} ${amount}`);
                 }
             }
 
             document.getElementById('textContent').value = lines.join('\n').trim();
             toggleModal('expItemEditModal'); 
-            
             await saveExpenseData(true); 
 
             if (currentExpPKey && currentExpDateKey && !document.getElementById('detailModal').classList.contains('hidden')) {
@@ -674,41 +639,28 @@
 
         async function deleteSingleExpItem(lineIndex) {
             if(!confirm("คุณต้องการลบรายการนี้ใช่หรือไม่?")) return;
-
             let lines = document.getElementById('textContent').value.split(/\r\n|\n|\r/);
             lines.splice(lineIndex, 1); 
-            
             document.getElementById('textContent').value = lines.join('\n').trim();
-            
             await saveExpenseData(true);
 
             if (currentExpPKey && currentExpDateKey) {
                 if(!expData.groupedData[currentExpPKey] || !expData.groupedData[currentExpPKey].days[currentExpDateKey] || expData.groupedData[currentExpPKey].days[currentExpDateKey].items.length === 0) {
                     toggleModal('detailModal');
-                } else {
-                    openExpDetails(currentExpPKey, currentExpDateKey);
-                }
+                } else { openExpDetails(currentExpPKey, currentExpDateKey); }
             }
         }
 
         async function saveExpenseData(isInlineEdit = false) {
             const newText = document.getElementById('textContent').value;
             const nowTime = `อัปเดต: ${new Date().toLocaleTimeString("th-TH")}`;
-            
-            processExpenseData(newText, nowTime); 
-            localStorage.setItem(CACHE_KEY, JSON.stringify({ content: newText, updateTime: nowTime }));
-            
+            processExpenseData(newText, nowTime); localStorage.setItem(CACHE_KEY, JSON.stringify({ content: newText, updateTime: nowTime }));
             try {
                 showSync(true);
                 const formData = new URLSearchParams(); formData.append('textData', newText);
                 await fetch(EXPENSE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData });
                 showToast('บันทึกข้อมูลเรียบร้อย', 'success');
-            } catch (error) { 
-                showToast('บันทึกไม่สำเร็จ', 'error'); 
-            } finally {
-                showSync(false);
-            }
-
+            } catch (error) { showToast('บันทึกไม่สำเร็จ', 'error'); } finally { showSync(false); }
             if (!isInlineEdit) toggleModal('rawModal'); 
         }
 
@@ -726,11 +678,9 @@
                 renderSalesTable(data);
                 
                 const elLastUpdated = document.getElementById('lastUpdated');
-                if(elLastUpdated) elLastUpdated.textContent = `อัปเดต: ${new Date().toLocaleTimeString('th-TH')}`;
+                if(elLastUpdated) elLastUpdated.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> อัปเดตล่าสุด: ${new Date().toLocaleTimeString('th-TH')}`;
             } catch (e) {
-                if(tbody && tbody.innerHTML.trim() === "") {
-                    tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-red-500 font-medium">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`;
-                }
+                if(tbody && tbody.innerHTML.trim() === "") tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-red-500 text-sm">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`;
                 showToast('ดึงข้อมูลยอดขายล้มเหลว', 'error');
             } finally { showSync(false); }
         }
@@ -743,12 +693,9 @@
             const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
 
             if (!data || data.length === 0 || !data[0].document) {
-                setVal('salTotalValue', "0");
-                setVal('salTotalProfit', "0");
-                setVal('salTotalBills', "0");
-                setVal('salAvgValue', "0 ฿/วัน");
-                setVal('salAvgBills', "0 บิล/วัน");
-                tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">ยังไม่มีข้อมูลในระบบ</td></tr>`;
+                setVal('salTotalValue', "0"); setVal('salTotalProfit', "0"); setVal('salTotalBills', "0"); 
+                setVal('salAvgProfit', "0"); setVal('salAvgValue', "0"); setVal('salAvgBills', "0");
+                tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-slate-400 text-sm">ยังไม่มีข้อมูลในระบบ</td></tr>`;
                 return;
             }
 
@@ -758,7 +705,6 @@
             data.forEach((item, index) => {
                 if(!item.document) return;
                 const fields = item.document.fields;
-                
                 const dateRaw = fields.date?.stringValue || '';
                 const sales = Number(fields.total_sales?.doubleValue || fields.total_sales?.integerValue || 0);
                 const profit = Number(fields.total_profit?.doubleValue || fields.total_profit?.integerValue || 0);
@@ -766,40 +712,44 @@
                 allSales += sales; allProfit += profit; allBills += bills;
 
                 const dateObj = new Date(dateRaw);
-                const thMonthsShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-                const displayDate = `${dateObj.getDate().toString().padStart(2, '0')} ${thMonthsShort[dateObj.getMonth()]} ${(dateObj.getFullYear() + 543).toString().substring(2)}`;
+                const d = dateObj.getDate();
+                const m = dateObj.getMonth() + 1;
+                const y = (dateObj.getFullYear() + 543).toString().slice(-2);
+                const displayDate = `${d}-${m}-${y}`;
 
                 const clickAction = `openSalesEditModal('${dateRaw}', ${bills}, ${sales}, ${profit})`;
 
                 tbody.insertAdjacentHTML('beforeend', `
-                    <tr onclick="${clickAction}" class="hover:bg-emerald-50/50 cursor-pointer transition-colors group fade-in" style="animation-delay: ${index * 0.03}s;">
-                        <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 whitespace-nowrap">
+                    <tr onclick="${clickAction}" class="table-row-hover cursor-pointer transition-colors fade-in" style="animation-delay: ${index * 0.02}s;">
+                        <td class="px-5 py-4 border-b border-slate-50 whitespace-nowrap">
                             <span class="font-heading font-medium text-slate-800">${displayDate}</span>
                         </td>
-                        <td class="px-3 md:px-4 py-3.5 border-b border-slate-100 text-center whitespace-nowrap">
-                            <span class="inline-block bg-slate-100 text-slate-600 text-[10px] md:text-xs font-semibold px-2.5 py-0.5 rounded-full">${bills}</span>
+                        <td class="px-3 py-4 border-b border-slate-50 text-center whitespace-nowrap">
+                            <span class="inline-block bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">${bills}</span>
                         </td>
-                        <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 text-right whitespace-nowrap">
-                            <span class="font-heading font-bold text-slate-900">${sales.toLocaleString('th-TH')}</span>
+                        <td class="px-5 py-4 border-b border-slate-50 text-right whitespace-nowrap">
+                            <span class="number-font font-bold text-slate-900">${sales.toLocaleString('th-TH')}</span>
                         </td>
-                        <td class="px-4 md:px-6 py-3.5 border-b border-slate-100 text-right whitespace-nowrap">
-                            <span class="font-heading font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-md inline-block">+${profit.toLocaleString('th-TH')}</span>
+                        <td class="px-5 py-4 border-b border-slate-50 text-right whitespace-nowrap">
+                            <span class="number-font font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md inline-block">+${profit.toLocaleString('th-TH')}</span>
                         </td>
-                        <td class="px-2 py-3.5 border-b border-slate-100 text-center whitespace-nowrap">
-                            <svg class="w-4 h-4 md:w-5 md:h-5 text-slate-300 group-hover:text-emerald-500 mx-auto transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        <td class="px-3 py-4 border-b border-slate-50 text-center whitespace-nowrap w-12">
+                            <svg class="w-4 h-4 text-slate-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </td>
                     </tr>
                 `);
             });
 
             const avgSales = daysCount > 0 ? (allSales / daysCount) : 0;
+            const avgProfit = daysCount > 0 ? (allProfit / daysCount) : 0; 
             const avgBills = daysCount > 0 ? (allBills / daysCount) : 0;
 
             setVal('salTotalValue', allSales.toLocaleString('th-TH'));
             setVal('salTotalProfit', allProfit.toLocaleString('th-TH'));
-            setVal('salTotalBills', `${allBills.toLocaleString('th-TH')}`);
-            setVal('salAvgValue', `${avgSales.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿/วัน`);
-            setVal('salAvgBills', `${Math.round(avgBills).toLocaleString('th-TH')} บิล/วัน`);
+            setVal('salTotalBills', `${allBills.toLocaleString('th-TH')} บิล`);
+            setVal('salAvgProfit', `${avgProfit.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`);
+            setVal('salAvgValue', `${avgSales.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`);
+            setVal('salAvgBills', `${Math.round(avgBills).toLocaleString('th-TH')} บิล`);
         }
 
         function openSalesEditModal(dateStr = '', bills = '', sales = '', profit = '') {
