@@ -369,7 +369,6 @@
         }
 
         function processExpenseData(text, updateTime) {
-            // ดึง Key เดิมไว้ก่อน (เพื่อให้ UI ไม่สลับเดือนเองตอนโหลดเสร็จ)
             const oldPeriodKey = expData.periods && expData.periods.length > 0 ? expData.periods[expPeriodIndex] : null;
 
             document.getElementById('textContent').value = text;
@@ -388,9 +387,8 @@
                     currentRawDate = trimmedLine;
                     let m = parseInt(dateMatch[2], 10), y = parseInt(dateMatch[3], 10);
                     
-                    // 🌟 จัดการปีให้ฉลาดขึ้น (แปลงทุกอย่างเป็น พ.ศ.)
-                    if (y < 100) y += 2500;       // เช่น 69 -> 2569
-                    else if (y < 2400) y += 543;  // เช่น 2026 -> 2569
+                    if (y < 100) y += 2500;       
+                    else if (y < 2400) y += 543;  
                     
                     currentPeriodKey = `${y}-${m.toString().padStart(2, '0')}`;
                     if (!expData.groupedData[currentPeriodKey]) expData.groupedData[currentPeriodKey] = { label: `${thaiMonths[m-1]} ${y}`, total: 0, count: 0, days: {} };
@@ -417,7 +415,6 @@
             expData.periods = Object.keys(expData.groupedData).sort().reverse();
             if (expData.periods.length > 1) expData.periods.push("all");
             
-            // กลับไปที่หน้าเดือนเดิมถ้ามี
             if (oldPeriodKey) {
                 let newIdx = expData.periods.indexOf(oldPeriodKey);
                 expPeriodIndex = newIdx !== -1 ? newIdx : 0;
@@ -440,11 +437,13 @@
             const tbody = document.getElementById('expTableBody');
             tbody.innerHTML = '';
 
+            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+
             if (expData.periods.length === 0) {
-                document.getElementById('expHeroLabel').textContent = "รวมทั้งหมด";
-                document.getElementById('expTotalValue').textContent = "0";
-                document.getElementById('expTotalItems').textContent = "0";
-                document.getElementById('expAvgValue').textContent = "0 ฿";
+                setVal('expHeroLabel', "รวมทั้งหมด");
+                setVal('expTotalValue', "0");
+                setVal('expTotalItems', "0");
+                setVal('expAvgValue', "0 ฿");
                 tbody.innerHTML = `<tr><td colspan="3" class="px-4 py-8 text-center text-slate-400">ยังไม่มีข้อมูลรายจ่ายในระบบ</td></tr>`;
                 return;
             }
@@ -456,8 +455,6 @@
             const displayCount = isAllTime ? expData.allTime.count : expData.groupedData[pKey].count;
             const daysCount = isAllTime ? expData.allTime.uniqueDays.size : Object.keys(expData.groupedData[pKey].days).length;
             const avgVal = daysCount > 0 ? (displayTotal / daysCount) : 0;
-
-            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
 
             setVal('expHeroLabel', isAllTime ? "รวมทุกเวลา" : `รวม ${expData.groupedData[pKey].label}`);
             setVal('expTotalValue', displayTotal.toLocaleString('th-TH'));
@@ -600,12 +597,13 @@
                     const isoDate = document.getElementById('editItemDate').value;
                     const [yStr, mStr, dStr] = isoDate.split('-');
                     let yNum = parseInt(yStr);
-                    // 🌟 แปลงวันที่จากปฏิทินให้เป็น พ.ศ. ก่อนบันทึก
+                    
                     if (yNum < 2400) yNum += 543; 
-                    dateToAppend = `${parseInt(dStr)}/${parseInt(mStr)}/${yNum}`; 
+                    // 🌟 เปลี่ยน Format ให้เป็น 7-5-69 
+                    let shortYear = yNum.toString().slice(-2);
+                    dateToAppend = `${parseInt(dStr)}-${parseInt(mStr)}-${shortYear}`; 
                 }
                 
-                // ใช้การ Push array ทำให้บรรทัดต่อกันได้อย่างถูกต้อง
                 lines.push(""); 
                 lines.push(dateToAppend);
                 lines.push(`${name} ${amount}`);
@@ -716,8 +714,11 @@
                 allSales += sales; allProfit += profit; allBills += bills;
 
                 const dateObj = new Date(dateRaw);
-                const thMonthsShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-                const displayDate = `${dateObj.getDate().toString().padStart(2, '0')} ${thMonthsShort[dateObj.getMonth()]} ${(dateObj.getFullYear() + 543).toString().substring(2)}`;
+                // 🌟 เปลี่ยนตารางยอดขายเป็นรูปแบบ 7-5-69 เหมือนกัน
+                const d = dateObj.getDate();
+                const m = dateObj.getMonth() + 1;
+                const y = (dateObj.getFullYear() + 543).toString().slice(-2);
+                const displayDate = `${d}-${m}-${y}`;
 
                 const clickAction = `openSalesEditModal('${dateRaw}', ${bills}, ${sales}, ${profit})`;
 
