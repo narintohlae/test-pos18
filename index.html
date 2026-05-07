@@ -377,7 +377,10 @@
             const lines = text.split(/\r\n|\n|\r/);
             const dateRegex = /^\s*(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})\s*$/;
             
-            let currentRawDate = "รายการอื่นๆ", currentPeriodKey = "uncategorized";
+            let currentRawDate = "รายการอื่นๆ";
+            let currentStandardDate = "รายการอื่นๆ";
+            let currentPeriodKey = "uncategorized";
+            
             expData.groupedData[currentPeriodKey] = { label: "รายการทั่วไป", total: 0, count: 0, days: {} };
 
             lines.forEach((line, idx) => {
@@ -385,16 +388,19 @@
                 const dateMatch = trimmedLine.match(dateRegex);
                 if (dateMatch) {
                     currentRawDate = trimmedLine;
-                    let m = parseInt(dateMatch[2], 10), y = parseInt(dateMatch[3], 10);
+                    let d = parseInt(dateMatch[1], 10), m = parseInt(dateMatch[2], 10), y = parseInt(dateMatch[3], 10);
                     
+                    // แปลงปีให้เป็น พ.ศ. เสมอเพื่อการจัดกลุ่ม
                     if (y < 100) y += 2500;       
                     else if (y < 2400) y += 543;  
                     
                     currentPeriodKey = `${y}-${m.toString().padStart(2, '0')}`;
+                    currentStandardDate = `${d}-${m}-${y.toString().slice(-2)}`; 
+
                     if (!expData.groupedData[currentPeriodKey]) expData.groupedData[currentPeriodKey] = { label: `${thaiMonths[m-1]} ${y}`, total: 0, count: 0, days: {} };
-                    if (!expData.groupedData[currentPeriodKey].days[currentRawDate]) expData.groupedData[currentPeriodKey].days[currentRawDate] = { total: 0, items: [] };
+                    if (!expData.groupedData[currentPeriodKey].days[currentStandardDate]) expData.groupedData[currentPeriodKey].days[currentStandardDate] = { total: 0, items: [] };
                     
-                    expData.allTime.uniqueDays.add(currentRawDate);
+                    expData.allTime.uniqueDays.add(currentStandardDate);
                     return;
                 }
                 const itemMatch = trimmedLine.match(/(.*?)(\d+(?:\.\d+)?)$/);
@@ -402,12 +408,13 @@
                     const itemName = itemMatch[1].trim() || 'รายการ', amount = parseFloat(itemMatch[2]);
                     expData.allTime.total += amount; expData.allTime.count++;
                     expData.groupedData[currentPeriodKey].total += amount; expData.groupedData[currentPeriodKey].count++;
-                    if (!expData.groupedData[currentPeriodKey].days[currentRawDate]) expData.groupedData[currentPeriodKey].days[currentRawDate] = { total: 0, items: [] };
                     
-                    if (currentRawDate !== "รายการอื่นๆ") expData.allTime.uniqueDays.add(currentRawDate);
+                    if (!expData.groupedData[currentPeriodKey].days[currentStandardDate]) expData.groupedData[currentPeriodKey].days[currentStandardDate] = { total: 0, items: [] };
+                    
+                    if (currentStandardDate !== "รายการอื่นๆ") expData.allTime.uniqueDays.add(currentStandardDate);
 
-                    expData.groupedData[currentPeriodKey].days[currentRawDate].total += amount;
-                    expData.groupedData[currentPeriodKey].days[currentRawDate].items.push({ name: itemName, amount: amount, lineIndex: idx });
+                    expData.groupedData[currentPeriodKey].days[currentStandardDate].total += amount;
+                    expData.groupedData[currentPeriodKey].days[currentStandardDate].items.push({ name: itemName, amount: amount, lineIndex: idx });
                 }
             });
 
@@ -469,7 +476,7 @@
                 }
             } else {
                 for (const [date, data] of Object.entries(expData.groupedData[pKey].days)) {
-                    if (data.total > 0) rowsToRender.push({ title: date, total: data.total, args: `openExpDetails('${pKey}', '${date}')` });
+                    if (data.items.length > 0) rowsToRender.push({ title: date, total: data.total, args: `openExpDetails('${pKey}', '${date}')` });
                 }
                 rowsToRender.sort((a, b) => {
                     const dayA = parseInt(a.title.match(/\d+/)?.[0] || 0);
@@ -587,30 +594,76 @@
             let lines = document.getElementById('textContent').value.split(/\r\n|\n|\r/);
 
             if (lineIndex >= 0) {
+                // แก้ไขข้อมูลเก่า
                 lines[lineIndex] = `${name} ${amount}`;
             } else {
-                let dateToAppend = "";
+                // แทรกข้อมูลใหม่ (โดยค้นหาตำแหน่งวันที่ที่มีอยู่แล้ว)
+                let targetD, targetM, targetY;
                 const rawDateLocked = document.getElementById('editItemDateRaw').value;
+
                 if (rawDateLocked) {
-                    dateToAppend = rawDateLocked;
+                    const match = rawDateLocked.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
+                    if (match) {
+                        targetD = parseInt(match[1], 10);
+                        targetM = parseInt(match[2], 10);
+                        targetY = parseInt(match[3], 10);
+                    }
                 } else {
                     const isoDate = document.getElementById('editItemDate').value;
+                    if (!isoDate) { showToast('กรุณาเลือกวันที่', 'error'); return; }
                     const [yStr, mStr, dStr] = isoDate.split('-');
-                    let yNum = parseInt(yStr);
-                    
-                    if (yNum < 2400) yNum += 543; 
-                    // 🌟 เปลี่ยน Format ให้เป็น 7-5-69 
-                    let shortYear = yNum.toString().slice(-2);
-                    dateToAppend = `${parseInt(dStr)}-${parseInt(mStr)}-${shortYear}`; 
+                    targetD = parseInt(dStr, 10);
+                    targetM = parseInt(mStr, 10);
+                    targetY = parseInt(yStr, 10);
+                    if (targetY < 2400) targetY += 543; 
                 }
                 
-                lines.push(""); 
-                lines.push(dateToAppend);
-                lines.push(`${name} ${amount}`);
+                let checkTargetY = targetY;
+                if (checkTargetY < 100) checkTargetY += 2500; else if (checkTargetY < 2400) checkTargetY += 543;
+                
+                let shortYear = checkTargetY.toString().slice(-2);
+                let fallbackDateStr = `${targetD}-${targetM}-${shortYear}`;
+
+                let insertIndex = -1;
+                let insideTargetBlock = false;
+
+                // สแกนบรรทัดเพื่อหาช่องแทรก
+                for(let i = 0; i < lines.length; i++) {
+                    let line = lines[i].trim();
+                    if(!line) continue;
+                    
+                    const dateMatch = line.match(/^\s*(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})\s*$/);
+                    if (dateMatch) {
+                        let d = parseInt(dateMatch[1], 10);
+                        let m = parseInt(dateMatch[2], 10);
+                        let y = parseInt(dateMatch[3], 10);
+                        if(y < 100) y += 2500; else if(y < 2400) y += 543;
+
+                        if (d === targetD && m === targetM && y === checkTargetY) {
+                            insideTargetBlock = true;
+                            insertIndex = i; 
+                        } else {
+                            if (insideTargetBlock) break; 
+                        }
+                    } else {
+                        if (insideTargetBlock) insertIndex = i;
+                    }
+                }
+
+                if (insideTargetBlock && insertIndex !== -1) {
+                    // แทรกต่อท้ายกลุ่มวันที่เดิม
+                    lines.splice(insertIndex + 1, 0, `${name} ${amount}`);
+                } else {
+                    // ถ้าไม่เคยมีวันนี้มาก่อน ให้สร้างใหม่ข้างล่าง
+                    if (lines.length > 0 && lines[lines.length - 1].trim() !== "") {
+                        lines.push("");
+                    }
+                    lines.push(fallbackDateStr);
+                    lines.push(`${name} ${amount}`);
+                }
             }
 
             document.getElementById('textContent').value = lines.join('\n').trim();
-            
             toggleModal('expItemEditModal'); 
             
             await saveExpenseData(true); 
@@ -631,7 +684,7 @@
             await saveExpenseData(true);
 
             if (currentExpPKey && currentExpDateKey) {
-                if(!expData.groupedData[currentExpPKey] || !expData.groupedData[currentExpPKey].days[currentExpDateKey]) {
+                if(!expData.groupedData[currentExpPKey] || !expData.groupedData[currentExpPKey].days[currentExpDateKey] || expData.groupedData[currentExpPKey].days[currentExpDateKey].items.length === 0) {
                     toggleModal('detailModal');
                 } else {
                     openExpDetails(currentExpPKey, currentExpDateKey);
@@ -714,11 +767,8 @@
                 allSales += sales; allProfit += profit; allBills += bills;
 
                 const dateObj = new Date(dateRaw);
-                // 🌟 เปลี่ยนตารางยอดขายเป็นรูปแบบ 7-5-69 เหมือนกัน
-                const d = dateObj.getDate();
-                const m = dateObj.getMonth() + 1;
-                const y = (dateObj.getFullYear() + 543).toString().slice(-2);
-                const displayDate = `${d}-${m}-${y}`;
+                const thMonthsShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                const displayDate = `${dateObj.getDate().toString().padStart(2, '0')} ${thMonthsShort[dateObj.getMonth()]} ${(dateObj.getFullYear() + 543).toString().substring(2)}`;
 
                 const clickAction = `openSalesEditModal('${dateRaw}', ${bills}, ${sales}, ${profit})`;
 
