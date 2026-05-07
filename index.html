@@ -369,6 +369,9 @@
         }
 
         function processExpenseData(text, updateTime) {
+            // ดึง Key เดิมไว้ก่อน (เพื่อให้ UI ไม่สลับเดือนเองตอนโหลดเสร็จ)
+            const oldPeriodKey = expData.periods && expData.periods.length > 0 ? expData.periods[expPeriodIndex] : null;
+
             document.getElementById('textContent').value = text;
             document.getElementById('lastUpdated').textContent = updateTime;
             expData = { allTime: { total: 0, count: 0, uniqueDays: new Set() }, periods: [], groupedData: {} };
@@ -384,7 +387,11 @@
                 if (dateMatch) {
                     currentRawDate = trimmedLine;
                     let m = parseInt(dateMatch[2], 10), y = parseInt(dateMatch[3], 10);
-                    if (y < 100) y += 2500;
+                    
+                    // 🌟 จัดการปีให้ฉลาดขึ้น (แปลงทุกอย่างเป็น พ.ศ.)
+                    if (y < 100) y += 2500;       // เช่น 69 -> 2569
+                    else if (y < 2400) y += 543;  // เช่น 2026 -> 2569
+                    
                     currentPeriodKey = `${y}-${m.toString().padStart(2, '0')}`;
                     if (!expData.groupedData[currentPeriodKey]) expData.groupedData[currentPeriodKey] = { label: `${thaiMonths[m-1]} ${y}`, total: 0, count: 0, days: {} };
                     if (!expData.groupedData[currentPeriodKey].days[currentRawDate]) expData.groupedData[currentPeriodKey].days[currentRawDate] = { total: 0, items: [] };
@@ -409,7 +416,15 @@
             if (expData.groupedData["uncategorized"].count === 0) delete expData.groupedData["uncategorized"];
             expData.periods = Object.keys(expData.groupedData).sort().reverse();
             if (expData.periods.length > 1) expData.periods.push("all");
-            if (expPeriodIndex >= expData.periods.length) expPeriodIndex = 0; 
+            
+            // กลับไปที่หน้าเดือนเดิมถ้ามี
+            if (oldPeriodKey) {
+                let newIdx = expData.periods.indexOf(oldPeriodKey);
+                expPeriodIndex = newIdx !== -1 ? newIdx : 0;
+            } else {
+                expPeriodIndex = 0;
+            }
+            
             renderExpenseTab();
         }
 
@@ -440,25 +455,15 @@
             const displayTotal = isAllTime ? expData.allTime.total : expData.groupedData[pKey].total;
             const displayCount = isAllTime ? expData.allTime.count : expData.groupedData[pKey].count;
             const daysCount = isAllTime ? expData.allTime.uniqueDays.size : Object.keys(expData.groupedData[pKey].days).length;
-            
-            // ป้องกันการหารด้วย 0
             const avgVal = daysCount > 0 ? (displayTotal / daysCount) : 0;
 
-            // ตรวจสอบและอัปเดต Element ให้แน่ใจว่าไม่เป็น Null
-            const elExpHeroLabel = document.getElementById('expHeroLabel');
-            if(elExpHeroLabel) elExpHeroLabel.textContent = isAllTime ? "รวมทุกเวลา" : `รวม ${expData.groupedData[pKey].label}`;
-            
-            const elExpTotalValue = document.getElementById('expTotalValue');
-            if(elExpTotalValue) elExpTotalValue.textContent = displayTotal.toLocaleString('th-TH');
-            
-            const elExpTotalItems = document.getElementById('expTotalItems');
-            if(elExpTotalItems) elExpTotalItems.textContent = `${displayCount.toLocaleString('th-TH')}`;
-            
-            const elExpAvgValue = document.getElementById('expAvgValue');
-            if(elExpAvgValue) elExpAvgValue.textContent = `${avgVal.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`;
-            
-            const elExpCurrentPeriodLabel = document.getElementById('expCurrentPeriodLabel');
-            if(elExpCurrentPeriodLabel) elExpCurrentPeriodLabel.textContent = isAllTime ? "ภาพรวมทั้งหมด" : expData.groupedData[pKey].label;
+            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+
+            setVal('expHeroLabel', isAllTime ? "รวมทุกเวลา" : `รวม ${expData.groupedData[pKey].label}`);
+            setVal('expTotalValue', displayTotal.toLocaleString('th-TH'));
+            setVal('expTotalItems', `${displayCount.toLocaleString('th-TH')}`);
+            setVal('expAvgValue', `${avgVal.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`);
+            setVal('expCurrentPeriodLabel', isAllTime ? "ภาพรวมทั้งหมด" : expData.groupedData[pKey].label);
 
             let rowsToRender = [];
             if (isAllTime) {
@@ -593,17 +598,20 @@
                     dateToAppend = rawDateLocked;
                 } else {
                     const isoDate = document.getElementById('editItemDate').value;
-                    const [y, m, d] = isoDate.split('-');
-                    dateToAppend = `${d}/${m}/${y}`; 
+                    const [yStr, mStr, dStr] = isoDate.split('-');
+                    let yNum = parseInt(yStr);
+                    // 🌟 แปลงวันที่จากปฏิทินให้เป็น พ.ศ. ก่อนบันทึก
+                    if (yNum < 2400) yNum += 543; 
+                    dateToAppend = `${parseInt(dStr)}/${parseInt(mStr)}/${yNum}`; 
                 }
                 
-                let currentText = document.getElementById('textContent').value.trim();
-                let newBlock = `\n${dateToAppend}\n${name} ${amount}\n`;
-                lines = [currentText + "\n" + newBlock]; 
+                // ใช้การ Push array ทำให้บรรทัดต่อกันได้อย่างถูกต้อง
+                lines.push(""); 
+                lines.push(dateToAppend);
+                lines.push(`${name} ${amount}`);
             }
 
-            const newText = lines.join('\n').trim();
-            document.getElementById('textContent').value = newText;
+            document.getElementById('textContent').value = lines.join('\n').trim();
             
             toggleModal('expItemEditModal'); 
             
@@ -625,9 +633,10 @@
             await saveExpenseData(true);
 
             if (currentExpPKey && currentExpDateKey) {
-                openExpDetails(currentExpPKey, currentExpDateKey);
                 if(!expData.groupedData[currentExpPKey] || !expData.groupedData[currentExpPKey].days[currentExpDateKey]) {
                     toggleModal('detailModal');
+                } else {
+                    openExpDetails(currentExpPKey, currentExpDateKey);
                 }
             }
         }
@@ -681,7 +690,6 @@
             if(!tbody) return;
             tbody.innerHTML = '';
             
-            // Safe checks สำหรับ DOM elements
             const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
 
             if (!data || data.length === 0 || !data[0].document) {
