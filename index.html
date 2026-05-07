@@ -43,7 +43,6 @@
 
     <div class="w-full h-full md:h-[95dvh] md:max-w-4xl md:rounded-[2.5rem] md:border border-white/50 flex flex-col relative bg-[#f4f5f9] md:shadow-2xl overflow-hidden pb-16 md:pb-0">
         
-        <!-- Header -->
         <header class="flex-none pt-8 md:pt-6 pb-3 px-6 md:px-8 flex justify-between items-center bg-[#f4f5f9] z-10 shrink-0">
             <div>
                 <p class="text-xs md:text-sm font-medium text-slate-500 mb-0.5">ยินดีต้อนรับ 👋</p>
@@ -58,7 +57,6 @@
             <div class="text-right flex flex-col items-end">
                 <span id="lastUpdated" class="text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-200/60 px-3 py-1 rounded-full mb-1.5">รอการซิงค์</span>
                 
-                <!-- ปุ่มสลับตามแท็บ: ฝั่งรายจ่าย -->
                 <div id="headerGroupExpense" class="flex items-center gap-2">
                     <button onclick="toggleModal('rawModal')" class="p-2 text-slate-400 hover:text-blue-600 bg-white hover:bg-blue-50 rounded-lg transition-colors border border-slate-200" title="แก้ไขแบบข้อความดิบ">
                         <svg class="w-4 h-4 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
@@ -69,7 +67,6 @@
                     </button>
                 </div>
                 
-                <!-- ปุ่มสลับตามแท็บ: ฝั่งยอดขาย -->
                 <div id="headerGroupSales" class="hidden flex items-center gap-2">
                     <button onclick="openSalesEditModal()" class="text-[11px] md:text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-600 px-3 py-2 rounded-lg flex items-center gap-1.5 active:scale-95 transition-colors duration-200 shadow-md shadow-emerald-500/30">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -79,11 +76,7 @@
             </div>
         </header>
 
-        <!-- ============================================== -->
-        <!-- TAB 1: ระบบรายจ่าย -->
-        <!-- ============================================== -->
         <main id="tabExpense" class="tab-content active flex-1 px-5 md:px-8 pb-5 md:pb-8 gap-4 min-h-0">
-            <!-- Hero Card: รายจ่าย -->
             <div class="flex-none bg-slate-900 rounded-[2rem] p-6 md:p-8 text-white shadow-xl relative overflow-hidden shrink-0">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-red-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40 translate-x-1/3 -translate-y-1/3"></div>
                 <div class="absolute bottom-0 left-0 w-48 h-48 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40 -translate-x-1/3 translate-y-1/3"></div>
@@ -112,7 +105,6 @@
                 </div>
             </div>
 
-            <!-- Table Section: รายจ่าย -->
             <section class="flex-1 flex flex-col min-h-0 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                 <div class="flex justify-between items-center p-3 border-b border-slate-50 bg-white z-10">
                     <button onclick="expChangePeriod(-1)" class="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg></button>
@@ -130,18 +122,13 @@
                             </tr>
                         </thead>
                         <tbody id="expTableBody" class="text-sm md:text-base text-slate-700 divide-y divide-slate-100">
-                            <!-- ข้อมูลจะถูกวาดเป็นตารางที่นี่ -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
             </section>
         </main>
 
-        <!-- ============================================== -->
-        <!-- TAB 2: ระบบยอดขาย & กำไร -->
-        <!-- ============================================== -->
         <main id="tabSales" class="tab-content flex-1 px-5 md:px-8 pb-5 md:pb-8 gap-4 min-h-0">
-            <!-- Hero Card: สรุปยอดขาย -->
             <div class="flex-none bg-slate-900 rounded-[2rem] p-6 md:p-8 text-white shadow-xl relative overflow-hidden shrink-0">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 translate-x-1/3 -translate-y-1/3"></div>
                 <div class="absolute bottom-0 left-0 w-48 h-48 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -translate-x-1/3 translate-y-1/3"></div>
@@ -163,6 +150,10 @@
                             <span class="text-sm md:text-base font-heading font-bold text-emerald-400" id="salTotalProfit">0</span>
                         </div>
                         <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+                            <span class="text-[11px] md:text-xs text-slate-300 font-medium">จำนวนบิล:</span>
+                            <span class="text-sm md:text-base font-heading font-bold text-white" id="salTotalBills">0</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
                             <span class="text-[11px] md:text-xs text-slate-300 font-medium">ยอดขายเฉลี่ย:</span>
                             <span class="text-sm md:text-base font-heading font-bold text-white" id="salAvgValue">0 ฿/วัน</span>
                         </div>
@@ -174,7 +165,6 @@
                 </div>
             </div>
 
-            <!-- Table Section: ยอดขาย -->
             <section class="flex-1 flex flex-col min-h-0 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                 <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-white z-10">
                     <h2 class="text-sm md:text-base font-heading font-bold text-slate-800">ตารางประวัติยอดขาย</h2>
@@ -192,25 +182,19 @@
                             </tr>
                         </thead>
                         <tbody id="salTableBody" class="text-sm md:text-base text-slate-700 divide-y divide-slate-100">
-                            <!-- ข้อมูลจะถูกวาดเป็นตารางที่นี่ -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
             </section>
         </main>
 
-        <!-- ============================================== -->
-        <!-- Bottom Navigation -->
-        <!-- ============================================== -->
         <nav class="absolute bottom-0 left-0 w-full bg-white border-t border-slate-200/60 pb-safe md:relative md:rounded-b-[2.5rem] md:border-none z-40">
             <div class="flex justify-around items-center h-16 md:h-20 px-6">
-                <!-- ปุ่มแท็บรายจ่าย -->
                 <button onclick="switchTab('expense')" id="navExpense" class="nav-btn active flex flex-col items-center justify-center w-full h-full text-blue-600 transition-colors">
                     <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"></path></svg>
                     <span class="text-[10px] md:text-xs font-bold">บันทึกรายจ่าย</span>
                 </button>
                 <div class="w-px h-8 bg-slate-200"></div>
-                <!-- ปุ่มแท็บยอดขาย -->
                 <button onclick="switchTab('sales')" id="navSales" class="nav-btn flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-emerald-500 transition-colors">
                     <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <span class="text-[10px] md:text-xs font-bold">ยอดขาย/กำไร</span>
@@ -219,11 +203,6 @@
         </nav>
     </div>
 
-    <!-- ============================================== -->
-    <!-- MODALS -->
-    <!-- ============================================== -->
-    
-    <!-- Modal: แสดงรายละเอียดรายจ่าย (อัปเกรดให้มีปุ่มแก้/ลบ/เพิ่ม) -->
     <div id="detailModal" class="fixed inset-0 z-50 hidden items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/50 backdrop-blur-sm">
         <div class="bg-white rounded-t-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-xl h-[85vh] md:h-auto md:max-h-[85vh] flex flex-col overflow-hidden mt-auto md:mt-0">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
@@ -239,7 +218,6 @@
         </div>
     </div>
 
-    <!-- Modal: เพิ่ม/แก้ไข "รายจ่ายแบบรายชิ้น" -->
     <div id="expItemEditModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
         <div class="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-sm flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
@@ -274,7 +252,6 @@
         </div>
     </div>
 
-    <!-- Modal: แก้ไขข้อความรายจ่ายแบบดิบ (Raw Text) -->
     <div id="rawModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
         <div class="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-2xl h-[85vh] md:h-[80vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
@@ -289,7 +266,6 @@
         </div>
     </div>
 
-    <!-- Modal: เพิ่ม/แก้ไขยอดขายและกำไร -->
     <div id="salesEditModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
         <div class="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full md:max-w-md flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
@@ -323,7 +299,6 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="fixed top-8 left-1/2 -translate-x-1/2 z-[60] hidden pointer-events-none">
         <div id="toastContent" class="bg-slate-900 text-white px-5 py-3 rounded-full shadow-2xl font-medium text-xs md:text-sm flex items-center gap-2 border border-slate-700/50 backdrop-blur-md">
             <span id="toastIcon"></span><span id="toastMessage">แจ้งเตือน</span>
@@ -332,7 +307,7 @@
 
     <script>
         // ================= CONFIG =================
-        const EXPENSE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyE1WkeDg1-eTzHibG5SKa_k7oPy6yG2BSUTBc_PrTiep2xMG_W_DlpmTYcGrfliu1PA/exec";
+        const EXPENSE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5wog2rJaNIqPplRKoIzvm-EWolvtSGkEZ8Owrav1sxlkqKdshENQUdPLoSGoH9M_Y/exec";
         const SALES_PROJECT_ID = "time-tracker-46283"; 
         const CACHE_KEY = "expense_app_cache_v2"; 
         const SALES_CACHE_KEY = "sales_app_cache_v1"; 
@@ -465,13 +440,25 @@
             const displayTotal = isAllTime ? expData.allTime.total : expData.groupedData[pKey].total;
             const displayCount = isAllTime ? expData.allTime.count : expData.groupedData[pKey].count;
             const daysCount = isAllTime ? expData.allTime.uniqueDays.size : Object.keys(expData.groupedData[pKey].days).length;
+            
+            // ป้องกันการหารด้วย 0
             const avgVal = daysCount > 0 ? (displayTotal / daysCount) : 0;
 
-            document.getElementById('expHeroLabel').textContent = isAllTime ? "รวมทุกเวลา" : `รวม ${expData.groupedData[pKey].label}`;
-            document.getElementById('expTotalValue').textContent = displayTotal.toLocaleString('th-TH');
-            document.getElementById('expTotalItems').textContent = `${displayCount.toLocaleString('th-TH')}`;
-            document.getElementById('expAvgValue').textContent = `${avgVal.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`;
-            document.getElementById('expCurrentPeriodLabel').textContent = isAllTime ? "ภาพรวมทั้งหมด" : expData.groupedData[pKey].label;
+            // ตรวจสอบและอัปเดต Element ให้แน่ใจว่าไม่เป็น Null
+            const elExpHeroLabel = document.getElementById('expHeroLabel');
+            if(elExpHeroLabel) elExpHeroLabel.textContent = isAllTime ? "รวมทุกเวลา" : `รวม ${expData.groupedData[pKey].label}`;
+            
+            const elExpTotalValue = document.getElementById('expTotalValue');
+            if(elExpTotalValue) elExpTotalValue.textContent = displayTotal.toLocaleString('th-TH');
+            
+            const elExpTotalItems = document.getElementById('expTotalItems');
+            if(elExpTotalItems) elExpTotalItems.textContent = `${displayCount.toLocaleString('th-TH')}`;
+            
+            const elExpAvgValue = document.getElementById('expAvgValue');
+            if(elExpAvgValue) elExpAvgValue.textContent = `${avgVal.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`;
+            
+            const elExpCurrentPeriodLabel = document.getElementById('expCurrentPeriodLabel');
+            if(elExpCurrentPeriodLabel) elExpCurrentPeriodLabel.textContent = isAllTime ? "ภาพรวมทั้งหมด" : expData.groupedData[pKey].label;
 
             let rowsToRender = [];
             if (isAllTime) {
@@ -531,9 +518,14 @@
                         </div>
                         <div class="flex items-center gap-2 md:gap-4 shrink-0">
                             <span class="font-heading font-bold text-slate-900 text-sm md:text-base">${item.amount.toLocaleString('th-TH')}</span>
+                            
                             <div class="flex gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="openEditSingleExpItem(${item.lineIndex}, '${item.name}', ${item.amount})" class="p-1.5 md:p-2 text-slate-400 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 rounded-lg transition-colors" title="แก้ไข"><svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
-                                <button onclick="deleteSingleExpItem(${item.lineIndex})" class="p-1.5 md:p-2 text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-lg transition-colors" title="ลบ"><svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                <button onclick="openEditSingleExpItem(${item.lineIndex}, '${item.name}', ${item.amount})" class="p-1.5 md:p-2 text-slate-400 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 rounded-lg transition-colors" title="แก้ไข">
+                                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </button>
+                                <button onclick="deleteSingleExpItem(${item.lineIndex})" class="p-1.5 md:p-2 text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-lg transition-colors" title="ลบ">
+                                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
                             </div>
                         </div>
                     </li>
@@ -586,7 +578,9 @@
             const name = document.getElementById('editItemName').value.trim();
             const amount = document.getElementById('editItemAmount').value.trim();
             
-            if (!name || !amount) { showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error'); return; }
+            if (!name || !amount) {
+                showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error'); return;
+            }
 
             let lines = document.getElementById('textContent').value.split(/\r\n|\n|\r/);
 
@@ -608,7 +602,9 @@
                 lines = [currentText + "\n" + newBlock]; 
             }
 
-            document.getElementById('textContent').value = lines.join('\n').trim();
+            const newText = lines.join('\n').trim();
+            document.getElementById('textContent').value = newText;
+            
             toggleModal('expItemEditModal'); 
             
             await saveExpenseData(true); 
@@ -620,9 +616,12 @@
 
         async function deleteSingleExpItem(lineIndex) {
             if(!confirm("คุณต้องการลบรายการนี้ใช่หรือไม่?")) return;
+
             let lines = document.getElementById('textContent').value.split(/\r\n|\n|\r/);
             lines.splice(lineIndex, 1); 
+            
             document.getElementById('textContent').value = lines.join('\n').trim();
+            
             await saveExpenseData(true);
 
             if (currentExpPKey && currentExpDateKey) {
@@ -636,8 +635,10 @@
         async function saveExpenseData(isInlineEdit = false) {
             const newText = document.getElementById('textContent').value;
             const nowTime = `อัปเดต: ${new Date().toLocaleTimeString("th-TH")}`;
+            
             processExpenseData(newText, nowTime); 
             localStorage.setItem(CACHE_KEY, JSON.stringify({ content: newText, updateTime: nowTime }));
+            
             try {
                 showSync(true);
                 const formData = new URLSearchParams(); formData.append('textData', newText);
@@ -645,7 +646,10 @@
                 showToast('บันทึกข้อมูลเรียบร้อย', 'success');
             } catch (error) { 
                 showToast('บันทึกไม่สำเร็จ', 'error'); 
-            } finally { showSync(false); }
+            } finally {
+                showSync(false);
+            }
+
             if (!isInlineEdit) toggleModal('rawModal'); 
         }
 
@@ -661,9 +665,11 @@
                 const data = await response.json();
                 localStorage.setItem(SALES_CACHE_KEY, JSON.stringify(data));
                 renderSalesTable(data);
-                document.getElementById('lastUpdated').textContent = `อัปเดต: ${new Date().toLocaleTimeString('th-TH')}`;
+                
+                const elLastUpdated = document.getElementById('lastUpdated');
+                if(elLastUpdated) elLastUpdated.textContent = `อัปเดต: ${new Date().toLocaleTimeString('th-TH')}`;
             } catch (e) {
-                if(tbody.innerHTML.trim() === "") {
+                if(tbody && tbody.innerHTML.trim() === "") {
                     tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-red-500 font-medium">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`;
                 }
                 showToast('ดึงข้อมูลยอดขายล้มเหลว', 'error');
@@ -672,14 +678,18 @@
 
         function renderSalesTable(data) {
             const tbody = document.getElementById('salTableBody');
+            if(!tbody) return;
             tbody.innerHTML = '';
             
+            // Safe checks สำหรับ DOM elements
+            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+
             if (!data || data.length === 0 || !data[0].document) {
-                document.getElementById('salTotalValue').textContent = "0";
-                document.getElementById('salTotalProfit').textContent = "0";
-                document.getElementById('salTotalBills').textContent = "0";
-                document.getElementById('salAvgValue').textContent = "0 ฿/วัน";
-                document.getElementById('salAvgBills').textContent = "0 บิล/วัน";
+                setVal('salTotalValue', "0");
+                setVal('salTotalProfit', "0");
+                setVal('salTotalBills', "0");
+                setVal('salAvgValue', "0 ฿/วัน");
+                setVal('salAvgBills', "0 บิล/วัน");
                 tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">ยังไม่มีข้อมูลในระบบ</td></tr>`;
                 return;
             }
@@ -727,11 +737,11 @@
             const avgSales = daysCount > 0 ? (allSales / daysCount) : 0;
             const avgBills = daysCount > 0 ? (allBills / daysCount) : 0;
 
-            document.getElementById('salTotalValue').textContent = allSales.toLocaleString('th-TH');
-            document.getElementById('salTotalProfit').textContent = allProfit.toLocaleString('th-TH');
-            document.getElementById('salTotalBills').textContent = `${allBills.toLocaleString('th-TH')}`;
-            document.getElementById('salAvgValue').textContent = `${avgSales.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿/วัน`;
-            document.getElementById('salAvgBills').textContent = `${Math.round(avgBills).toLocaleString('th-TH')} บิล/วัน`;
+            setVal('salTotalValue', allSales.toLocaleString('th-TH'));
+            setVal('salTotalProfit', allProfit.toLocaleString('th-TH'));
+            setVal('salTotalBills', `${allBills.toLocaleString('th-TH')}`);
+            setVal('salAvgValue', `${avgSales.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿/วัน`);
+            setVal('salAvgBills', `${Math.round(avgBills).toLocaleString('th-TH')} บิล/วัน`);
         }
 
         function openSalesEditModal(dateStr = '', bills = '', sales = '', profit = '') {
@@ -785,11 +795,12 @@
         // ================= UTILS =================
         function showSync(isSyncing) {
             const el = document.getElementById('bgSyncIndicator');
-            isSyncing ? el.classList.remove('hidden') : el.classList.add('hidden');
+            if(el) isSyncing ? el.classList.remove('hidden') : el.classList.add('hidden');
         }
 
         function toggleModal(id) {
             const el = document.getElementById(id);
+            if(!el) return;
             if(el.classList.contains('hidden')) { el.classList.remove('hidden'); el.classList.add('flex', 'fade-in'); }
             else { el.classList.add('hidden'); el.classList.remove('flex', 'fade-in'); }
         }
@@ -797,6 +808,7 @@
         let tTimer;
         function showToast(msg, type) {
             const toast = document.getElementById('toast');
+            if(!toast) return;
             document.getElementById('toastMessage').textContent = msg;
             document.getElementById('toastIcon').innerHTML = type === 'success' 
                 ? '<svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>'
