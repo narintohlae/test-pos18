@@ -120,10 +120,12 @@
             </div>
 
             <section class="flex-1 flex flex-col min-w-0 bg-white rounded-3xl border border-slate-200/60 shadow-sm overflow-hidden h-full">
-                <div class="flex justify-between items-center p-3 md:p-4 border-b border-slate-100 bg-white z-10 shrink-0">
-                    <button onclick="expChangePeriod(-1)" class="p-2.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
-                    <h2 id="expCurrentPeriodLabel" class="text-sm md:text-base font-heading font-bold text-slate-800">เดือนนี้</h2>
-                    <button onclick="expChangePeriod(1)" class="p-2.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+                <div class="flex justify-between items-center p-2.5 md:p-3 border-b border-slate-100 bg-white z-10 shrink-0">
+                    <button onclick="expChangePeriod(-1)" class="p-2.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg></button>
+                    <div class="flex items-center gap-2">
+                        <h2 id="expCurrentPeriodLabel" class="text-sm md:text-base font-heading font-bold text-slate-800">เดือนนี้</h2>
+                    </div>
+                    <button onclick="expChangePeriod(1)" class="p-2.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg></button>
                 </div>
                 
                 <div class="flex-1 overflow-x-auto overflow-y-auto custom-scroll">
@@ -152,7 +154,7 @@
                             <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
                                 <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </div>
-                            <span class="text-xs md:text-sm font-heading font-medium text-slate-200">ยอดขายรวมสะสม</span>
+                            <span class="text-xs md:text-sm font-heading font-medium text-slate-200" id="salHeroLabel">ยอดขายรวมสะสม</span>
                         </div>
                         <span class="text-[10px] md:text-xs font-medium bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700" id="salTotalBills">0 บิล</span>
                     </div>
@@ -187,15 +189,20 @@
             </div>
 
             <section class="flex-1 flex flex-col min-w-0 bg-white rounded-3xl border border-slate-200/60 shadow-sm overflow-hidden h-full">
-                <div class="flex justify-between items-center p-3 md:p-4 border-b border-slate-100 bg-white z-10 shrink-0">
-                    <h2 class="text-sm md:text-base font-heading font-bold text-slate-800 ml-2">ประวัติยอดขายรายวัน</h2>
-                    <button onclick="fetchSalesData()" class="p-2.5 text-slate-400 hover:text-emerald-600 bg-slate-50 hover:bg-emerald-50 rounded-xl transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
+                <div class="flex justify-between items-center p-2.5 md:p-3 border-b border-slate-100 bg-white z-10 shrink-0">
+                    <button onclick="salChangePeriod(-1)" class="p-2.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg></button>
+                    <div class="flex items-center gap-2">
+                        <h2 id="salCurrentPeriodLabel" class="text-sm md:text-base font-heading font-bold text-slate-800">เดือนนี้</h2>
+                        <button onclick="fetchSalesData()" class="p-1.5 text-slate-400 hover:text-emerald-600 bg-slate-50 hover:bg-emerald-50 rounded-lg transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
+                    </div>
+                    <button onclick="salChangePeriod(1)" class="p-2.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg></button>
                 </div>
+                
                 <div class="flex-1 overflow-x-auto overflow-y-auto custom-scroll">
                     <table class="w-full text-left border-collapse">
                         <thead class="bg-slate-50/80 text-slate-400 text-[10px] md:text-[11px] uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md">
                             <tr>
-                                <th class="px-5 py-4 font-bold border-b border-slate-100">วันที่</th>
+                                <th id="salThDate" class="px-5 py-4 font-bold border-b border-slate-100">วันที่</th>
                                 <th class="px-3 py-4 font-bold border-b border-slate-100 text-center">บิล</th>
                                 <th class="px-5 py-4 font-bold border-b border-slate-100 text-right">ยอดขาย (฿)</th>
                                 <th class="px-5 py-4 font-bold border-b border-slate-100 text-right">กำไร (฿)</th>
@@ -376,7 +383,10 @@
             if (cachedExp) processExpenseData(JSON.parse(cachedExp).content, "รอซิงค์...");
             
             const cachedSales = localStorage.getItem(SALES_CACHE_KEY);
-            if (cachedSales) renderSalesTable(JSON.parse(cachedSales));
+            if (cachedSales) {
+                rawSalesData = JSON.parse(cachedSales);
+                processSalesData(rawSalesData);
+            }
 
             fetchExpenseData(); 
             fetchSalesData(); 
@@ -521,6 +531,7 @@
             });
         }
 
+        // โค้ด Modal และ SaveExpense คงเดิม
         function openExpDetails(pKey, dateKey) {
             currentExpPKey = pKey; currentExpDateKey = dateKey;
             const data = expData.groupedData[pKey]?.days[dateKey];
@@ -665,6 +676,10 @@
         }
 
         // ================= SALES LOGIC =================
+        let rawSalesData = [];
+        let salData = { allTime: { sales: 0, profit: 0, bills: 0, days: new Set() }, periods: [], groupedData: {} };
+        let salPeriodIndex = 0;
+
         async function fetchSalesData() {
             showSync(true);
             const tbody = document.getElementById('salTableBody');
@@ -674,8 +689,10 @@
                 const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (!response.ok) throw new Error();
                 const data = await response.json();
+                
+                rawSalesData = data;
                 localStorage.setItem(SALES_CACHE_KEY, JSON.stringify(data));
-                renderSalesTable(data);
+                processSalesData(data);
                 
                 const elLastUpdated = document.getElementById('lastUpdated');
                 if(elLastUpdated) elLastUpdated.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> อัปเดตล่าสุด: ${new Date().toLocaleTimeString('th-TH')}`;
@@ -685,71 +702,169 @@
             } finally { showSync(false); }
         }
 
-        function renderSalesTable(data) {
-            const tbody = document.getElementById('salTableBody');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-            
-            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+        function processSalesData(data) {
+            const oldPeriodKey = salData.periods && salData.periods.length > 0 ? salData.periods[salPeriodIndex] : null;
+            salData = { allTime: { sales: 0, profit: 0, bills: 0, days: new Set() }, periods: [], groupedData: {} };
 
             if (!data || data.length === 0 || !data[0].document) {
-                setVal('salTotalValue', "0"); setVal('salTotalProfit', "0"); setVal('salTotalBills', "0"); 
-                setVal('salAvgProfit', "0"); setVal('salAvgValue', "0"); setVal('salAvgBills', "0");
-                tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-slate-400 text-sm">ยังไม่มีข้อมูลในระบบ</td></tr>`;
+                renderSalesTab();
                 return;
             }
 
-            let allSales = 0, allProfit = 0, allBills = 0;
-            const daysCount = data.filter(item => item.document).length;
-
-            data.forEach((item, index) => {
-                if(!item.document) return;
+            data.forEach(item => {
+                if (!item.document) return;
                 const fields = item.document.fields;
                 const dateRaw = fields.date?.stringValue || '';
                 const sales = Number(fields.total_sales?.doubleValue || fields.total_sales?.integerValue || 0);
                 const profit = Number(fields.total_profit?.doubleValue || fields.total_profit?.integerValue || 0);
                 const bills = Number(fields.total_bills?.integerValue || 0);
-                allSales += sales; allProfit += profit; allBills += bills;
 
                 const dateObj = new Date(dateRaw);
-                const d = dateObj.getDate();
-                const m = dateObj.getMonth() + 1;
-                const y = (dateObj.getFullYear() + 543).toString().slice(-2);
-                const displayDate = `${d}-${m}-${y}`;
+                let y = dateObj.getFullYear();
+                let m = dateObj.getMonth() + 1; 
+                let d = dateObj.getDate();
+                if (y < 2400) y += 543; 
+                
+                const pKey = `${y}-${m.toString().padStart(2, '0')}`;
+                const shortYear = y.toString().slice(-2);
+                const displayDate = `${d}-${m}-${shortYear}`;
 
-                const clickAction = `openSalesEditModal('${dateRaw}', ${bills}, ${sales}, ${profit})`;
+                if (!salData.groupedData[pKey]) {
+                    salData.groupedData[pKey] = { label: `${thaiMonths[m-1]} ${y}`, sales: 0, profit: 0, bills: 0, days: {} };
+                }
+
+                salData.allTime.sales += sales;
+                salData.allTime.profit += profit;
+                salData.allTime.bills += bills;
+                salData.allTime.days.add(dateRaw);
+
+                salData.groupedData[pKey].sales += sales;
+                salData.groupedData[pKey].profit += profit;
+                salData.groupedData[pKey].bills += bills;
+                
+                salData.groupedData[pKey].days[dateRaw] = { 
+                    displayDate: displayDate, 
+                    sales: sales, 
+                    profit: profit, 
+                    bills: bills,
+                    rawDate: dateRaw
+                };
+            });
+
+            salData.periods = Object.keys(salData.groupedData).sort().reverse();
+            if (salData.periods.length > 1) salData.periods.push("all");
+
+            if (oldPeriodKey) {
+                let newIdx = salData.periods.indexOf(oldPeriodKey);
+                salPeriodIndex = newIdx !== -1 ? newIdx : 0;
+            } else {
+                salPeriodIndex = 0;
+            }
+
+            renderSalesTab();
+        }
+
+        function salChangePeriod(dir) {
+            if (salData.periods.length === 0) return;
+            salPeriodIndex += dir;
+            if (salPeriodIndex < 0) salPeriodIndex = salData.periods.length - 1;
+            if (salPeriodIndex >= salData.periods.length) salPeriodIndex = 0;
+            renderSalesTab();
+        }
+
+        function renderSalesTab() {
+            const tbody = document.getElementById('salTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+
+            if (salData.periods.length === 0) {
+                setVal('salHeroLabel', "ยอดขายรวมสะสม");
+                setVal('salCurrentPeriodLabel', "ยังไม่มีข้อมูล");
+                setVal('salTotalValue', "0"); setVal('salTotalProfit', "0"); setVal('salTotalBills', "0 บิล"); 
+                setVal('salAvgProfit', "0 ฿"); setVal('salAvgValue', "0 ฿"); setVal('salAvgBills', "0 บิล");
+                tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-slate-400 text-sm">ยังไม่มีข้อมูลในระบบ</td></tr>`;
+                return;
+            }
+
+            const pKey = salData.periods[salPeriodIndex];
+            const isAllTime = pKey === "all";
+            
+            const displaySales = isAllTime ? salData.allTime.sales : salData.groupedData[pKey].sales;
+            const displayProfit = isAllTime ? salData.allTime.profit : salData.groupedData[pKey].profit;
+            const displayBills = isAllTime ? salData.allTime.bills : salData.groupedData[pKey].bills;
+            const daysCount = isAllTime ? salData.allTime.days.size : Object.keys(salData.groupedData[pKey].days).length;
+            
+            const avgSales = daysCount > 0 ? (displaySales / daysCount) : 0;
+            const avgProfit = daysCount > 0 ? (displayProfit / daysCount) : 0;
+            const avgBills = daysCount > 0 ? (displayBills / daysCount) : 0;
+
+            setVal('salHeroLabel', isAllTime ? "ยอดขายรวมทุกเวลา" : `รวม ${salData.groupedData[pKey].label}`);
+            setVal('salCurrentPeriodLabel', isAllTime ? "ภาพรวมทั้งหมด" : salData.groupedData[pKey].label);
+            document.getElementById('salThDate').textContent = isAllTime ? "เดือน / ปี" : "วันที่";
+
+            setVal('salTotalValue', displaySales.toLocaleString('th-TH'));
+            setVal('salTotalProfit', displayProfit.toLocaleString('th-TH'));
+            setVal('salTotalBills', `${displayBills.toLocaleString('th-TH')} บิล`);
+            setVal('salAvgValue', `${avgSales.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`);
+            setVal('salAvgProfit', `${avgProfit.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`);
+            setVal('salAvgBills', `${Math.round(avgBills).toLocaleString('th-TH')} บิล`);
+
+            let rowsToRender = [];
+            
+            if (isAllTime) {
+                for (let k of salData.periods.filter(k => k !== "all")) {
+                    const grp = salData.groupedData[k];
+                    rowsToRender.push({
+                        title: grp.label,
+                        bills: grp.bills,
+                        sales: grp.sales,
+                        profit: grp.profit,
+                        args: null 
+                    });
+                }
+            } else {
+                for (const [dateRaw, data] of Object.entries(salData.groupedData[pKey].days)) {
+                    rowsToRender.push({
+                        title: data.displayDate,
+                        bills: data.bills,
+                        sales: data.sales,
+                        profit: data.profit,
+                        rawDate: data.rawDate,
+                        args: `openSalesEditModal('${data.rawDate}', ${data.bills}, ${data.sales}, ${data.profit})`
+                    });
+                }
+                rowsToRender.sort((a, b) => {
+                    const dayA = parseInt(a.title.split('-')[0]);
+                    const dayB = parseInt(b.title.split('-')[0]);
+                    return dayA - dayB;
+                });
+            }
+
+            rowsToRender.forEach((row, i) => {
+                const clickAttr = row.args ? `onclick="${row.args}" class="table-row-hover cursor-pointer transition-colors fade-in"` : `class="table-row-hover transition-colors fade-in"`;
+                const btnIcon = row.args ? `<svg class="w-4 h-4 text-slate-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>` : '-';
 
                 tbody.insertAdjacentHTML('beforeend', `
-                    <tr onclick="${clickAction}" class="table-row-hover cursor-pointer transition-colors fade-in" style="animation-delay: ${index * 0.02}s;">
+                    <tr ${clickAttr} style="animation-delay: ${i * 0.02}s;">
                         <td class="px-5 py-4 border-b border-slate-50 whitespace-nowrap">
-                            <span class="font-heading font-medium text-slate-800">${displayDate}</span>
+                            <span class="font-heading font-medium text-slate-800">${row.title}</span>
                         </td>
                         <td class="px-3 py-4 border-b border-slate-50 text-center whitespace-nowrap">
-                            <span class="inline-block bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">${bills}</span>
+                            <span class="inline-block bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">${row.bills.toLocaleString('th-TH')}</span>
                         </td>
                         <td class="px-5 py-4 border-b border-slate-50 text-right whitespace-nowrap">
-                            <span class="number-font font-bold text-slate-900">${sales.toLocaleString('th-TH')}</span>
+                            <span class="number-font font-bold text-slate-900">${row.sales.toLocaleString('th-TH')}</span>
                         </td>
                         <td class="px-5 py-4 border-b border-slate-50 text-right whitespace-nowrap">
-                            <span class="number-font font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md inline-block">+${profit.toLocaleString('th-TH')}</span>
+                            <span class="number-font font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md inline-block">+${row.profit.toLocaleString('th-TH')}</span>
                         </td>
                         <td class="px-3 py-4 border-b border-slate-50 text-center whitespace-nowrap w-12">
-                            <svg class="w-4 h-4 text-slate-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            ${btnIcon}
                         </td>
                     </tr>
                 `);
             });
-
-            const avgSales = daysCount > 0 ? (allSales / daysCount) : 0;
-            const avgProfit = daysCount > 0 ? (allProfit / daysCount) : 0; 
-            const avgBills = daysCount > 0 ? (allBills / daysCount) : 0;
-
-            setVal('salTotalValue', allSales.toLocaleString('th-TH'));
-            setVal('salTotalProfit', allProfit.toLocaleString('th-TH'));
-            setVal('salTotalBills', `${allBills.toLocaleString('th-TH')} บิล`);
-            setVal('salAvgProfit', `${avgProfit.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`);
-            setVal('salAvgValue', `${avgSales.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`);
-            setVal('salAvgBills', `${Math.round(avgBills).toLocaleString('th-TH')} บิล`);
         }
 
         function openSalesEditModal(dateStr = '', bills = '', sales = '', profit = '') {
