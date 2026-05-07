@@ -459,7 +459,10 @@
                 const data = await res.json();
                 localStorage.setItem(CACHE_KEY, JSON.stringify(data));
                 processExpenseData(data.content, data.updateTime);
-            } catch (e) { showToast('โหลดรายจ่ายไม่สำเร็จ', 'error'); } 
+            } catch (e) { 
+    console.error("เกิดข้อผิดพลาดในการโหลด:", e); // พ่น error ออกหน้าต่างนักพัฒนา
+    showToast('โหลดรายจ่ายไม่สำเร็จ', 'error'); 
+} 
             finally { showSync(false); }
         }
 
