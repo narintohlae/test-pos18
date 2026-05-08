@@ -200,7 +200,7 @@
                 <div class="mt-2 lg:mt-auto grid grid-cols-2 lg:flex lg:flex-col gap-x-2 gap-y-1 lg:gap-2">
                     <div class="col-span-2 flex justify-between items-center bg-[#F2F2F7] p-1.5 lg:p-2.5 rounded-lg mb-1 lg:mb-2">
                         <span class="text-[11px] lg:text-[12px] font-semibold text-[#86868B]">กำไรสุทธิ</span>
-                        <span class="text-[14px] lg:text-base number-font font-bold text-[#34C759]">+<span id="salTotalProfit">0</span></span>
+                        <span class="text-[14px] lg:text-base number-font font-bold text-[#34C759]"><span id="salTotalProfit">0</span></span>
                     </div>
                     <div class="flex justify-between items-center border-b border-[#E5E5EA] pb-1">
                         <span class="text-[10px] lg:text-[12px] font-medium text-[#86868B]">รวมบิล</span>
@@ -707,17 +707,51 @@
             }
         }
 
-        async function deleteSingleExpItem(lineIndex) {
+async function deleteSingleExpItem(lineIndex) {
             if(!confirm("คุณต้องการลบรายการนี้ใช่หรือไม่?")) return;
             let lines = document.getElementById('textContent').value.split(/\r\n|\n|\r/);
+            
+            // 1. ลบรายการที่เลือกทิ้ง
             lines.splice(lineIndex, 1); 
+
+            // 2. เช็คบรรทัดก่อนหน้า ว่าเป็น "หัวข้อวันที่" หรือไม่
+            const dateRegex = /^\s*(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})\s*$/;
+            let prevIdx = lineIndex - 1;
+
+            if (prevIdx >= 0 && dateRegex.test(lines[prevIdx])) {
+                // ถ้าบรรทัดก่อนหน้าเป็นวันที่ ให้สแกนดูบรรทัดข้างใต้ที่เหลืออยู่
+                let scanIdx = lineIndex;
+                let hasItemsLeft = false;
+                
+                while (scanIdx < lines.length) {
+                    let checkLine = lines[scanIdx].trim();
+                    if (dateRegex.test(checkLine)) break; // ไปเจอหัวข้อวันที่ของวันอื่นแล้ว แปลว่าวันเดิมหมดแล้ว
+                    if (checkLine !== "") {
+                        hasItemsLeft = true; // ยังเจอรายการอื่นของวันเดิมอยู่
+                        break;
+                    }
+                    scanIdx++;
+                }
+
+                // 3. ถ้าสแกนแล้วไม่เจอรายการของวันนั้นเหลืออยู่เลย ให้ลบ "หัวข้อวันที่" ทิ้งด้วย
+                if (!hasItemsLeft) {
+                    lines.splice(prevIdx, 1);
+                }
+            }
+
+            // นำบรรทัดที่เหลือมาประกอบร่างใหม่ และเอาช่องว่างท้ายไฟล์ออก
             document.getElementById('textContent').value = lines.join('\n').trim();
             await saveExpenseData(true);
 
+            // อัปเดตหน้าต่าง Modal ลายละเอียดประจำวัน
             if (currentExpPKey && currentExpDateKey) {
+                // ถ้าลบจนหมดแล้ว ให้ปิดหน้าต่าง Modal ไปเลย
                 if(!expData.groupedData[currentExpPKey] || !expData.groupedData[currentExpPKey].days[currentExpDateKey] || expData.groupedData[currentExpPKey].days[currentExpDateKey].items.length === 0) {
                     toggleModal('detailModal');
-                } else { openExpDetails(currentExpPKey, currentExpDateKey); }
+                } else { 
+                    // ถ้ายังมีรายการอื่นเหลืออยู่ ให้รีเฟรชหน้าต่างใหม่
+                    openExpDetails(currentExpPKey, currentExpDateKey); 
+                }
             }
         }
 
@@ -875,7 +909,7 @@
             document.getElementById('salThDate').textContent = isAllTime ? "เดือน/ปี" : "วันที่";
 
             setVal('salTotalValue', displaySales.toLocaleString('th-TH'));
-            setVal('salTotalProfit', displayProfit.toLocaleString('th-TH'));
+            setVal('salTotalProfit', displayProfit.toLocaleString('th-TH', {maximumFractionDigits: 0}));
             setVal('salTotalBills', `${displayBills.toLocaleString('th-TH')} บิล`);
             setVal('salAvgValue', `${avgSales.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`);
             setVal('salAvgProfit', `${avgProfit.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`);
@@ -918,11 +952,11 @@
                             <span class="inline-block bg-[#F2F2F7] text-[#86868B] text-[10px] font-semibold px-1.5 py-0.5 rounded-md">${row.bills.toLocaleString('th-TH')}</span>
                         </td>
                         <td class="py-1.5 px-1 sm:px-2 border-b border-[#E5E5EA] group-last:border-0 text-right truncate">
-                            <span class="number-font font-bold text-[#1D1D1F] text-[11px]">${row.sales.toLocaleString('th-TH')}</span>
-                        </td>
+    <span class="number-font font-bold text-[#34C759] text-[11px]">${row.profit.toLocaleString('th-TH', {maximumFractionDigits: 0})}</span>
+</td>
                         <td class="py-1.5 px-1 sm:px-2 border-b border-[#E5E5EA] group-last:border-0 text-right truncate">
-                            <span class="number-font font-bold text-[#34C759] text-[11px]">+${row.profit.toLocaleString('th-TH')}</span>
-                        </td>
+    <span class="number-font font-bold text-[#34C759] text-[11px]">${row.profit.toLocaleString('th-TH', {maximumFractionDigits: 0})}</span>
+</td>
                         <td class="py-1.5 px-1 border-b border-[#E5E5EA] group-last:border-0 text-center">
                             ${btnIcon}
                         </td>
