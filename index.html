@@ -936,7 +936,7 @@
                 });
             }
 
-            rowsToRender.forEach((row) => {
+rowsToRender.forEach((row) => {
                 const clickAttr = row.args ? `onclick="${row.args}" class="group cursor-pointer transition-colors hover:bg-[#F2F2F7]/50"` : `class="group transition-colors"`;
                 const btnIcon = row.args ? `<svg class="w-4 h-4 text-[#C7C7CC] ml-auto group-hover:text-[#34C759] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>` : '';
 
@@ -948,9 +948,11 @@
                         <td class="py-1.5 px-1 sm:px-2 border-b border-[#E5E5EA] group-last:border-0 text-center truncate">
                             <span class="inline-block bg-[#F2F2F7] text-[#86868B] text-[10px] font-semibold px-1.5 py-0.5 rounded-md">${row.bills.toLocaleString('th-TH')}</span>
                         </td>
+                        <!-- เปลี่ยนสียอดขายเป็นสีฟ้า (Blue) ตรงนี้ -->
                         <td class="py-1.5 px-1 sm:px-2 border-b border-[#E5E5EA] group-last:border-0 text-right truncate">
-                            <span class="number-font font-bold text-[#34C759] text-[11px]">${row.sales.toLocaleString('th-TH', {maximumFractionDigits: 0})}</span>
+                            <span class="number-font font-bold text-[#007AFF] text-[11px]">${row.sales.toLocaleString('th-TH', {maximumFractionDigits: 0})}</span>
                         </td>
+                        <!-- สีของกำไรยังคงเป็นสีเขียว (Green) -->
                         <td class="py-1.5 px-1 sm:px-2 border-b border-[#E5E5EA] group-last:border-0 text-right truncate">
                             <span class="number-font font-bold text-[#34C759] text-[11px]">${row.profit.toLocaleString('th-TH', {maximumFractionDigits: 0})}</span>
                         </td>
