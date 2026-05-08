@@ -202,15 +202,19 @@
                         <span class="text-[11px] lg:text-[12px] font-semibold text-[#86868B]">กำไรสุทธิ</span>
                         <span class="text-[14px] lg:text-base number-font font-bold text-[#34C759]"><span id="salTotalProfit">0</span></span>
                     </div>
-                    <div class="flex justify-between items-center border-b border-[#E5E5EA] pb-1">
+                    <div class="flex justify-between items-center border-b border-[#E5E5EA] pb-1 lg:pb-0">
                         <span class="text-[10px] lg:text-[12px] font-medium text-[#86868B]">รวมบิล</span>
                         <span class="text-[11px] lg:text-[12px] number-font font-semibold text-[#1D1D1F]" id="salTotalBills">0 บิล</span>
                     </div>
-                    <div class="flex justify-between items-center border-b border-[#E5E5EA] pb-1">
-                        <span class="text-[10px] lg:text-[12px] font-medium text-[#86868B]">ยอดขายเฉลี่ย/วัน</span>
+                    <div class="flex justify-between items-center border-b border-[#E5E5EA] pb-1 lg:pb-0">
+                        <span class="text-[10px] lg:text-[12px] font-medium text-[#86868B]">บิลเฉลี่ย/วัน</span>
+                        <span class="text-[11px] lg:text-[12px] number-font font-semibold text-[#1D1D1F]" id="salAvgBills">0 บิล</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1 lg:pt-0 lg:border-none">
+                        <span class="text-[10px] lg:text-[12px] font-medium text-[#86868B]">ขายเฉลี่ย/วัน</span>
                         <span class="text-[11px] lg:text-[12px] number-font font-semibold text-[#1D1D1F]" id="salAvgValue">0 ฿</span>
                     </div>
-                    <div class="col-span-2 flex justify-between items-center pt-1 lg:pt-0">
+                    <div class="flex justify-between items-center pt-1 lg:pt-0">
                         <span class="text-[10px] lg:text-[12px] font-medium text-[#86868B]">กำไรเฉลี่ย/วัน</span>
                         <span class="text-[11px] lg:text-[12px] number-font font-semibold text-[#1D1D1F]" id="salAvgProfit">0 ฿</span>
                     </div>
@@ -574,7 +578,6 @@
                 const clickAttr = row.args ? `onclick="${row.args}" class="group cursor-pointer transition-colors hover:bg-[#F2F2F7]/50"` : `class="group transition-colors"`;
                 const btnIcon = row.args ? `<svg class="w-4 h-4 text-[#C7C7CC] ml-auto group-hover:text-[#007AFF] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>` : '';
                 
-                // ปรับแต่ง padding และ text size เล็กสุดที่นี่
                 tbody.insertAdjacentHTML('beforeend', `
                     <tr ${clickAttr}>
                         <td class="py-1.5 px-2 sm:px-4 border-b border-[#E5E5EA] group-last:border-0 truncate w-full max-w-0">
@@ -707,49 +710,41 @@
             }
         }
 
-async function deleteSingleExpItem(lineIndex) {
+        async function deleteSingleExpItem(lineIndex) {
             if(!confirm("คุณต้องการลบรายการนี้ใช่หรือไม่?")) return;
             let lines = document.getElementById('textContent').value.split(/\r\n|\n|\r/);
             
-            // 1. ลบรายการที่เลือกทิ้ง
             lines.splice(lineIndex, 1); 
 
-            // 2. เช็คบรรทัดก่อนหน้า ว่าเป็น "หัวข้อวันที่" หรือไม่
             const dateRegex = /^\s*(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})\s*$/;
             let prevIdx = lineIndex - 1;
 
             if (prevIdx >= 0 && dateRegex.test(lines[prevIdx])) {
-                // ถ้าบรรทัดก่อนหน้าเป็นวันที่ ให้สแกนดูบรรทัดข้างใต้ที่เหลืออยู่
                 let scanIdx = lineIndex;
                 let hasItemsLeft = false;
                 
                 while (scanIdx < lines.length) {
                     let checkLine = lines[scanIdx].trim();
-                    if (dateRegex.test(checkLine)) break; // ไปเจอหัวข้อวันที่ของวันอื่นแล้ว แปลว่าวันเดิมหมดแล้ว
+                    if (dateRegex.test(checkLine)) break; 
                     if (checkLine !== "") {
-                        hasItemsLeft = true; // ยังเจอรายการอื่นของวันเดิมอยู่
+                        hasItemsLeft = true; 
                         break;
                     }
                     scanIdx++;
                 }
 
-                // 3. ถ้าสแกนแล้วไม่เจอรายการของวันนั้นเหลืออยู่เลย ให้ลบ "หัวข้อวันที่" ทิ้งด้วย
                 if (!hasItemsLeft) {
                     lines.splice(prevIdx, 1);
                 }
             }
 
-            // นำบรรทัดที่เหลือมาประกอบร่างใหม่ และเอาช่องว่างท้ายไฟล์ออก
             document.getElementById('textContent').value = lines.join('\n').trim();
             await saveExpenseData(true);
 
-            // อัปเดตหน้าต่าง Modal ลายละเอียดประจำวัน
             if (currentExpPKey && currentExpDateKey) {
-                // ถ้าลบจนหมดแล้ว ให้ปิดหน้าต่าง Modal ไปเลย
                 if(!expData.groupedData[currentExpPKey] || !expData.groupedData[currentExpPKey].days[currentExpDateKey] || expData.groupedData[currentExpPKey].days[currentExpDateKey].items.length === 0) {
                     toggleModal('detailModal');
                 } else { 
-                    // ถ้ายังมีรายการอื่นเหลืออยู่ ให้รีเฟรชหน้าต่างใหม่
                     openExpDetails(currentExpPKey, currentExpDateKey); 
                 }
             }
@@ -888,6 +883,7 @@ async function deleteSingleExpItem(lineIndex) {
                 setVal('salHeroLabel', "ยอดขายรวมสะสม");
                 setVal('salCurrentPeriodLabel', "ไม่มีข้อมูล");
                 setVal('salTotalValue', "0"); setVal('salTotalProfit', "0"); setVal('salTotalBills', "0 บิล"); 
+                setVal('salAvgBills', "0 บิล");
                 setVal('salAvgProfit', "0 ฿"); setVal('salAvgValue', "0 ฿");
                 tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-[#86868B] text-sm">ยังไม่มีข้อมูลในระบบ</td></tr>`;
                 return;
@@ -903,6 +899,7 @@ async function deleteSingleExpItem(lineIndex) {
             
             const avgSales = daysCount > 0 ? (displaySales / daysCount) : 0;
             const avgProfit = daysCount > 0 ? (displayProfit / daysCount) : 0;
+            const avgBills = daysCount > 0 ? (displayBills / daysCount) : 0;
 
             setVal('salHeroLabel', isAllTime ? "ยอดขายรวมทุกเวลา" : `รวม ${salData.groupedData[pKey].label}`);
             setVal('salCurrentPeriodLabel', isAllTime ? "ภาพรวมทั้งหมด" : salData.groupedData[pKey].label);
@@ -911,6 +908,7 @@ async function deleteSingleExpItem(lineIndex) {
             setVal('salTotalValue', displaySales.toLocaleString('th-TH'));
             setVal('salTotalProfit', displayProfit.toLocaleString('th-TH', {maximumFractionDigits: 0}));
             setVal('salTotalBills', `${displayBills.toLocaleString('th-TH')} บิล`);
+            setVal('salAvgBills', `${avgBills.toLocaleString('th-TH', {maximumFractionDigits: 1})} บิล`);
             setVal('salAvgValue', `${avgSales.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`);
             setVal('salAvgProfit', `${avgProfit.toLocaleString('th-TH', {maximumFractionDigits: 0})} ฿`);
 
@@ -942,7 +940,6 @@ async function deleteSingleExpItem(lineIndex) {
                 const clickAttr = row.args ? `onclick="${row.args}" class="group cursor-pointer transition-colors hover:bg-[#F2F2F7]/50"` : `class="group transition-colors"`;
                 const btnIcon = row.args ? `<svg class="w-4 h-4 text-[#C7C7CC] ml-auto group-hover:text-[#34C759] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>` : '';
 
-                // ปรับแต่ง padding และ text size เล็กสุดที่นี่
                 tbody.insertAdjacentHTML('beforeend', `
                     <tr ${clickAttr}>
                         <td class="py-1.5 px-1 sm:px-2 border-b border-[#E5E5EA] group-last:border-0 truncate w-full max-w-0">
@@ -952,11 +949,11 @@ async function deleteSingleExpItem(lineIndex) {
                             <span class="inline-block bg-[#F2F2F7] text-[#86868B] text-[10px] font-semibold px-1.5 py-0.5 rounded-md">${row.bills.toLocaleString('th-TH')}</span>
                         </td>
                         <td class="py-1.5 px-1 sm:px-2 border-b border-[#E5E5EA] group-last:border-0 text-right truncate">
-    <span class="number-font font-bold text-[#34C759] text-[11px]">${row.profit.toLocaleString('th-TH', {maximumFractionDigits: 0})}</span>
-</td>
+                            <span class="number-font font-bold text-[#34C759] text-[11px]">${row.sales.toLocaleString('th-TH', {maximumFractionDigits: 0})}</span>
+                        </td>
                         <td class="py-1.5 px-1 sm:px-2 border-b border-[#E5E5EA] group-last:border-0 text-right truncate">
-    <span class="number-font font-bold text-[#34C759] text-[11px]">${row.profit.toLocaleString('th-TH', {maximumFractionDigits: 0})}</span>
-</td>
+                            <span class="number-font font-bold text-[#34C759] text-[11px]">${row.profit.toLocaleString('th-TH', {maximumFractionDigits: 0})}</span>
+                        </td>
                         <td class="py-1.5 px-1 border-b border-[#E5E5EA] group-last:border-0 text-center">
                             ${btnIcon}
                         </td>
